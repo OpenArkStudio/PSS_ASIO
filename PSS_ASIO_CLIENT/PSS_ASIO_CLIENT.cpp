@@ -3,11 +3,21 @@
 
 #include <iostream>
 #include <string>
-#include "asio.hpp"
-using asio::ip::tcp;
 
+#include "TcpSession.h"
 
-void test_connect_server(std::string strIP, unsigned short port)
+//异步客户端
+void test_connect_asynchronous_server(std::string strIP, unsigned short port)
+{
+    asio::io_context io_context;
+    CTcpSession c(io_context);
+
+    c.start(1, 1024, "127.0.0.1", 8888);
+
+}
+
+//同步客户端
+void test_connect_synchronize_server(std::string strIP, unsigned short port)
 {
     asio::io_context io_context;
 
@@ -72,7 +82,15 @@ void test_connect_server(std::string strIP, unsigned short port)
 
 int main()
 {
-    test_connect_server("127.0.0.1", 8888);
+    //初始化输出
+    Init_Console_Output(0,
+        1,
+        1024000,
+        "./serverlog",
+        "debug");
+
+
+    test_connect_synchronize_server("127.0.0.1", 8888);
 
     getchar();
 }

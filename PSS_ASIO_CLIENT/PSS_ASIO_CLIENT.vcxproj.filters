@@ -13,10 +13,21 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="TcpSession">
+      <UniqueIdentifier>{732a8b85-e430-48b1-ae52-d28861577d24}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PSS_ASIO_CLIENT.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="TcpSession\TcpSession.cpp">
+      <Filter>TcpSession</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="TcpSession\TcpSession.h">
+      <Filter>TcpSession</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

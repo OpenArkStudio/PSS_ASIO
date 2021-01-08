@@ -1,29 +1,42 @@
 #include "TcpSession.h"
 
-CTcpSession::CTcpSession(tcp::socket socket)
-    : socket_(std::move(socket))
+CTcpSession::CTcpSession(asio::io_context& io_context)
+    : socket_(io_context)
 {
 }
 
-void CTcpSession::open(uint32 connect_id, uint32 packet_parse_id, uint32 buffer_size)
+void CTcpSession::start(uint32 connect_id, uint32 buffer_size, string server_ip, uint16 server_port)
 {
     connect_id_ = connect_id;
-
-    packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(packet_parse_id);
 
     session_recv_buffer_.Init(buffer_size);
     session_send_buffer_.Init(buffer_size);
 
-    //处理链接建立消息
-    _ClientIPInfo remote_ip;
-    _ClientIPInfo local_ip;
-    remote_ip.m_strClientIP = socket_.remote_endpoint().address().to_string();
-    remote_ip.m_u2Port = socket_.remote_endpoint().port();
-    local_ip.m_strClientIP = socket_.local_endpoint().address().to_string();
-    local_ip.m_u2Port = socket_.local_endpoint().port();
-    packet_parse_interface_->Connect(connect_id_, remote_ip, local_ip);
+    //建立连接
+    tcp::endpoint end_point(asio::ip::address::from_string(server_ip.c_str()), server_port);
+    asio::error_code connect_error;
+    socket_.connect(end_point, connect_error);
 
-    do_read();
+    if (connect_error)
+    {
+        //连接建立失败
+        PSS_LOGGER_DEBUG("[CTcpSession::start]error({})", connect_error.message());
+    }
+    else
+    {
+        //处理链接建立消息
+        _ClientIPInfo remote_ip;
+        _ClientIPInfo local_ip;
+        remote_ip.m_strClientIP = socket_.remote_endpoint().address().to_string();
+        remote_ip.m_u2Port = socket_.remote_endpoint().port();
+        local_ip.m_strClientIP = socket_.local_endpoint().address().to_string();
+        local_ip.m_u2Port = socket_.local_endpoint().port();
+
+        PSS_LOGGER_DEBUG("[CTcpSession::start]remote({0}:{1})", remote_ip.m_strClientIP, remote_ip.m_u2Port);
+        PSS_LOGGER_DEBUG("[CTcpSession::start]local({0}:{1})", local_ip.m_strClientIP, local_ip.m_u2Port);
+
+        do_read();
+    }
 }
 
 void CTcpSession::Close()
@@ -33,8 +46,6 @@ void CTcpSession::Close()
     //输出接收发送字节数
     PSS_LOGGER_DEBUG("[CTcpSession::Close]recv:{0}, send:{1}", recv_data_size_, send_data_size_);
 
-    //断开连接
-    packet_parse_interface_->DisConnect(connect_id_);
 }
 
 void CTcpSession::do_read()
@@ -58,7 +69,7 @@ void CTcpSession::do_read()
             {
                 recv_data_size_ += length;
                 session_recv_buffer_.set_write_data(length);
-                //PSS_LOGGER_DEBUG("[CTcpSession::do_write]recv length={}.", length);
+                PSS_LOGGER_DEBUG("[CTcpSession::do_write]recv length={}.", length);
 
                 std::memcpy(session_send_buffer_.get_curr_write_ptr(),
                     session_recv_buffer_.read(),
@@ -66,29 +77,6 @@ void CTcpSession::do_read()
                 session_send_buffer_.set_write_data(length);
 
                 //处理数据拆包
-                vector<CMessage_Packet> message_list;
-                bool ret = packet_parse_interface_->Parse_Packet_From_Recv_Buffer(connect_id_, &session_recv_buffer_, message_list, EM_CONNECT_IO_TYPE::CONNECT_IO_TCP);
-                if (!ret)
-                {
-                    //链接断开(解析包不正确)
-                    App_tms::instance()->AddMessage(1, [self]() {
-                        self->Close();
-                        });
-                }
-
-                //添加到数据队列处理
-                App_tms::instance()->AddMessage(1, [self, message_list](){
-                    /*
-                    CMessage_Packet send_packet;
-                    for (auto packet : message_list)
-                    {
-                        self->set_write_buffer(packet.head_.c_str(), packet.head_.size());
-                        self->set_write_buffer(packet.body_.c_str(), packet.body_.size());
-                    }
-                    */
-
-                    self->do_write();
-                    });
 
                 //继续读数据
                 self->do_read();
@@ -96,9 +84,7 @@ void CTcpSession::do_read()
             else
             {
                 //链接断开
-                App_tms::instance()->AddMessage(1, [self]() {
-                    self->Close();
-                    });
+                Close();
             }
         });
 }
