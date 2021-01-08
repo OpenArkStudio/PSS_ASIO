@@ -41,6 +41,16 @@ void CTcpSession::do_read()
 {
     //接收数据
     auto self(shared_from_this());
+
+    //如果缓冲已满，断开连接，不再接受数据。
+    if (session_recv_buffer_.get_buffer_size() == 0)
+    {
+        //链接断开(缓冲撑满了)
+        App_tms::instance()->AddMessage(1, [self]() {
+            self->Close();
+            });
+    }
+
     socket_.async_read_some(asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()),
         [this, self](std::error_code ec, std::size_t length)
         {
@@ -48,7 +58,7 @@ void CTcpSession::do_read()
             {
                 recv_data_size_ += length;
                 session_recv_buffer_.set_write_data(length);
-                //PSS_LOGGER_DEBUG("[CTcpSession::do_write]recv length={}.", length);
+                PSS_LOGGER_DEBUG("[CTcpSession::do_write]recv length={}.", length);
 
                 std::memcpy(session_send_buffer_.get_curr_write_ptr(),
                     session_recv_buffer_.read(),
