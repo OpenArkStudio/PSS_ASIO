@@ -5,7 +5,6 @@
 #define _TIMEMANAGER_H
 
 #include "define.h"
-#include "singleton.h"
 
 #include <functional>
 #include <queue>
@@ -105,10 +104,12 @@ namespace brynet {
             F&& callback,
             TArgs&& ...args)
         {
+            std::lock_guard<std::mutex> lock(mtx);
             auto timer = std::make_shared<Timer>(
                 std::chrono::steady_clock::now(),
                 std::chrono::nanoseconds(timeout),
                 std::bind(std::forward<F>(callback), std::forward<TArgs>(args)...));
+
             mTimers.push(timer);
 
             //唤醒线程
@@ -119,6 +120,7 @@ namespace brynet {
 
         void addTimer(const Timer::Ptr& timer)
         {
+            std::lock_guard<std::mutex> lock(mtx);
             mTimers.push(timer);
             //唤醒线程
             timer_wakeup_state = EM_TIMER_STATE::TIMER_STATE_ADD_TIMER;
@@ -127,6 +129,7 @@ namespace brynet {
 
         void Close()
         {
+            std::lock_guard<std::mutex> lock(mtx);
             timer_run_ = false;
             //唤醒线程
             timer_wakeup_state = EM_TIMER_STATE::TIMER_STATE_ADD_TIMER;
@@ -154,6 +157,7 @@ namespace brynet {
             }
 
             auto tmp = mTimers.top();
+
             auto timer_wait = tmp->getLeftTime();
             if (timer_wait > std::chrono::nanoseconds::zero())
             {
@@ -173,6 +177,7 @@ namespace brynet {
 
             mTimers.pop();
             (*tmp)();
+
             timer_wakeup_state = EM_TIMER_STATE::TIMER_STATE_EXECUTE_TIMER;
 
             return ENUM_WHILE_STATE::WHILE_STATE_CONTINUE;
@@ -196,7 +201,7 @@ namespace brynet {
                 }
             }
 
-            //PSS_LOGGER_DEBUG("[TimerMgr::schedule]Time manager is end.");
+            PSS_LOGGER_DEBUG("[TimerMgr::schedule]Time manager is end.");
         }
 
         bool isEmpty() const
@@ -205,8 +210,9 @@ namespace brynet {
         }
 
         // if timer empty, return zero
-        std::chrono::nanoseconds nearLeftTime() const
+        std::chrono::nanoseconds nearLeftTime()
         {
+            std::unique_lock <std::mutex> lck(mtx);
             if (mTimers.empty())
             {
                 return std::chrono::nanoseconds::zero();
@@ -221,8 +227,9 @@ namespace brynet {
             return result;
         }
 
-        void    clear()
+        void clear()
         {
+            std::unique_lock <std::mutex> lck(mtx);
             while (!mTimers.empty())
             {
                 mTimers.pop();
@@ -262,7 +269,7 @@ public:
         m_ttTimerThread = std::thread([this]()
             {
                 m_timerMgr->schedule();
-                //PSS_LOGGER_DEBUG("[PSS_Timer_Manager::start]End.");
+                PSS_LOGGER_DEBUG("[PSS_Timer_Manager::start]End.");
             });
     };
 

@@ -5,13 +5,14 @@ CTcpSession::CTcpSession(tcp::socket socket)
 {
 }
 
-void CTcpSession::open(uint32 connect_id, uint32 packet_parse_id)
+void CTcpSession::open(uint32 connect_id, uint32 packet_parse_id, uint32 buffer_size)
 {
     connect_id_ = connect_id;
 
     packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(packet_parse_id);
 
-    session_recv_buffer_.Init(1024);
+    session_recv_buffer_.Init(buffer_size);
+    session_send_buffer_.Init(buffer_size);
 
     //处理链接建立消息
     _ClientIPInfo remote_ip;
@@ -29,6 +30,9 @@ void CTcpSession::Close()
 {
     socket_.close();
 
+    //输出接收发送字节数
+    PSS_LOGGER_DEBUG("[CTcpSession::Close]recv:{0}, send:{1}", recv_data_size_, send_data_size_);
+
     //断开连接
     packet_parse_interface_->DisConnect(connect_id_);
 }
@@ -42,7 +46,14 @@ void CTcpSession::do_read()
         {
             if (!ec)
             {
+                recv_data_size_ += length;
                 session_recv_buffer_.set_write_data(length);
+                //PSS_LOGGER_DEBUG("[CTcpSession::do_write]recv length={}.", length);
+
+                std::memcpy(session_send_buffer_.get_curr_write_ptr(),
+                    session_recv_buffer_.read(),
+                    length);
+                session_send_buffer_.set_write_data(length);
 
                 //处理数据拆包
                 vector<CMessage_Packet> message_list;
@@ -57,14 +68,16 @@ void CTcpSession::do_read()
 
                 //添加到数据队列处理
                 App_tms::instance()->AddMessage(1, [self, message_list](){
+                    /*
                     CMessage_Packet send_packet;
                     for (auto packet : message_list)
                     {
-                        send_packet.body_.append(packet.head_.c_str(), packet.head_.size());
-                        send_packet.body_.append(packet.body_.c_str(), packet.body_.size());
+                        self->set_write_buffer(packet.head_.c_str(), packet.head_.size());
+                        self->set_write_buffer(packet.body_.c_str(), packet.body_.size());
                     }
+                    */
 
-                    self->do_write(send_packet);
+                    self->do_write();
                     });
 
                 //继续读数据
@@ -80,22 +93,45 @@ void CTcpSession::do_read()
         });
 }
 
-void CTcpSession::do_write(CMessage_Packet send_packet)
+void CTcpSession::do_write()
 {
     //组装发送数据
     auto send_buffer = make_shared<CSendBuffer>();
-    send_buffer->data_.append(send_packet.body_.c_str(), send_packet.body_.size());
-    send_buffer->buffer_length_ = send_packet.body_.size();
+    send_buffer->data_.append(session_send_buffer_.read(), session_send_buffer_.get_write_size());
+    send_buffer->buffer_length_ = session_send_buffer_.get_write_size();
+    session_send_buffer_.move(session_send_buffer_.get_write_size());
+
+    //PSS_LOGGER_DEBUG("[CTcpSession::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
+
+    clear_write_buffer();
 
     //异步发送
+    auto self(shared_from_this());
     asio::async_write(socket_, asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
-        [send_buffer](std::error_code ec, std::size_t)
+        [self, send_buffer](std::error_code ec, std::size_t length)
         {
             if (ec)
             {
                 //暂时不处理
                 std::cout << "[CTcpSession::do_write](" << ec.value() << ") mseeage(" << ec.message() << ")" << std::endl;
             }
+            else
+            {
+                self->add_send_finish_size(length);
+            }
         });
+}
+
+void CTcpSession::set_write_buffer(const char* data, size_t length)
+{
+}
+
+void CTcpSession::clear_write_buffer()
+{
+}
+
+void CTcpSession::add_send_finish_size(size_t send_length)
+{
+    send_data_size_ += send_length;
 }
 
