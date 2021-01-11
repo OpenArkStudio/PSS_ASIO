@@ -58,17 +58,19 @@ void CTcpSession::do_read()
             {
                 recv_data_size_ += length;
                 session_recv_buffer_.set_write_data(length);
-                //PSS_LOGGER_DEBUG("[CTcpSession::do_write]recv length={}.", length);
+                PSS_LOGGER_DEBUG("[CTcpSession::do_write]recv length={}.", length);
 
+                /*
                 std::memcpy(session_send_buffer_.get_curr_write_ptr(),
                     session_recv_buffer_.read(),
                     length);
                 session_send_buffer_.set_write_data(length);
-
+                */
+                
                 //处理数据拆包
                 vector<CMessage_Packet> message_list;
                 bool ret = packet_parse_interface_->Parse_Packet_From_Recv_Buffer(connect_id_, &session_recv_buffer_, message_list, EM_CONNECT_IO_TYPE::CONNECT_IO_TCP);
-                if (!ret)
+                if (!ret)   
                 {
                     //链接断开(解析包不正确)
                     App_tms::instance()->AddMessage(1, [self]() {
@@ -78,19 +80,18 @@ void CTcpSession::do_read()
 
                 //添加到数据队列处理
                 App_tms::instance()->AddMessage(1, [self, message_list](){
-                    /*
-                    CMessage_Packet send_packet;
+                    PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
                     for (auto packet : message_list)
                     {
                         self->set_write_buffer(packet.head_.c_str(), packet.head_.size());
                         self->set_write_buffer(packet.body_.c_str(), packet.body_.size());
                     }
-                    */
 
                     self->do_write();
                     });
 
                 //继续读数据
+                //self->do_write();
                 self->do_read();
             }
             else
@@ -109,10 +110,8 @@ void CTcpSession::do_write()
     auto send_buffer = make_shared<CSendBuffer>();
     send_buffer->data_.append(session_send_buffer_.read(), session_send_buffer_.get_write_size());
     send_buffer->buffer_length_ = session_send_buffer_.get_write_size();
-    session_send_buffer_.move(session_send_buffer_.get_write_size());
 
-    //PSS_LOGGER_DEBUG("[CTcpSession::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
-
+    PSS_LOGGER_DEBUG("[CTcpSession::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
     clear_write_buffer();
 
     //异步发送
@@ -134,10 +133,21 @@ void CTcpSession::do_write()
 
 void CTcpSession::set_write_buffer(const char* data, size_t length)
 {
+    if (session_send_buffer_.get_buffer_size() <= length)
+    {
+        //发送些缓冲已经满了
+        return;
+    }
+
+    std::memcpy(session_send_buffer_.get_curr_write_ptr(),
+        data,
+        length);
+    session_send_buffer_.set_write_data(length);
 }
 
 void CTcpSession::clear_write_buffer()
 {
+    session_send_buffer_.move(session_send_buffer_.get_write_size());
 }
 
 void CTcpSession::add_send_finish_size(size_t send_length)

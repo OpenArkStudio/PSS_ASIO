@@ -90,7 +90,9 @@ int main()
         "debug");
 
 
-    test_connect_synchronize_server("127.0.0.1", 8888);
+    //test_connect_synchronize_server("127.0.0.1", 8888);
+
+    test_connect_asynchronous_server("127.0.0.1", 8888);
 
     getchar();
 }

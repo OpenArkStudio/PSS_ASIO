@@ -30,14 +30,18 @@ DECLDIR void Close();
 
 bool Parse_Packet_From_Recv_Buffer(uint32 connect_id, CSessionBuffer* buffer, vector<CMessage_Packet>& message_list, EM_CONNECT_IO_TYPE emIOType)
 {
+    uint32 packet_pos = 0;
+    auto buff_length = buffer->get_write_size();
+    auto pData = buffer->read();
+
     //在这里负责拆包
     while (true)
     {
         //数据包头是2+2+4+32 结构
-        auto buff_length = buffer->get_write_size();
         if (buff_length <= 40)
         {
             //包头不完整，不做解析
+            buffer->move(packet_pos);
             break;
         }
 
@@ -47,17 +51,19 @@ bool Parse_Packet_From_Recv_Buffer(uint32 connect_id, CSessionBuffer* buffer, ve
         uint32 packet_body_length = 0;             //包体长度
         char   packet_session[33] = { '\0' };      //Session字符串
 
-        char* pData = buffer->read();
+        //继续偏移
+        char* packet_buffer_data = pData + packet_pos;
+        
         uint32 u4Pos = 0;
 
         //解析包头
-        std::memcpy(&packet_version, &pData[u4Pos], (uint32)sizeof(uint16));
+        std::memcpy(&packet_version, &packet_buffer_data[u4Pos], (uint32)sizeof(uint16));
         u4Pos += sizeof(uint16);
-        std::memcpy(&command_id, &pData[u4Pos], (uint32)sizeof(uint16));
+        std::memcpy(&command_id, &packet_buffer_data[u4Pos], (uint32)sizeof(uint16));
         u4Pos += sizeof(uint16);
-        std::memcpy(&packet_body_length, &pData[u4Pos], (uint32)sizeof(uint32));
+        std::memcpy(&packet_body_length, &packet_buffer_data[u4Pos], (uint32)sizeof(uint32));
         u4Pos += sizeof(uint32);
-        std::memcpy(&packet_session, &pData[u4Pos], (uint32)(sizeof(char) * 32));
+        std::memcpy(&packet_session, &packet_buffer_data[u4Pos], (uint32)(sizeof(char) * 32));
         u4Pos += sizeof(char) * 32;
 
         //判断包体长度是否大于指定的长度
@@ -70,6 +76,7 @@ bool Parse_Packet_From_Recv_Buffer(uint32 connect_id, CSessionBuffer* buffer, ve
         if (buff_length < packet_body_length)
         {
             //收包不完整，继续接收
+            buffer->move(packet_pos);
             break;
         }
         else
@@ -79,11 +86,13 @@ bool Parse_Packet_From_Recv_Buffer(uint32 connect_id, CSessionBuffer* buffer, ve
             logic_packet.connect_id_ = connect_id;
             logic_packet.type_ = emIOType;
             logic_packet.command_id_ = command_id;
-            logic_packet.head_.append(&pData[0], 40);
-            logic_packet.body_.append(&pData[40], packet_body_length);
+            logic_packet.head_.append(&packet_buffer_data[0], 40);
+            logic_packet.body_.append(&packet_buffer_data[40], packet_body_length);
             message_list.emplace_back(logic_packet);
 
-            buffer->move((size_t)40 + packet_body_length);
+            uint32 curr_packet_size = 40 + packet_body_length;
+            packet_pos += curr_packet_size;
+            buff_length -= curr_packet_size;
         }
     }
 
