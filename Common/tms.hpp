@@ -6,6 +6,7 @@
 #include "TimerManager.hpp"
 #include "TimeStamp.hpp"
 #include <map>
+#include "singleton.h"
 
 using namespace std;
 
@@ -196,4 +197,6 @@ private:
     mapthreads m_mapLogicList;
     std::thread m_ttTimer;
 };
+
+using App_tms = PSS_singleton<TMS>;
 
