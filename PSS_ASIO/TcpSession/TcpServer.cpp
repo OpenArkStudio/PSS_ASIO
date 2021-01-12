@@ -1,7 +1,7 @@
 #include "TcpServer.h"
 
-CTcpServer::CTcpServer(asio::io_context& io_context, std::string server_ip, short port, uint32 packet_parse_id)
-    : acceptor_(io_context, tcp::endpoint(asio::ip::address_v4::from_string(server_ip), port)), packet_parse_id_(packet_parse_id)
+CTcpServer::CTcpServer(asio::io_context& io_context, std::string server_ip, short port, uint32 packet_parse_id, uint32 max_buffer_size)
+    : acceptor_(io_context, tcp::endpoint(asio::ip::address_v4::from_string(server_ip), port)), packet_parse_id_(packet_parse_id), max_buffer_size_(max_buffer_size)
 {
     //处理链接建立消息
     std::cout << "[CTcpServer::do_accept](" << acceptor_.local_endpoint() << ") Begin Accept." << std::endl;
@@ -16,7 +16,7 @@ void CTcpServer::do_accept()
         {
             if (!ec)
             {
-                std::make_shared<CTcpSession>(std::move(socket))->open(connect_clinet_id_++, packet_parse_id_, 102400);
+                std::make_shared<CTcpSession>(std::move(socket))->open(connect_clinet_id_++, packet_parse_id_, max_buffer_size_);
             }
             else
             {

@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "TcpServer.h"
+#include "UdpServer.h"
 
 #if PSS_PLATFORM == PLATFORM_WIN
 #include <tchar.h>
@@ -42,7 +43,9 @@ int main()
 
     App_tms::instance()->CreateLogic(1);
 
-    CTcpServer s1(io_context, "127.0.0.1", socket_serevr_port, 1);
+    CTcpServer s1(io_context, "127.0.0.1", socket_serevr_port, 1, 102400);
+
+    CUdpServer s2(io_context, "127.0.0.1", socket_serevr_port, 1, 1024);
     io_context.run();
 
 }
