@@ -58,14 +58,7 @@ void CTcpSession::do_read()
             {
                 recv_data_size_ += length;
                 session_recv_buffer_.set_write_data(length);
-                PSS_LOGGER_DEBUG("[CTcpSession::do_write]recv length={}.", length);
-
-                /*
-                std::memcpy(session_send_buffer_.get_curr_write_ptr(),
-                    session_recv_buffer_.read(),
-                    length);
-                session_send_buffer_.set_write_data(length);
-                */
+                //PSS_LOGGER_DEBUG("[CTcpSession::do_write]recv length={}.", length);
                 
                 //处理数据拆包
                 vector<CMessage_Packet> message_list;
@@ -80,7 +73,7 @@ void CTcpSession::do_read()
 
                 //添加到数据队列处理
                 App_tms::instance()->AddMessage(1, [self, message_list](){
-                    PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
+                    //PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
                     for (auto packet : message_list)
                     {
                         self->set_write_buffer(packet.head_.c_str(), packet.head_.size());
@@ -91,7 +84,6 @@ void CTcpSession::do_read()
                     });
 
                 //继续读数据
-                //self->do_write();
                 self->do_read();
             }
             else
@@ -111,7 +103,7 @@ void CTcpSession::do_write()
     send_buffer->data_.append(session_send_buffer_.read(), session_send_buffer_.get_write_size());
     send_buffer->buffer_length_ = session_send_buffer_.get_write_size();
 
-    PSS_LOGGER_DEBUG("[CTcpSession::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
+    //PSS_LOGGER_DEBUG("[CTcpSession::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
     clear_write_buffer();
 
     //异步发送

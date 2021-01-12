@@ -117,7 +117,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_WIN32_WINDOWS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../third_Include;../Common;./Message;./TcpSession</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../third_Include;../Common;./Message;./TcpSession;./Common</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -141,10 +141,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Common\ConnectCounter.cpp" />
     <ClCompile Include="Message\LoadPacketParse.cpp" />
     <ClCompile Include="PSS_ASIO.cpp" />
     <ClCompile Include="TcpSession\TcpServer.cpp" />
     <ClCompile Include="TcpSession\TcpSession.cpp" />
+    <ClCompile Include="UdpSession\UdpServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\define.h" />
@@ -155,9 +157,12 @@
     <ClInclude Include="..\Common\TimerManager.hpp" />
     <ClInclude Include="..\Common\TimeStamp.hpp" />
     <ClInclude Include="..\Common\tms.hpp" />
+    <ClInclude Include="Common\ConnectCounter.h" />
+    <ClInclude Include="Common\SendBuffer.h" />
     <ClInclude Include="Message\LoadPacketParse.h" />
     <ClInclude Include="TcpSession\TcpServer.h" />
     <ClInclude Include="TcpSession\TcpSession.h" />
+    <ClInclude Include="UdpSession\UdpServer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
