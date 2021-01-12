@@ -12,6 +12,21 @@
 
 using asio::ip::udp;
 
+enum class EM_UDP_VALID
+{
+    UDP_INVALUD = 0,
+    UDP_VALUD,
+};
+
+class CUdp_Session_Info
+{
+public:
+    udp::endpoint send_endpoint;
+    size_t recv_data_size_ = 0;
+    size_t send_data_size_ = 0;
+    EM_UDP_VALID udp_state = EM_UDP_VALID::UDP_INVALUD;
+};
+
 class CUdpServer : public std::enable_shared_from_this<CUdpServer>
 {
 public:
@@ -26,16 +41,18 @@ private:
 
     void do_write(uint32 connect_id);
 
-    uint32 add_udp_endpoint(udp::endpoint recv_endpoint_);
+    uint32 add_udp_endpoint(udp::endpoint recv_endpoint_, size_t length);
 
-    udp::endpoint find_udp_endpoint_by_id(uint32 connect_id);
+    CUdp_Session_Info find_udp_endpoint_by_id(uint32 connect_id);
+
+    void write_send_buffer_size(uint32 connect_id, size_t length);
 
     udp::socket socket_;
     uint32 connect_client_id_ = 0;
     uint32 packet_parse_id_ = 0;
     udp::endpoint recv_endpoint_;
     
-    using mapudpid2endpoint = map<uint32, udp::endpoint>;
+    using mapudpid2endpoint = map<uint32, CUdp_Session_Info>;
     using mapudpendpoint2id = map<udp::endpoint, uint32>;
     mapudpid2endpoint udp_id_2_endpoint_list;
     mapudpendpoint2id udp_endpoint_2_id_list;

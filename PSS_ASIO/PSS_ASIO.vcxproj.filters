@@ -25,6 +25,9 @@
     <Filter Include="UdpSession">
       <UniqueIdentifier>{4629095e-4ef2-4da1-8bc2-48fe9d5b531e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="TTySession">
+      <UniqueIdentifier>{bc12e155-3ff1-4110-9f58-2134d25f17d0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PSS_ASIO.cpp">
@@ -44,6 +47,9 @@
     </ClCompile>
     <ClCompile Include="Common\ConnectCounter.cpp">
       <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="TTySession\TtyServer.cpp">
+      <Filter>TTySession</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -88,6 +94,9 @@
     </ClInclude>
     <ClInclude Include="Common\SendBuffer.h">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="TTySession\TtyServer.h">
+      <Filter>TTySession</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
