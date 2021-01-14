@@ -51,6 +51,9 @@
     <ClCompile Include="TTySession\TtyServer.cpp">
       <Filter>TTySession</Filter>
     </ClCompile>
+    <ClCompile Include="Message\LoadModule.cpp">
+      <Filter>Message</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TcpSession\TcpServer.h">
@@ -97,6 +100,12 @@
     </ClInclude>
     <ClInclude Include="TTySession\TtyServer.h">
       <Filter>TTySession</Filter>
+    </ClInclude>
+    <ClInclude Include="Message\LoadModule.h">
+      <Filter>Message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IFrameObject.h">
+      <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

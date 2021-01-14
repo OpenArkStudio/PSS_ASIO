@@ -57,8 +57,7 @@ class CMessage_Packet
 {
 public:
     EM_CONNECT_IO_TYPE type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_TCP;
-    string head_;
-    string body_;
+    string buffer_;
     uint16 command_id_;
     uint32 connect_id_;
 };

@@ -36,7 +36,7 @@ void CTTyServer::do_receive()
 
                 //处理数据拆包
                 vector<CMessage_Packet> message_list;
-                bool ret = packet_parse_interface_->Parse_Packet_From_Recv_Buffer(connect_client_id_, &session_recv_buffer_, message_list, EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
+                bool ret = packet_parse_interface_->Parse_Packet_From_Recv_Buffer(connect_client_id_, &session_recv_buffer_, message_list, EM_CONNECT_IO_TYPE::CONNECT_IO_TTY);
                 if (!ret)
                 {
                     //链接断开(解析包不正确)
@@ -49,8 +49,7 @@ void CTTyServer::do_receive()
                     PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
                     for (auto packet : message_list)
                     {
-                        self->set_write_buffer(packet.head_.c_str(), packet.head_.size());
-                        self->set_write_buffer(packet.body_.c_str(), packet.body_.size());
+                        self->set_write_buffer(packet.buffer_.c_str(), packet.buffer_.size());
                     }
 
                     self->do_write();

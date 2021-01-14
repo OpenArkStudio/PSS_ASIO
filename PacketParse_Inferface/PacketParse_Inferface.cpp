@@ -73,26 +73,43 @@ bool Parse_Packet_From_Recv_Buffer(uint32 connect_id, CSessionBuffer* buffer, ve
             return false;
         }
 
-        if (buff_length < packet_body_length)
-        {
-            //收包不完整，继续接收
-            buffer->move(packet_pos);
-            break;
-        }
-        else
+        //如果包体长度为0
+        if (packet_body_length == 0)
         {
             //拼接完整包，放入整包处理结构
             CMessage_Packet logic_packet;
             logic_packet.connect_id_ = connect_id;
             logic_packet.type_ = emIOType;
             logic_packet.command_id_ = command_id;
-            logic_packet.head_.append(&packet_buffer_data[0], 40);
-            logic_packet.body_.append(&packet_buffer_data[40], packet_body_length);
+            logic_packet.buffer_.append(&packet_buffer_data[0], (size_t)40);
             message_list.emplace_back(logic_packet);
 
-            uint32 curr_packet_size = 40 + packet_body_length;
+            uint32 curr_packet_size = 40;
             packet_pos += curr_packet_size;
             buff_length -= curr_packet_size;
+        }
+        else
+        {
+            if (buff_length < packet_body_length)
+            {
+                //收包不完整，继续接收
+                buffer->move(packet_pos);
+                break;
+            }
+            else
+            {
+                //拼接完整包，放入整包处理结构
+                CMessage_Packet logic_packet;
+                logic_packet.connect_id_ = connect_id;
+                logic_packet.type_ = emIOType;
+                logic_packet.command_id_ = command_id;
+                logic_packet.buffer_.append(&packet_buffer_data[0], (size_t)40 + packet_body_length);
+                message_list.emplace_back(logic_packet);
+
+                uint32 curr_packet_size = 40 + packet_body_length;
+                packet_pos += curr_packet_size;
+                buff_length -= curr_packet_size;
+            }
         }
     }
 

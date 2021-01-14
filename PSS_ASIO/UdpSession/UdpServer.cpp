@@ -51,8 +51,7 @@ void CUdpServer::do_receive()
                     PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
                     for (auto packet : message_list)
                     {
-                        self->set_write_buffer(packet.head_.c_str(), packet.head_.size());
-                        self->set_write_buffer(packet.body_.c_str(), packet.body_.size());
+                        self->set_write_buffer(packet.buffer_.c_str(), packet.buffer_.size());
                     }
 
                     self->do_write(connect_id);
