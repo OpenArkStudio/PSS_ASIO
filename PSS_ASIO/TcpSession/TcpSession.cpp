@@ -26,7 +26,7 @@ void CTcpSession::open(uint32 connect_id, uint32 packet_parse_id, uint32 buffer_
     do_read();
 }
 
-void CTcpSession::Close()
+void CTcpSession::Close(uint32 connect_id)
 {
     socket_.close();
 
@@ -34,7 +34,7 @@ void CTcpSession::Close()
     PSS_LOGGER_DEBUG("[CTcpSession::Close]recv:{0}, send:{1}", recv_data_size_, send_data_size_);
 
     //断开连接
-    packet_parse_interface_->DisConnect(connect_id_);
+    packet_parse_interface_->DisConnect(connect_id);
 }
 
 void CTcpSession::do_read()
@@ -42,17 +42,19 @@ void CTcpSession::do_read()
     //接收数据
     auto self(shared_from_this());
 
+    auto connect_id = connect_id_;
+
     //如果缓冲已满，断开连接，不再接受数据。
     if (session_recv_buffer_.get_buffer_size() == 0)
     {
         //链接断开(缓冲撑满了)
-        App_tms::instance()->AddMessage(1, [self]() {
-            self->Close();
+        App_tms::instance()->AddMessage(1, [self, connect_id]() {
+            self->Close(connect_id);
             });
     }
 
     socket_.async_read_some(asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()),
-        [this, self](std::error_code ec, std::size_t length)
+        [this, self, connect_id](std::error_code ec, std::size_t length)
         {
             if (!ec)
             {
@@ -66,20 +68,20 @@ void CTcpSession::do_read()
                 if (!ret)   
                 {
                     //链接断开(解析包不正确)
-                    App_tms::instance()->AddMessage(1, [self]() {
-                        self->Close();
+                    App_tms::instance()->AddMessage(1, [self, connect_id]() {
+                        self->Close(connect_id);
                         });
                 }
 
                 //添加到数据队列处理
-                App_tms::instance()->AddMessage(1, [self, message_list](){
+                App_tms::instance()->AddMessage(1, [self, connect_id, message_list](){
                     //PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
                     for (auto packet : message_list)
                     {
-                        self->set_write_buffer(packet.buffer_.c_str(), packet.buffer_.size());
+                        self->set_write_buffer(connect_id, packet.buffer_.c_str(), packet.buffer_.size());
                     }
 
-                    self->do_write();
+                    self->do_write(connect_id);
                     });
 
                 //继续读数据
@@ -88,14 +90,14 @@ void CTcpSession::do_read()
             else
             {
                 //链接断开
-                App_tms::instance()->AddMessage(1, [self]() {
-                    self->Close();
+                App_tms::instance()->AddMessage(1, [self, connect_id]() {
+                    self->Close(connect_id);
                     });
             }
         });
 }
 
-void CTcpSession::do_write()
+void CTcpSession::do_write(uint32 connect_id)
 {
     //组装发送数据
     auto send_buffer = make_shared<CSendBuffer>();
@@ -108,25 +110,26 @@ void CTcpSession::do_write()
     //异步发送
     auto self(shared_from_this());
     asio::async_write(socket_, asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
-        [self, send_buffer](std::error_code ec, std::size_t length)
+        [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
         {
             if (ec)
             {
                 //暂时不处理
-                std::cout << "[CTcpSession::do_write](" << ec.value() << ") mseeage(" << ec.message() << ")" << std::endl;
+                std::cout << "[CTcpSession::do_write](" << ec.value() << ") message (" << ec.message() << ")" << std::endl;
             }
             else
             {
-                self->add_send_finish_size(length);
+                self->add_send_finish_size(connect_id, length);
             }
         });
 }
 
-void CTcpSession::set_write_buffer(const char* data, size_t length)
+void CTcpSession::set_write_buffer(uint32 connect_id, const char* data, size_t length)
 {
     if (session_send_buffer_.get_buffer_size() <= length)
     {
         //发送些缓冲已经满了
+        PSS_LOGGER_DEBUG("[CTcpSession::set_write_buffer]connect_id={} is full.", connect_id);
         return;
     }
 
@@ -141,7 +144,7 @@ void CTcpSession::clear_write_buffer()
     session_send_buffer_.move(session_send_buffer_.get_write_size());
 }
 
-void CTcpSession::add_send_finish_size(size_t send_length)
+void CTcpSession::add_send_finish_size(uint32 connect_id, size_t send_length)
 {
     send_data_size_ += send_length;
 }

@@ -10,27 +10,28 @@
 #include "SendBuffer.h"
 #include "SessionBuffer.hpp"
 #include "LoadPacketParse.h"
+#include "ISession.h"
 
 using asio::ip::tcp;
 
-class CTcpSession : public std::enable_shared_from_this<CTcpSession>
+class CTcpSession : public std::enable_shared_from_this<CTcpSession>, public ISession
 {
 public:
     CTcpSession(tcp::socket socket);
 
     void open(uint32 connect_id, uint32 packet_parse_id, uint32 buffer_size);
 
-    void Close();
+    void Close(uint32 connect_id) final;
+
+    void set_write_buffer(uint32 connect_id, const char* data, size_t length) final;
+
+    void do_write(uint32 connect_id) final;
+
+    void add_send_finish_size(uint32 connect_id, size_t send_length) final;
 
     void do_read();
 
-    void do_write();
-
-    void set_write_buffer(const char* data, size_t length);
-
     void clear_write_buffer();
-
-    void add_send_finish_size(size_t send_length);
 
 private:
     tcp::socket socket_;

@@ -7,7 +7,8 @@ CUdpServer::CUdpServer(asio::io_context& io_context, std::string server_ip, shor
     std::cout << "[CUdpServer::do_accept](" << socket_.local_endpoint() << ") Begin Accept." << std::endl;
 
     session_recv_buffer_.Init(max_buffer_length);
-    session_send_buffer_.Init(max_buffer_length);
+
+    max_buffer_length_ = max_buffer_length;
 
     packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(packet_parse_id);
 
@@ -21,7 +22,7 @@ void CUdpServer::do_receive()
         [this](std::error_code ec, std::size_t length)
         {
             //查询当前的connect_id
-            auto connect_id = add_udp_endpoint(recv_endpoint_, length);
+            auto connect_id = add_udp_endpoint(recv_endpoint_, length, max_buffer_length_);
             
             if (!ec && length > 0)
             {
@@ -33,6 +34,7 @@ void CUdpServer::do_receive()
                 {
                     //链接断开(缓冲撑满了)
                     session_recv_buffer_.move(length);
+                    Close(connect_id);
                     do_receive();
                 }
 
@@ -43,6 +45,7 @@ void CUdpServer::do_receive()
                 {
                     //链接断开(解析包不正确)
                     session_recv_buffer_.move(length);
+                    Close(connect_id);
                     do_receive();
                 }
 
@@ -51,7 +54,7 @@ void CUdpServer::do_receive()
                     PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
                     for (auto packet : message_list)
                     {
-                        self->set_write_buffer(packet.buffer_.c_str(), packet.buffer_.size());
+                        self->set_write_buffer(connect_id, packet.buffer_.c_str(), packet.buffer_.size());
                     }
 
                     self->do_write(connect_id);
@@ -67,53 +70,70 @@ void CUdpServer::do_receive()
         });
 }
 
-void CUdpServer::set_write_buffer(const char* data, size_t length)
+void CUdpServer::Close(uint32 connect_id)
 {
-    if (session_send_buffer_.get_buffer_size() <= length)
+    close_udp_endpoint_by_id(connect_id);
+}
+
+void CUdpServer::set_write_buffer(uint32 connect_id, const char* data, size_t length)
+{
+    auto session_info = find_udp_endpoint_by_id(connect_id);
+
+    if (session_info == nullptr || session_info->session_send_buffer_.get_buffer_size() <= length)
     {
         //发送些缓冲已经满了
+        PSS_LOGGER_DEBUG("[CUdpServer::set_write_buffer]({})session_info is null or session_send_buffer_ is full", connect_id);
         return;
     }
 
-    std::memcpy(session_send_buffer_.get_curr_write_ptr(),
+    std::memcpy(session_info->session_send_buffer_.get_curr_write_ptr(),
         data,
         length);
-    session_send_buffer_.set_write_data(length);
+    session_info->session_send_buffer_.set_write_data(length);
 }
 
-void CUdpServer::clear_write_buffer()
+void CUdpServer::clear_write_buffer(shared_ptr<CUdp_Session_Info> session_info)
 {
-    session_send_buffer_.move(session_send_buffer_.get_write_size());
+    session_info->session_send_buffer_.move(session_info->session_send_buffer_.get_write_size());
 }
 
 void CUdpServer::do_write(uint32 connect_id)
 {
     auto session_info = find_udp_endpoint_by_id(connect_id);
 
-    if (session_info.udp_state == EM_UDP_VALID::UDP_INVALUD)
+    if (session_info == nullptr)
     {
-        clear_write_buffer();
+        PSS_LOGGER_DEBUG("[CUdpServer::do_write]({}) is nullptr.", connect_id);
+        return;
+    }
+
+    if (session_info->udp_state == EM_UDP_VALID::UDP_INVALUD)
+    {
+        clear_write_buffer(session_info);
         return;
     }
 
     //组装发送数据
     auto send_buffer = make_shared<CSendBuffer>();
-    send_buffer->data_.append(session_send_buffer_.read(), session_send_buffer_.get_write_size());
-    send_buffer->buffer_length_ = session_send_buffer_.get_write_size();
+    send_buffer->data_.append(session_info->session_send_buffer_.read(), session_info->session_send_buffer_.get_write_size());
+    send_buffer->buffer_length_ = session_info->session_send_buffer_.get_write_size();
 
     //PSS_LOGGER_DEBUG("[CUdpServer::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
-    clear_write_buffer();
+    clear_write_buffer(session_info);
 
     socket_.async_send_to(
-        asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_), session_info.send_endpoint,
-        [this, send_buffer, connect_id](std::error_code /*ec*/, std::size_t /*bytes_sent*/)
+        asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_), session_info->send_endpoint,
+        [this, send_buffer, connect_id](std::error_code ec, std::size_t /*bytes_sent*/)
         {
-            //这里记录发送字节数
-            write_send_buffer_size(connect_id, send_buffer->buffer_length_);
+            if (!ec)
+            {
+                //这里记录发送字节数
+                add_send_finish_size(connect_id, send_buffer->buffer_length_);
+            }
         });
 }
 
-uint32 CUdpServer::add_udp_endpoint(udp::endpoint recv_endpoint_, size_t length)
+uint32 CUdpServer::add_udp_endpoint(udp::endpoint recv_endpoint_, size_t length, uint32 max_buffer_length)
 {
     auto f = udp_endpoint_2_id_list.find(recv_endpoint_);
     if (f != udp_endpoint_2_id_list.end())
@@ -126,10 +146,11 @@ uint32 CUdpServer::add_udp_endpoint(udp::endpoint recv_endpoint_, size_t length)
         //生成一个新的ID
         auto connect_id = App_ConnectCounter::instance()->CreateCounter();
 
-        CUdp_Session_Info session_info;
-        session_info.send_endpoint = recv_endpoint_;
-        session_info.recv_data_size_ += length;
-        session_info.udp_state = EM_UDP_VALID::UDP_VALUD;
+        auto session_info = make_shared<CUdp_Session_Info>();
+        session_info->send_endpoint = recv_endpoint_;
+        session_info->recv_data_size_ += length;
+        session_info->udp_state = EM_UDP_VALID::UDP_VALUD;
+        session_info->session_send_buffer_.Init(max_buffer_length);
 
         udp_endpoint_2_id_list[recv_endpoint_] = connect_id;
         udp_id_2_endpoint_list[connect_id] = session_info;
@@ -137,24 +158,34 @@ uint32 CUdpServer::add_udp_endpoint(udp::endpoint recv_endpoint_, size_t length)
     }
 }
 
-CUdp_Session_Info CUdpServer::find_udp_endpoint_by_id(uint32 connect_id)
+shared_ptr<CUdp_Session_Info> CUdpServer::find_udp_endpoint_by_id(uint32 connect_id)
 {
-    CUdp_Session_Info session_info;
     auto f = udp_id_2_endpoint_list.find(connect_id);
     if (f != udp_id_2_endpoint_list.end())
     {
-        session_info = f->second;
+        return f->second;
     }
     
-    return session_info;
+    return nullptr;
 }
 
-void CUdpServer::write_send_buffer_size(uint32 connect_id, size_t length)
+void CUdpServer::close_udp_endpoint_by_id(uint32 connect_id)
 {
     auto f = udp_id_2_endpoint_list.find(connect_id);
     if (f != udp_id_2_endpoint_list.end())
     {
-        f->second.send_data_size_ += length;
+        auto session_endpoint = f->second->send_endpoint;
+        udp_id_2_endpoint_list.erase(f);
+        udp_endpoint_2_id_list.erase(session_endpoint);
+    }
+}
+
+void CUdpServer::add_send_finish_size(uint32 connect_id, size_t length)
+{
+    auto f = udp_id_2_endpoint_list.find(connect_id);
+    if (f != udp_id_2_endpoint_list.end())
+    {
+        f->second->send_data_size_ += length;
     }
 }
 

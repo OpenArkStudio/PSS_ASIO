@@ -9,20 +9,23 @@
 #include "SessionBuffer.hpp"
 #include "LoadPacketParse.h"
 #include "ConnectCounter.h"
+#include "ISession.h"
 
-class CTTyServer : public std::enable_shared_from_this<CTTyServer>
+class CTTyServer : public std::enable_shared_from_this<CTTyServer>, public ISession
 {
 public:
     CTTyServer(shared_ptr<asio::serial_port> serial_port_param, uint32 packet_parse_id, uint32 max_buffer_length);
 
+    void set_write_buffer(uint32 connect_id, const char* data, size_t length) final;
+
+    void do_write(uint32 connect_id) final;
+
+    void add_send_finish_size(uint32 connect_id, size_t send_length) final;
+
 private:
     void do_receive();
 
-    void set_write_buffer(const char* data, size_t length);
-
     void clear_write_buffer();
-
-    void do_write();
 
     shared_ptr<asio::serial_port> serial_port_param_;
     uint32 connect_client_id_ = 0;

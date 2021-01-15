@@ -161,6 +161,7 @@
     <ClInclude Include="..\Common\TimeStamp.hpp" />
     <ClInclude Include="..\Common\tms.hpp" />
     <ClInclude Include="Common\ConnectCounter.h" />
+    <ClInclude Include="Common\ISession.h" />
     <ClInclude Include="Common\SendBuffer.h" />
     <ClInclude Include="Message\LoadModule.h" />
     <ClInclude Include="Message\LoadPacketParse.h" />

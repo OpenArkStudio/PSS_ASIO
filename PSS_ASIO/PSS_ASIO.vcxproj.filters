@@ -107,5 +107,8 @@
     <ClInclude Include="..\Common\IFrameObject.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="Common\ISession.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

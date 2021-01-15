@@ -19,6 +19,8 @@ void CTTyServer::do_receive()
     serial_port_param_->async_read_some(asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()),
         [this](std::error_code ec, std::size_t length)
         {
+            auto connect_id = connect_client_id_;
+
             if (!ec && length > 0)
             {
                 //处理数据包
@@ -45,14 +47,14 @@ void CTTyServer::do_receive()
                 }
 
                 //添加到数据队列处理
-                App_tms::instance()->AddMessage(1, [self, message_list]() {
+                App_tms::instance()->AddMessage(1, [self, message_list, connect_id]() {
                     PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
                     for (auto packet : message_list)
                     {
-                        self->set_write_buffer(packet.buffer_.c_str(), packet.buffer_.size());
+                        self->set_write_buffer(connect_id, packet.buffer_.c_str(), packet.buffer_.size());
                     }
 
-                    self->do_write();
+                    self->do_write(connect_id);
                     });
 
 
@@ -65,11 +67,12 @@ void CTTyServer::do_receive()
         });
 }
 
-void CTTyServer::set_write_buffer(const char* data, size_t length)
+void CTTyServer::set_write_buffer(uint32 connect_id, const char* data, size_t length)
 {
     if (session_send_buffer_.get_buffer_size() <= length)
     {
         //发送些缓冲已经满了
+        PSS_LOGGER_DEBUG("[CTTyServer::set_write_buffer]connect_id={0} is full.", connect_id);
         return;
     }
 
@@ -84,8 +87,10 @@ void CTTyServer::clear_write_buffer()
     session_send_buffer_.move(session_send_buffer_.get_write_size());
 }
 
-void CTTyServer::do_write()
+void CTTyServer::do_write(uint32 connect_id)
 {
+    PSS_UNUSED_ARG(connect_id);
+
     //组装发送数据
     auto send_buffer = make_shared<CSendBuffer>();
     send_buffer->data_.append(session_send_buffer_.read(), session_send_buffer_.get_write_size());
@@ -96,13 +101,17 @@ void CTTyServer::do_write()
     
     //异步发送
     serial_port_param_->async_write_some(asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
-        [this, send_buffer](std::error_code /*ec*/, std::size_t /*bytes_sent*/)
+        [this, send_buffer, connect_id](std::error_code /*ec*/, std::size_t /*bytes_sent*/)
         {
-            //异步写返回
-            send_data_size_ += send_buffer->buffer_length_;
+            add_send_finish_size(connect_id, send_buffer->buffer_length_);
         });
 
     clear_write_buffer();
 }
 
+void CTTyServer::add_send_finish_size(uint32 connect_id, size_t send_length)
+{
+    //异步写返回
+    send_data_size_ += send_length;
+}
 
