@@ -7,5 +7,5 @@
 class IFrame_Object
 {
 public:
-    int a = 1;
+    virtual void Regedit_command(uint16 command_id) = 0;
 };
