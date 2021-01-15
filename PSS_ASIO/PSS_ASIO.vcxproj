@@ -144,8 +144,9 @@
     <ClCompile Include="Common\ConnectCounter.cpp" />
     <ClCompile Include="Message\LoadModule.cpp" />
     <ClCompile Include="Message\LoadPacketParse.cpp" />
-    <ClCompile Include="Message\MessageInterfalce.cpp" />
     <ClCompile Include="Message\ModuleInterfalce.cpp" />
+    <ClCompile Include="Message\ModuleLogic.cpp" />
+    <ClCompile Include="Message\SessionInterfalce.cpp" />
     <ClCompile Include="PSS_ASIO.cpp" />
     <ClCompile Include="TcpSession\TcpServer.cpp" />
     <ClCompile Include="TcpSession\TcpSession.cpp" />
@@ -168,8 +169,9 @@
     <ClInclude Include="Common\SendBuffer.h" />
     <ClInclude Include="Message\LoadModule.h" />
     <ClInclude Include="Message\LoadPacketParse.h" />
-    <ClInclude Include="Message\MessageInterfalce.h" />
     <ClInclude Include="Message\ModuleInterfalce.h" />
+    <ClInclude Include="Message\ModuleLogic.h" />
+    <ClInclude Include="Message\SessionInterfalce.h" />
     <ClInclude Include="TcpSession\TcpServer.h" />
     <ClInclude Include="TcpSession\TcpSession.h" />
     <ClInclude Include="TTySession\TtyServer.h" />

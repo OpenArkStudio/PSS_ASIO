@@ -54,10 +54,13 @@
     <ClCompile Include="Message\LoadModule.cpp">
       <Filter>Message</Filter>
     </ClCompile>
-    <ClCompile Include="Message\MessageInterfalce.cpp">
+    <ClCompile Include="Message\ModuleInterfalce.cpp">
       <Filter>Message</Filter>
     </ClCompile>
-    <ClCompile Include="Message\ModuleInterfalce.cpp">
+    <ClCompile Include="Message\SessionInterfalce.cpp">
+      <Filter>Message</Filter>
+    </ClCompile>
+    <ClCompile Include="Message\ModuleLogic.cpp">
       <Filter>Message</Filter>
     </ClCompile>
   </ItemGroup>
@@ -116,14 +119,17 @@
     <ClInclude Include="Common\ISession.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="Message\MessageInterfalce.h">
-      <Filter>Message</Filter>
-    </ClInclude>
     <ClInclude Include="Message\ModuleInterfalce.h">
       <Filter>Message</Filter>
     </ClInclude>
     <ClInclude Include="Common\FrameObject.hpp">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Message\SessionInterfalce.h">
+      <Filter>Message</Filter>
+    </ClInclude>
+    <ClInclude Include="Message\ModuleLogic.h">
+      <Filter>Message</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -5,16 +5,18 @@
 #include "define.h"
 #include "ISession.h"
 
-class CMessageInterface
+class CSessionInterface
 {
-private:
-    CMessageInterface() = default;
+public:
+    CSessionInterface() = default;
 
     void add_session_interface(uint32 connect_id, shared_ptr<ISession> session);
 
     shared_ptr<ISession> get_session_interface(uint32 connect_id);
 
     void delete_session_interface(uint32 connect_id);
+
+    void close();
 
 private:
     using hashmapsessions = unordered_map<uint32, shared_ptr<ISession>>;

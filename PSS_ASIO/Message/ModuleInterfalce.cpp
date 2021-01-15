@@ -15,3 +15,8 @@ void CModuleInterface::do_module_message(uint16 command_id, CMessage_Packet& rec
         f->second(command_id, recv_packet, send_packet);
     }
 }
+
+void CModuleInterface::close()
+{
+    command_to_module_function_.clear();
+}

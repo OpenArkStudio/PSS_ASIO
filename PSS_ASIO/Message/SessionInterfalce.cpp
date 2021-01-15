@@ -1,6 +1,6 @@
-#include "MessageInterfalce.h"
+#include "SessionInterfalce.h"
 
-void CMessageInterface::add_session_interface(uint32 connect_id, shared_ptr<ISession> session)
+void CSessionInterface::add_session_interface(uint32 connect_id, shared_ptr<ISession> session)
 {
     auto f = sessions_list_.find(connect_id);
     if (f == sessions_list_.end())
@@ -9,7 +9,7 @@ void CMessageInterface::add_session_interface(uint32 connect_id, shared_ptr<ISes
     }
 }
 
-shared_ptr<ISession> CMessageInterface::get_session_interface(uint32 connect_id)
+shared_ptr<ISession> CSessionInterface::get_session_interface(uint32 connect_id)
 {
     auto f = sessions_list_.find(connect_id);
     if (f != sessions_list_.end())
@@ -22,7 +22,12 @@ shared_ptr<ISession> CMessageInterface::get_session_interface(uint32 connect_id)
     }
 }
 
-void CMessageInterface::delete_session_interface(uint32 connect_id)
+void CSessionInterface::delete_session_interface(uint32 connect_id)
 {
     sessions_list_.erase(connect_id);
+}
+
+void CSessionInterface::close()
+{
+    sessions_list_.clear();
 }
