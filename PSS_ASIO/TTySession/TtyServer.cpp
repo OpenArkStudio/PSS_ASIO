@@ -11,6 +11,8 @@ CTTyServer::CTTyServer(shared_ptr<asio::serial_port> serial_port_param, uint32 p
 
     packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(packet_parse_id);
 
+    App_WorkThreadLogic::instance()->add_thread_session(connect_client_id_, shared_from_this());
+
     do_receive();
 }
 
@@ -33,6 +35,7 @@ void CTTyServer::do_receive()
                 {
                     //不断开(缓冲撑满了)
                     session_recv_buffer_.move(length);
+                    App_WorkThreadLogic::instance()->close_session_event(connect_id);
                     do_receive();
                 }
 
@@ -43,20 +46,14 @@ void CTTyServer::do_receive()
                 {
                     //链接断开(解析包不正确)
                     session_recv_buffer_.move(length);
+                    App_WorkThreadLogic::instance()->close_session_event(connect_id);
                     do_receive();
                 }
-
-                //添加到数据队列处理
-                App_tms::instance()->AddMessage(1, [self, message_list, connect_id]() {
-                    PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
-                    for (auto packet : message_list)
-                    {
-                        self->set_write_buffer(connect_id, packet.buffer_.c_str(), packet.buffer_.size());
-                    }
-
-                    self->do_write(connect_id);
-                    });
-
+                else
+                {
+                    //添加到数据队列处理
+                    App_WorkThreadLogic::instance()->do_thread_module_logic(connect_id, message_list, self);
+                }
 
                 do_receive();
             }

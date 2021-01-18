@@ -78,6 +78,8 @@ void CTcpSession::do_read()
 
                 //处理数据拆包
 
+
+                session_recv_buffer_.move(length);
                 //继续读数据
                 self->do_read();
             }
@@ -99,7 +101,7 @@ void CTcpSession::do_write()
 
     //PSS_LOGGER_DEBUG("[CTcpSession::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
 
-    clear_write_buffer();
+    clear_write_buffer(send_buffer->buffer_length_);
 
     //异步发送
     auto self(shared_from_this());
@@ -120,10 +122,15 @@ void CTcpSession::do_write()
 
 void CTcpSession::set_write_buffer(const char* data, size_t length)
 {
+    std::memcpy(session_send_buffer_.get_curr_write_ptr(), 
+        data,
+        length);
+    session_send_buffer_.set_write_data(length);
 }
 
-void CTcpSession::clear_write_buffer()
+void CTcpSession::clear_write_buffer(size_t length)
 {
+    session_send_buffer_.move(length);
 }
 
 void CTcpSession::add_send_finish_size(size_t send_length)

@@ -64,7 +64,7 @@ int main()
     CTcpServer s1(io_context, "127.0.0.1", socket_serevr_port, 1, 102400);
 
     //测试UDP监听
-    CUdpServer s2(io_context, "127.0.0.1", socket_serevr_port, 1, 1024);
+    auto s2 = make_shared<CUdpServer>(io_context, "127.0.0.1", socket_serevr_port, 1, 1024);
     io_context.run();
 
 }

@@ -34,7 +34,7 @@ void CUdpServer::do_receive()
                 {
                     //链接断开(缓冲撑满了)
                     session_recv_buffer_.move(length);
-                    Close(connect_id);
+                    App_WorkThreadLogic::instance()->close_session_event(connect_id);
                     do_receive();
                 }
 
@@ -45,20 +45,14 @@ void CUdpServer::do_receive()
                 {
                     //链接断开(解析包不正确)
                     session_recv_buffer_.move(length);
-                    Close(connect_id);
+                    App_WorkThreadLogic::instance()->close_session_event(connect_id);
                     do_receive();
                 }
-
-                //添加到数据队列处理
-                App_tms::instance()->AddMessage(1, [self, message_list, connect_id]() {
-                    PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
-                    for (auto packet : message_list)
-                    {
-                        self->set_write_buffer(connect_id, packet.buffer_.c_str(), packet.buffer_.size());
-                    }
-
-                    self->do_write(connect_id);
-                    });
+                else
+                {
+                    //添加到数据队列处理
+                    App_WorkThreadLogic::instance()->do_thread_module_logic(connect_id, message_list, self);
+                }
 
 
                 do_receive();
@@ -154,6 +148,10 @@ uint32 CUdpServer::add_udp_endpoint(udp::endpoint recv_endpoint_, size_t length,
 
         udp_endpoint_2_id_list[recv_endpoint_] = connect_id;
         udp_id_2_endpoint_list[connect_id] = session_info;
+
+        //添加映射关系
+        App_WorkThreadLogic::instance()->add_thread_session(connect_id, shared_from_this());
+
         return connect_id;
     }
 }
@@ -178,6 +176,9 @@ void CUdpServer::close_udp_endpoint_by_id(uint32 connect_id)
         udp_id_2_endpoint_list.erase(f);
         udp_endpoint_2_id_list.erase(session_endpoint);
     }
+
+    //删除映射关系
+    App_WorkThreadLogic::instance()->delete_thread_session(connect_id);
 }
 
 void CUdpServer::add_send_finish_size(uint32 connect_id, size_t length)

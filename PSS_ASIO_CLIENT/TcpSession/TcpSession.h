@@ -42,7 +42,7 @@ public:
 
     void set_write_buffer(const char* data, size_t length);
 
-    void clear_write_buffer();
+    void clear_write_buffer(size_t length);
 
     void add_send_finish_size(size_t send_length);
 

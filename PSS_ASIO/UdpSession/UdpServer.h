@@ -10,6 +10,7 @@
 #include "LoadPacketParse.h"
 #include "ConnectCounter.h"
 #include "ISession.h"
+#include "ModuleLogic.h"
 
 using asio::ip::udp;
 

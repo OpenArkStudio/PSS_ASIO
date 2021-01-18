@@ -10,9 +10,38 @@
 void test_connect_asynchronous_server(std::string strIP, unsigned short port)
 {
     asio::io_context io_context;
-    CTcpSession c(io_context);
 
-    c.start(1, 1024, "127.0.0.1", 8888);
+    auto c = make_shared<CTcpSession>(io_context);
+
+    c->start(1, 2400, "127.0.0.1", 8888);
+
+    
+
+    //发送数据
+    char send_buffer[2400] = { '\0' };
+    int nPos = 0;
+
+    unsigned short client_version = 1;
+    unsigned short client_command_id = 0x2101;
+    unsigned int client_packet_length = 200;
+
+
+    for (int i = 0; i < 10; i++)
+    {
+        std::memcpy(&send_buffer[nPos], &client_version, sizeof(short));
+        nPos += sizeof(short);
+        std::memcpy(&send_buffer[nPos], &client_command_id, sizeof(short));
+        nPos += sizeof(short);
+        std::memcpy(&send_buffer[nPos], &client_packet_length, sizeof(int));
+        nPos += sizeof(int);
+        nPos += 32;
+        nPos += 200;
+    }
+
+    c->set_write_buffer(send_buffer, 2400);
+    c->do_write();
+
+    io_context.run();
 
 }
 
@@ -34,7 +63,7 @@ void test_connect_synchronize_server(std::string strIP, unsigned short port)
         std::cout << "[test_connect_server]connect error(" << connect_error.message() << std::endl;
         return;
     }
-    
+
     std::cout << "[test_connect_server]connect OK" << std::endl;
 
     //发送数据
@@ -42,7 +71,7 @@ void test_connect_synchronize_server(std::string strIP, unsigned short port)
     int nPos = 0;
 
     unsigned short client_version = 1;
-    unsigned short client_command_id = 1;
+    unsigned short client_command_id = 0x2101;
     unsigned int client_packet_length = 200;
 
 

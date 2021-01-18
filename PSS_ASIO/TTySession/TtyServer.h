@@ -10,6 +10,7 @@
 #include "LoadPacketParse.h"
 #include "ConnectCounter.h"
 #include "ISession.h"
+#include "ModuleLogic.h"
 
 class CTTyServer : public std::enable_shared_from_this<CTTyServer>, public ISession
 {
