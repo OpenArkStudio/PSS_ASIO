@@ -8,9 +8,10 @@
 #include "singleton.h"
 #include "TimeStamp.hpp"
 #include "FrameObject.hpp"
+#include "tms.hpp"
 
 //定义插件函数指针入口
-using load_module_function_ptr = int(*)(IFrame_Object*);
+using load_module_function_ptr = int(*)(IFrame_Object*, string module_param);
 using unload_module_function_ptr = void(*)(void);
 using do_message_function_ptr = int(*)(const uint16, CMessage_Packet&, CMessage_Packet&);
 using get_module_state_function_ptr = bool(*)(uint32&);
@@ -55,6 +56,9 @@ public:
     string get_module_file_path(const char* pModuleName);
     void get_all_module_name(vector<string>& vecModeInfo);
 
+    //插件命令处理同步相关功能
+    command_to_module_function& get_module_function_list();
+
 private:
     bool load_module_info(shared_ptr<_ModuleInfo> module_info);    //开始加载模块的接口和数据
 
@@ -67,5 +71,4 @@ private:
     command_to_module_function command_to_module_function_;
 };
 
-using App_ModuleLoader = PSS_singleton<CLoadModule>;
 #endif

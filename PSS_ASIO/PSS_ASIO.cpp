@@ -57,7 +57,8 @@ int main()
     int socket_serevr_port = 8888;
     asio::io_context io_context;
 
-    App_tms::instance()->CreateLogic(1);
+    //初始化执行库
+    App_WorkThreadLogic::instance()->init_work_thread_logic(3);
 
     //测试Tcp监听
     CTcpServer s1(io_context, "127.0.0.1", socket_serevr_port, 1, 102400);

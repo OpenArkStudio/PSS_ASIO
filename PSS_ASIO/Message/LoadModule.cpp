@@ -1,7 +1,7 @@
 // 这里实现模块加载
 // 一步步，便可聚少为多，便能实现目标。
 // add by freeeyes
-// 2009-02-20
+// 2020-12-20
 
 #include "LoadModule.h"
 
@@ -47,7 +47,7 @@ bool CLoadModule::load_plugin_module(const string& module_file_path, const strin
 
     //开始调用模块初始化动作
     CFrame_Object module_frame_object;
-    int nRet = module_info->load_module_(&module_frame_object);
+    int nRet = module_info->load_module_((IFrame_Object* )&module_frame_object, module_info->module_param_);
 
     if (nRet != 0)
     {
@@ -139,7 +139,7 @@ bool CLoadModule::load_module_info(shared_ptr<_ModuleInfo> module_info)
         return false;
     }
 
-    module_info->load_module_ = (load_module_function_ptr)CLoadLibrary::PSS_dlsym(module_info->hModule_, "LoadModuleData");
+    module_info->load_module_ = (load_module_function_ptr)CLoadLibrary::PSS_dlsym(module_info->hModule_, "load_module");
 
     if (nullptr == module_info->load_module_)
     {
@@ -147,7 +147,7 @@ bool CLoadModule::load_module_info(shared_ptr<_ModuleInfo> module_info)
         return false;
     }
 
-    module_info->unload_module_ = (unload_module_function_ptr)CLoadLibrary::PSS_dlsym(module_info->hModule_, "UnLoadModuleData");
+    module_info->unload_module_ = (unload_module_function_ptr)CLoadLibrary::PSS_dlsym(module_info->hModule_, "unload_module");
 
     if (nullptr == module_info->unload_module_)
     {
@@ -155,7 +155,7 @@ bool CLoadModule::load_module_info(shared_ptr<_ModuleInfo> module_info)
         return false;
     }
 
-    module_info->do_message_ = (do_message_function_ptr)CLoadLibrary::PSS_dlsym(module_info->hModule_, "DoModuleMessage");
+    module_info->do_message_ = (do_message_function_ptr)CLoadLibrary::PSS_dlsym(module_info->hModule_, "do_module_message");
 
     if (nullptr == module_info->do_message_)
     {
@@ -163,7 +163,7 @@ bool CLoadModule::load_module_info(shared_ptr<_ModuleInfo> module_info)
         return false;
     }
 
-    module_info->get_module_state_ = (get_module_state_function_ptr)CLoadLibrary::PSS_dlsym(module_info->hModule_, "GetModuleState");
+    module_info->get_module_state_ = (get_module_state_function_ptr)CLoadLibrary::PSS_dlsym(module_info->hModule_, "module_state");
 
     if (nullptr == module_info->get_module_state_)
     {
@@ -171,7 +171,7 @@ bool CLoadModule::load_module_info(shared_ptr<_ModuleInfo> module_info)
         return false;
     }
 
-    module_info->set_output_ = (set_output_function_ptr)CLoadLibrary::PSS_dlsym(module_info->hModule_, "Set_output");
+    module_info->set_output_ = (set_output_function_ptr)CLoadLibrary::PSS_dlsym(module_info->hModule_, "set_output");
 
     if (nullptr == module_info->set_output_)
     {
@@ -190,6 +190,11 @@ void CLoadModule::delete_module_name_list(const string& module_name)
     //删除vector中的name
     auto iter = std::remove(module_name_list_.begin(), module_name_list_.end(), module_name);
     module_name_list_.erase(iter, module_name_list_.end());
+}
+
+command_to_module_function& CLoadModule::get_module_function_list()
+{
+    return command_to_module_function_;
 }
 
 bool CLoadModule::get_module_exist(const char* pModuleName)

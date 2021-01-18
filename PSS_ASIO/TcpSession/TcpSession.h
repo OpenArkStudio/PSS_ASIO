@@ -11,6 +11,7 @@
 #include "SessionBuffer.hpp"
 #include "LoadPacketParse.h"
 #include "ISession.h"
+#include "ModuleLogic.h"
 
 using asio::ip::tcp;
 

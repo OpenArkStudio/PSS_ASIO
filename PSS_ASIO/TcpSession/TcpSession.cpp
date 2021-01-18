@@ -23,6 +23,9 @@ void CTcpSession::open(uint32 connect_id, uint32 packet_parse_id, uint32 buffer_
     local_ip.m_u2Port = socket_.local_endpoint().port();
     packet_parse_interface_->Connect(connect_id_, remote_ip, local_ip);
 
+    //加入session 映射
+    App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this());
+
     do_read();
 }
 
@@ -35,6 +38,8 @@ void CTcpSession::Close(uint32 connect_id)
 
     //断开连接
     packet_parse_interface_->DisConnect(connect_id);
+
+    App_WorkThreadLogic::instance()->delete_thread_session(connect_id);
 }
 
 void CTcpSession::do_read()
@@ -48,9 +53,7 @@ void CTcpSession::do_read()
     if (session_recv_buffer_.get_buffer_size() == 0)
     {
         //链接断开(缓冲撑满了)
-        App_tms::instance()->AddMessage(1, [self, connect_id]() {
-            self->Close(connect_id);
-            });
+        App_WorkThreadLogic::instance()->close_session_event(connect_id_);
     }
 
     socket_.async_read_some(asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()),
@@ -68,21 +71,13 @@ void CTcpSession::do_read()
                 if (!ret)   
                 {
                     //链接断开(解析包不正确)
-                    App_tms::instance()->AddMessage(1, [self, connect_id]() {
-                        self->Close(connect_id);
-                        });
+                    App_WorkThreadLogic::instance()->close_session_event(connect_id_);
                 }
-
-                //添加到数据队列处理
-                App_tms::instance()->AddMessage(1, [self, connect_id, message_list](){
-                    //PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
-                    for (auto packet : message_list)
-                    {
-                        self->set_write_buffer(connect_id, packet.buffer_.c_str(), packet.buffer_.size());
-                    }
-
-                    self->do_write(connect_id);
-                    });
+                else
+                {
+                    //添加消息处理
+                    App_WorkThreadLogic::instance()->do_thread_module_logic(connect_id_, message_list, self);
+                }
 
                 //继续读数据
                 self->do_read();
