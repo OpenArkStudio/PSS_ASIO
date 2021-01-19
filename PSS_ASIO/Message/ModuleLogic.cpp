@@ -36,6 +36,8 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count)
     //初始化线程数
     thread_count_ = thread_count;
 
+    App_tms::instance()->Init();
+
     //初始化插件加载
     load_module_.load_plugin_module("./", "Test_Logic.dll", "test param");
 
@@ -56,12 +58,18 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count)
 
 void CWorkThreadLogic::close()
 {
+    //关闭线程操作
+    App_tms::instance()->Close();
+
     for (auto f : thread_module_list_)
     {
         f->close();
     }
 
     thread_module_list_.clear();
+
+    //关闭模板操作
+    load_module_.Close();
 }
 
 void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession> session)

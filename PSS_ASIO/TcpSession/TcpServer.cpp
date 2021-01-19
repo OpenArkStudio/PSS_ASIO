@@ -9,6 +9,11 @@ CTcpServer::CTcpServer(asio::io_context& io_context, std::string server_ip, shor
     do_accept();
 }
 
+void CTcpServer::close()
+{
+    acceptor_.close();
+}
+
 void CTcpServer::do_accept()
 {
     acceptor_.async_accept(

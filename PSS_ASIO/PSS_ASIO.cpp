@@ -1,15 +1,7 @@
 ﻿// PSS_ASIO.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
 //
 
-#include <iostream>
-
-#include "TcpServer.h"
-#include "UdpServer.h"
-#include "TtyServer.h"
-
-#if PSS_PLATFORM == PLATFORM_WIN
-#include <tchar.h>
-#endif
+#include "ServerService.h"
 
 void add_serial_port(asio::io_context& io_context)
 {
@@ -22,49 +14,11 @@ void add_serial_port(asio::io_context& io_context)
     serial_port->set_option(asio::serial_port::parity(asio::serial_port::parity::none), ec);
     serial_port->set_option(asio::serial_port::stop_bits(asio::serial_port::stop_bits::one), ec);
     serial_port->set_option(asio::serial_port::character_size(char_size), ec);
-
-
 }
 
 int main()
 {
-    //指定当前目录，防止访问文件失败
-    TCHAR szFileName[MAX_PATH] = { 0 };
-    GetModuleFileName(0, szFileName, MAX_PATH);
-    LPTSTR pszEnd = _tcsrchr(szFileName, TEXT('\\'));
+    App_ServerService::instance()->init_servce();
 
-    if (pszEnd != 0)
-    {
-        pszEnd++;
-        *pszEnd = 0;
-    }
-
-    //初始化输出
-    Init_Console_Output(0,
-        1,
-        1024000,
-        "./serverlog",
-        "debug");
-
-    //初始化PacketParse插件
-    App_PacketParseLoader::instance()->Init(100);
-
-    if (false == App_PacketParseLoader::instance()->LoadPacketInfo(1, "./", "PacketParse_Inferface.dll"))
-    {
-        PSS_LOGGER_DEBUG("[App_PacketParseLoader] load error.");
-    }
-
-    int socket_serevr_port = 8888;
-    asio::io_context io_context;
-
-    //初始化执行库
-    App_WorkThreadLogic::instance()->init_work_thread_logic(3);
-
-    //测试Tcp监听
-    CTcpServer s1(io_context, "127.0.0.1", socket_serevr_port, 1, 102400);
-
-    //测试UDP监听
-    auto s2 = make_shared<CUdpServer>(io_context, "127.0.0.1", socket_serevr_port, 1, 1024);
-    io_context.run();
-
+    return 0;
 }

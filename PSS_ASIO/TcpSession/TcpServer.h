@@ -7,6 +7,8 @@ class CTcpServer
 public:
     CTcpServer(asio::io_context& io_context, std::string server_ip, short port, uint32 packet_parse_id, uint32 max_buffer_size);
 
+    void close();
+
 private:
     void do_accept();
 

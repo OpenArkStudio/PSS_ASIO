@@ -63,6 +63,9 @@
     <ClCompile Include="Message\ModuleLogic.cpp">
       <Filter>Message</Filter>
     </ClCompile>
+    <ClCompile Include="Common\ServerService.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TcpSession\TcpServer.h">
@@ -130,6 +133,9 @@
     </ClInclude>
     <ClInclude Include="Message\ModuleLogic.h">
       <Filter>Message</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\ServerService.h">
+      <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

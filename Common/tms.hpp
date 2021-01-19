@@ -2,6 +2,7 @@
 
 //线程处理队列，处理消息队列和定时消息
 //add by freeeyes
+#include "define.h"
 #include "threadqueue.h"
 #include "TimerManager.hpp"
 #include "TimeStamp.hpp"
@@ -53,8 +54,8 @@ public:
         pLogicMessage->m_emType = EM_LOGIC_TYPE::LOGIC_TYPE_CLOSE;
         Put(pLogicMessage);
 
+        //PSS_LOGGER_DEBUG("[Close]Thread({0}) put close.", m_u4ThreadID);
         m_ttlogic.join();
-        std::cout << "Thread(" << m_u4ThreadID << ") is Finish." << std::endl;
     }
 
     void svc()
@@ -63,20 +64,20 @@ public:
         while (m_run)
         {
             shared_ptr<CLogicMessage> msg;
-            if (true == m_thread_queue.Pop(msg))
+            m_thread_queue.Pop(msg);
+
+            if (EM_LOGIC_TYPE::LOGIC_TYPE_RUN == msg->m_emType)
             {
-                if (EM_LOGIC_TYPE::LOGIC_TYPE_RUN == msg->m_emType)
-                    //获得了数据，进行处理
-                    msg->m_func();
+                //获得了数据，进行处理
+                msg->m_func();
             }
             else
             {
-                //关闭线程
-                continue;
+                break;
             }
         }
 
-        std::cout << "Thread is over." << std::endl;
+        //PSS_LOGGER_DEBUG("[Close]Thread({0}) is over.", m_u4ThreadID);
     }
 
 private:
@@ -117,7 +118,7 @@ public:
 
             m_mapLogicList[u4LogicID] = pLogicTask;
 
-            cout << "CreateLogic(" << u4LogicID << ")." << endl;
+            //cout << "CreateLogic(" << u4LogicID << ")." << endl;
         }
 
         return true;
@@ -187,8 +188,6 @@ public:
         //关闭定时器
         m_timerManager.Close();
         m_ttTimer.join();
-
-        cout << "TMS is close." << endl;
     }
 
 private:

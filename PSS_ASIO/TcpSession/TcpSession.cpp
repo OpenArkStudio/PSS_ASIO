@@ -85,9 +85,7 @@ void CTcpSession::do_read()
             else
             {
                 //链接断开
-                App_tms::instance()->AddMessage(1, [self, connect_id]() {
-                    self->Close(connect_id);
-                    });
+                App_WorkThreadLogic::instance()->close_session_event(connect_id_);
             }
         });
 }
@@ -110,7 +108,7 @@ void CTcpSession::do_write(uint32 connect_id)
             if (ec)
             {
                 //暂时不处理
-                std::cout << "[CTcpSession::do_write](" << ec.value() << ") message (" << ec.message() << ")" << std::endl;
+                PSS_LOGGER_DEBUG("[CTcpSession::do_write]write error({0}).", ec.message());
             }
             else
             {

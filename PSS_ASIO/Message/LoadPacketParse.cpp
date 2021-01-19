@@ -1,10 +1,5 @@
 #include "LoadPacketParse.h"
 
-void CLoadPacketParse::Init(int nCount)
-{
-    //≥ı ºªØHashTable
-    m_nModuleCount = nCount;
-}
 
 bool CLoadPacketParse::LoadPacketInfo(uint32 u4PacketParseID, const char* pPacketParsePath, const char* szPacketParseName)
 {

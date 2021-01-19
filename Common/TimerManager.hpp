@@ -201,7 +201,7 @@ namespace brynet {
                 }
             }
 
-            PSS_LOGGER_DEBUG("[TimerMgr::schedule]Time manager is end.");
+            //PSS_LOGGER_DEBUG("[TimerMgr::schedule]Time manager is end.");
         }
 
         bool isEmpty() const

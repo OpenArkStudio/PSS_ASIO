@@ -142,6 +142,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Common\ConnectCounter.cpp" />
+    <ClCompile Include="Common\ServerService.cpp" />
     <ClCompile Include="Message\LoadModule.cpp" />
     <ClCompile Include="Message\LoadPacketParse.cpp" />
     <ClCompile Include="Message\ModuleInterfalce.cpp" />
@@ -167,6 +168,7 @@
     <ClInclude Include="Common\FrameObject.hpp" />
     <ClInclude Include="Common\ISession.h" />
     <ClInclude Include="Common\SendBuffer.h" />
+    <ClInclude Include="Common\ServerService.h" />
     <ClInclude Include="Message\LoadModule.h" />
     <ClInclude Include="Message\LoadPacketParse.h" />
     <ClInclude Include="Message\ModuleInterfalce.h" />
