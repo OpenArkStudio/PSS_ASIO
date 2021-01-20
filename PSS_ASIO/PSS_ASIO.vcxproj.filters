@@ -66,6 +66,9 @@
     <ClCompile Include="Common\ServerService.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="TcpSession\TcpClientSession.cpp">
+      <Filter>TcpSession</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TcpSession\TcpServer.h">
@@ -136,6 +139,9 @@
     </ClInclude>
     <ClInclude Include="Common\ServerService.h">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="TcpSession\TcpClientSession.h">
+      <Filter>TcpSession</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

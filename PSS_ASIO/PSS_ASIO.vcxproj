@@ -149,6 +149,7 @@
     <ClCompile Include="Message\ModuleLogic.cpp" />
     <ClCompile Include="Message\SessionInterfalce.cpp" />
     <ClCompile Include="PSS_ASIO.cpp" />
+    <ClCompile Include="TcpSession\TcpClientSession.cpp" />
     <ClCompile Include="TcpSession\TcpServer.cpp" />
     <ClCompile Include="TcpSession\TcpSession.cpp" />
     <ClCompile Include="TTySession\TtyServer.cpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="Message\ModuleInterfalce.h" />
     <ClInclude Include="Message\ModuleLogic.h" />
     <ClInclude Include="Message\SessionInterfalce.h" />
+    <ClInclude Include="TcpSession\TcpClientSession.h" />
     <ClInclude Include="TcpSession\TcpServer.h" />
     <ClInclude Include="TcpSession\TcpSession.h" />
     <ClInclude Include="TTySession\TtyServer.h" />

@@ -7,6 +7,7 @@ BOOL WINAPI ConsoleHandlerRoutine(DWORD dwCtrlType)
     {
         //在这里处理窗口服务器关闭回收资源
         PSS_LOGGER_DEBUG("[ConsoleHandlerRoutine]server is close.");
+        App_ServerService::instance()->stop_service();
         return TRUE;
     }
 

@@ -23,6 +23,8 @@ public:
 
     void add_send_finish_size(uint32 connect_id, size_t send_length) final;
 
+    void close();
+
 private:
     void do_receive();
 

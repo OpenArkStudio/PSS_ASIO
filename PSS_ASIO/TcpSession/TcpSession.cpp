@@ -21,7 +21,7 @@ void CTcpSession::open(uint32 connect_id, uint32 packet_parse_id, uint32 buffer_
     remote_ip.m_u2Port = socket_.remote_endpoint().port();
     local_ip.m_strClientIP = socket_.local_endpoint().address().to_string();
     local_ip.m_u2Port = socket_.local_endpoint().port();
-    packet_parse_interface_->Connect(connect_id_, remote_ip, local_ip);
+    packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip, local_ip, EM_CONNECT_IO_TYPE::CONNECT_IO_TCP);
 
     //加入session 映射
     App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this());
@@ -37,7 +37,7 @@ void CTcpSession::Close(uint32 connect_id)
     PSS_LOGGER_DEBUG("[CTcpSession::Close]recv:{0}, send:{1}", recv_data_size_, send_data_size_);
 
     //断开连接
-    packet_parse_interface_->DisConnect(connect_id);
+    packet_parse_interface_->packet_disconnect_ptr_(connect_id, EM_CONNECT_IO_TYPE::CONNECT_IO_TCP);
 
     App_WorkThreadLogic::instance()->delete_thread_session(connect_id);
 }
@@ -67,7 +67,7 @@ void CTcpSession::do_read()
                 
                 //处理数据拆包
                 vector<CMessage_Packet> message_list;
-                bool ret = packet_parse_interface_->Parse_Packet_From_Recv_Buffer(connect_id_, &session_recv_buffer_, message_list, EM_CONNECT_IO_TYPE::CONNECT_IO_TCP);
+                bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, EM_CONNECT_IO_TYPE::CONNECT_IO_TCP);
                 if (!ret)   
                 {
                     //链接断开(解析包不正确)

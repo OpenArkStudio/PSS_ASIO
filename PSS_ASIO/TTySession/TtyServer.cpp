@@ -13,6 +13,10 @@ CTTyServer::CTTyServer(shared_ptr<asio::serial_port> serial_port_param, uint32 p
 
     App_WorkThreadLogic::instance()->add_thread_session(connect_client_id_, shared_from_this());
 
+    _ClientIPInfo remote_ip;
+    _ClientIPInfo local_ip;
+    packet_parse_interface_->packet_connect_ptr_(connect_client_id_, remote_ip, local_ip, EM_CONNECT_IO_TYPE::CONNECT_IO_TTY);
+
     do_receive();
 }
 
@@ -41,7 +45,7 @@ void CTTyServer::do_receive()
 
                 //处理数据拆包
                 vector<CMessage_Packet> message_list;
-                bool ret = packet_parse_interface_->Parse_Packet_From_Recv_Buffer(connect_client_id_, &session_recv_buffer_, message_list, EM_CONNECT_IO_TYPE::CONNECT_IO_TTY);
+                bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_client_id_, &session_recv_buffer_, message_list, EM_CONNECT_IO_TYPE::CONNECT_IO_TTY);
                 if (!ret)
                 {
                     //链接断开(解析包不正确)
@@ -110,5 +114,10 @@ void CTTyServer::add_send_finish_size(uint32 connect_id, size_t send_length)
 {
     //异步写返回
     send_data_size_ += send_length;
+}
+
+void CTTyServer::close()
+{
+    packet_parse_interface_->packet_disconnect_ptr_(connect_client_id_, EM_CONNECT_IO_TYPE::CONNECT_IO_TTY);
 }
 
