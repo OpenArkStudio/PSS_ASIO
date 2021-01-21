@@ -125,7 +125,7 @@ void CUdpServer::do_write(uint32 connect_id)
             if (ec)
             {
                 //暂时不处理
-                PSS_LOGGER_DEBUG("[CUdpServer::do_write]write error({0}).", ec.message());
+                PSS_LOGGER_DEBUG("[CUdpServer::do_write]connect_id={0}, write error({1}).", connect_id, ec.message());
             }
             else
             {

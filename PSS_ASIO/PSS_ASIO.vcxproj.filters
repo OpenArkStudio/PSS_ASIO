@@ -69,6 +69,9 @@
     <ClCompile Include="TcpSession\TcpClientSession.cpp">
       <Filter>TcpSession</Filter>
     </ClCompile>
+    <ClCompile Include="UdpSession\UdpClientSession.cpp">
+      <Filter>UdpSession</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TcpSession\TcpServer.h">
@@ -142,6 +145,9 @@
     </ClInclude>
     <ClInclude Include="TcpSession\TcpClientSession.h">
       <Filter>TcpSession</Filter>
+    </ClInclude>
+    <ClInclude Include="UdpSession\UdpClientSession.h">
+      <Filter>UdpSession</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

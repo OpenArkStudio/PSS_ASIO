@@ -153,6 +153,7 @@
     <ClCompile Include="TcpSession\TcpServer.cpp" />
     <ClCompile Include="TcpSession\TcpSession.cpp" />
     <ClCompile Include="TTySession\TtyServer.cpp" />
+    <ClCompile Include="UdpSession\UdpClientSession.cpp" />
     <ClCompile Include="UdpSession\UdpServer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -179,6 +180,7 @@
     <ClInclude Include="TcpSession\TcpServer.h" />
     <ClInclude Include="TcpSession\TcpSession.h" />
     <ClInclude Include="TTySession\TtyServer.h" />
+    <ClInclude Include="UdpSession\UdpClientSession.h" />
     <ClInclude Include="UdpSession\UdpServer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
