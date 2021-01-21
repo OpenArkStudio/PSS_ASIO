@@ -16,6 +16,12 @@
     <Filter Include="TcpSession">
       <UniqueIdentifier>{732a8b85-e430-48b1-ae52-d28861577d24}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UdpSession">
+      <UniqueIdentifier>{f2d7a650-8c6d-4b82-8061-dc2a086556d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{2712058e-3d0d-4424-a172-8999251463f1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PSS_ASIO_CLIENT.cpp">
@@ -24,10 +30,19 @@
     <ClCompile Include="TcpSession\TcpSession.cpp">
       <Filter>TcpSession</Filter>
     </ClCompile>
+    <ClCompile Include="UdpSession\UdpSession.cpp">
+      <Filter>UdpSession</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TcpSession\TcpSession.h">
       <Filter>TcpSession</Filter>
+    </ClInclude>
+    <ClInclude Include="UdpSession\UdpSession.h">
+      <Filter>UdpSession</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\SendBuffer.h">
+      <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

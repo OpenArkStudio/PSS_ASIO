@@ -62,12 +62,12 @@ bool CServerService::init_servce()
     App_WorkThreadLogic::instance()->init_work_thread_logic(3);
 
     //≤‚ ‘Tcpº‡Ã˝
-    auto tcp_service = make_shared<CTcpServer>(io_context_, "127.0.0.1", socket_serevr_port, 1, 102400);
-    tcp_service_list_.emplace_back(tcp_service);
+    //auto tcp_service = make_shared<CTcpServer>(io_context_, "127.0.0.1", socket_serevr_port, 1, 102400);
+    //tcp_service_list_.emplace_back(tcp_service);
 
     //≤‚ ‘UDPº‡Ã˝
-    //auto udp_service = make_shared<CUdpServer>(io_context_, "127.0.0.1", socket_serevr_port, 1, 1024);
-    //udp_service_list_.emplace_back(udp_service);
+    auto udp_service = make_shared<CUdpServer>(io_context_, "127.0.0.1", socket_serevr_port, 1, 1024);
+    udp_service_list_.emplace_back(udp_service);
 
     io_context_.run();
 

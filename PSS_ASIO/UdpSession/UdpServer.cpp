@@ -38,6 +38,8 @@ void CUdpServer::do_receive()
                     do_receive();
                 }
 
+                session_recv_buffer_.set_write_data(length);
+
                 //处理数据拆包
                 vector<CMessage_Packet> message_list;
                 bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_client_id_, &session_recv_buffer_, message_list, EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
