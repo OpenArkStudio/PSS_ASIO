@@ -20,15 +20,15 @@
 
 using namespace std;
 
-DECLDIR bool Parse_Packet_From_Recv_Buffer(uint32 connect_id, CSessionBuffer* buffer, vector<CMessage_Packet>& message_list, EM_CONNECT_IO_TYPE emIOType);
-DECLDIR bool Connect(uint32 connect_id, const _ClientIPInfo& remote_ip, const _ClientIPInfo& local_ip);
-DECLDIR void DisConnect(uint32 connect_id);
-DECLDIR void Set_output(shared_ptr<spdlog::logger> logger);
-DECLDIR void Load();
-DECLDIR void Close();
+DECLDIR bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, vector<CMessage_Packet>& message_list, EM_CONNECT_IO_TYPE emIOType);
+DECLDIR bool connect(uint32 connect_id, const _ClientIPInfo& remote_ip, const _ClientIPInfo& local_ip, EM_CONNECT_IO_TYPE emIOType);
+DECLDIR void disConnect(uint32 connect_id, EM_CONNECT_IO_TYPE emIOType);
+DECLDIR void set_output(shared_ptr<spdlog::logger> logger);
+DECLDIR void packet_load();
+DECLDIR void packet_close();
 
 
-bool Parse_Packet_From_Recv_Buffer(uint32 connect_id, CSessionBuffer* buffer, vector<CMessage_Packet>& message_list, EM_CONNECT_IO_TYPE emIOType)
+bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, vector<CMessage_Packet>& message_list, EM_CONNECT_IO_TYPE emIOType)
 {
     uint32 packet_pos = 0;
     auto buff_length = buffer->get_write_size();
@@ -116,9 +116,9 @@ bool Parse_Packet_From_Recv_Buffer(uint32 connect_id, CSessionBuffer* buffer, ve
     return true;
 }
 
-bool Connect(uint32 u4ConnectID, const _ClientIPInfo& remote_ip, const _ClientIPInfo& local_ip)
+bool connect(uint32 u4ConnectID, const _ClientIPInfo& remote_ip, const _ClientIPInfo& local_ip, EM_CONNECT_IO_TYPE emIOType)
 {
-
+    PSS_UNUSED_ARG(emIOType);
     PSS_LOGGER_INFO("[Connect]{}:{} ==> {}{}",
         remote_ip.m_strClientIP,
         remote_ip.m_u2Port,
@@ -127,24 +127,25 @@ bool Connect(uint32 u4ConnectID, const _ClientIPInfo& remote_ip, const _ClientIP
     return true;
 }
 
-void DisConnect(uint32 u4ConnectID)
+void disConnect(uint32 u4ConnectID, EM_CONNECT_IO_TYPE emIOType)
 {
+    PSS_UNUSED_ARG(emIOType);
     PSS_LOGGER_DEBUG("[DisConnect]u4ConnectID={}.",
         u4ConnectID);
 }
 
-void Set_output(shared_ptr<spdlog::logger> logger)
+void set_output(shared_ptr<spdlog::logger> logger)
 {
     //设置输出对象
     spdlog::set_default_logger(logger);
 }
 
-void Load()
+void packet_load()
 {
     //Packet_Parse初始化调用
 }
 
-void Close()
+void packet_close()
 {
     //Packet_Parse关闭调用
 }

@@ -21,7 +21,7 @@ void CTcpServer::do_accept()
         {
             if (!ec)
             {
-                std::make_shared<CTcpSession>(std::move(socket))->open(connect_clinet_id_++, packet_parse_id_, max_buffer_size_);
+                std::make_shared<CTcpSession>(std::move(socket))->open(packet_parse_id_, max_buffer_size_);
             }
             else
             {

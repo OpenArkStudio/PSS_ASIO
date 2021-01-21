@@ -96,7 +96,7 @@ void CWorkThreadLogic::close_session_event(uint32 connect_id)
     auto session = thread_module_list_[curr_thread_index]->get_session_interface(connect_id);
 
     App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id]() {
-        session->Close(connect_id);
+        session->close(connect_id);
         });
 }
 

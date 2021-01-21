@@ -76,6 +76,13 @@ public:
 #define PSS_LOGGER_WARN(...) SPDLOG_LOGGER_WARN(spdlog::default_logger(), __VA_ARGS__);
 #define PSS_LOGGER_ERROR(...) SPDLOG_LOGGER_ERROR(spdlog::default_logger(), __VA_ARGS__);
 
+//链接消息命令
+enum class ENUM_LOGIC_COMMAND
+{
+    LOGIC_COMMAND_CONNECT = 0x0001,
+    LOGIC_COMMAND_DISCONNECT = 0x0002,
+};
+
 //暂不使用的参数
 template <typename T>
 void PSS_UNUSED_ARG(T&&)

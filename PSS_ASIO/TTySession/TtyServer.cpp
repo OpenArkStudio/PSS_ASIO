@@ -101,10 +101,49 @@ void CTTyServer::do_write(uint32 connect_id)
     clear_write_buffer();
     
     //异步发送
+    auto self(shared_from_this());
     serial_port_param_->async_write_some(asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
-        [this, send_buffer, connect_id](std::error_code /*ec*/, std::size_t /*bytes_sent*/)
+        [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
         {
-            add_send_finish_size(connect_id, send_buffer->buffer_length_);
+            if (ec)
+            {
+                //暂时不处理
+                PSS_LOGGER_DEBUG("[CTTyServer::do_write]write error({0}).", ec.message());
+            }
+            else
+            {
+                self->add_send_finish_size(connect_id, length);
+            }
+        });
+
+    clear_write_buffer();
+}
+
+void CTTyServer::do_write_immediately(uint32 connect_id, const char* data, size_t length)
+{
+    PSS_UNUSED_ARG(connect_id);
+
+    //组装发送数据
+    auto send_buffer = make_shared<CSendBuffer>();
+    send_buffer->data_.append(data, length);
+    send_buffer->buffer_length_ = length;
+
+    //PSS_LOGGER_DEBUG("[CTTyServer::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
+
+    //异步发送
+    auto self(shared_from_this());
+    serial_port_param_->async_write_some(asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
+        [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
+        {
+            if (ec)
+            {
+                //暂时不处理
+                PSS_LOGGER_DEBUG("[CTTyServer::do_write]write error({0}).", ec.message());
+            }
+            else
+            {
+                self->add_send_finish_size(connect_id, length);
+            }
         });
 
     clear_write_buffer();

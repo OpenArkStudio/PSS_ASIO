@@ -5,9 +5,9 @@ CTcpSession::CTcpSession(tcp::socket socket)
 {
 }
 
-void CTcpSession::open(uint32 connect_id, uint32 packet_parse_id, uint32 buffer_size)
+void CTcpSession::open(uint32 packet_parse_id, uint32 buffer_size)
 {
-    connect_id_ = connect_id;
+    connect_id_ = App_ConnectCounter::instance()->CreateCounter();
 
     packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(packet_parse_id);
 
@@ -29,7 +29,7 @@ void CTcpSession::open(uint32 connect_id, uint32 packet_parse_id, uint32 buffer_
     do_read();
 }
 
-void CTcpSession::Close(uint32 connect_id)
+void CTcpSession::close(uint32 connect_id)
 {
     socket_.close();
 
@@ -109,6 +109,32 @@ void CTcpSession::do_write(uint32 connect_id)
             {
                 //暂时不处理
                 PSS_LOGGER_DEBUG("[CTcpSession::do_write]write error({0}).", ec.message());
+            }
+            else
+            {
+                self->add_send_finish_size(connect_id, length);
+            }
+        });
+}
+
+void CTcpSession::do_write_immediately(uint32 connect_id, const char* data, size_t length)
+{
+    //组装发送数据
+    auto send_buffer = make_shared<CSendBuffer>();
+    send_buffer->data_.append(data, length);
+    send_buffer->buffer_length_ = length;
+
+    //PSS_LOGGER_DEBUG("[CTcpSession::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
+
+    //异步发送
+    auto self(shared_from_this());
+    asio::async_write(socket_, asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
+        [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
+        {
+            if (ec)
+            {
+                //暂时不处理
+                PSS_LOGGER_DEBUG("[CTcpSession::do_write_immediately]write error({0}).", ec.message());
             }
             else
             {

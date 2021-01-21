@@ -35,11 +35,13 @@ class CUdpServer : public std::enable_shared_from_this<CUdpServer>, public ISess
 public:
     CUdpServer(asio::io_context& io_context, std::string server_ip, short port, uint32 packet_parse_id, uint32 max_buffer_length);
 
-    void Close(uint32 connect_id) final;
+    void close(uint32 connect_id) final;
 
     void set_write_buffer(uint32 connect_id, const char* data, size_t length) final;
 
     void do_write(uint32 connect_id) final;
+
+    void do_write_immediately(uint32 connect_id, const char* data, size_t length) final;
 
     void add_send_finish_size(uint32 connect_id, size_t length) final;
 

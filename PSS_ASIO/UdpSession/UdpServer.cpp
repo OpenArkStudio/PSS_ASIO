@@ -64,7 +64,7 @@ void CUdpServer::do_receive()
         });
 }
 
-void CUdpServer::Close(uint32 connect_id)
+void CUdpServer::close(uint32 connect_id)
 {
     close_udp_endpoint_by_id(connect_id);
 }
@@ -115,14 +115,62 @@ void CUdpServer::do_write(uint32 connect_id)
     //PSS_LOGGER_DEBUG("[CUdpServer::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
     clear_write_buffer(session_info);
 
+    auto self(shared_from_this());
     socket_.async_send_to(
         asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_), session_info->send_endpoint,
-        [this, send_buffer, connect_id](std::error_code ec, std::size_t /*bytes_sent*/)
+        [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
         {
-            if (!ec)
+            if (ec)
+            {
+                //暂时不处理
+                PSS_LOGGER_DEBUG("[CUdpServer::do_write]write error({0}).", ec.message());
+            }
+            else
             {
                 //这里记录发送字节数
-                add_send_finish_size(connect_id, send_buffer->buffer_length_);
+                self->add_send_finish_size(connect_id, send_buffer->buffer_length_);
+            }
+        });
+}
+
+void CUdpServer::do_write_immediately(uint32 connect_id, const char* data, size_t length)
+{
+    auto session_info = find_udp_endpoint_by_id(connect_id);
+
+    if (session_info == nullptr)
+    {
+        PSS_LOGGER_DEBUG("[CUdpServer::do_write]({}) is nullptr.", connect_id);
+        return;
+    }
+
+    if (session_info->udp_state == EM_UDP_VALID::UDP_INVALUD)
+    {
+        clear_write_buffer(session_info);
+        return;
+    }
+
+    //组装发送数据
+    auto send_buffer = make_shared<CSendBuffer>();
+    send_buffer->data_.append(data, length);
+    send_buffer->buffer_length_ = length;
+
+    //PSS_LOGGER_DEBUG("[CUdpServer::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
+    clear_write_buffer(session_info);
+
+    auto self(shared_from_this());
+    socket_.async_send_to(
+        asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_), session_info->send_endpoint,
+        [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
+        {
+            if (ec)
+            {
+                //暂时不处理
+                PSS_LOGGER_DEBUG("[CUdpServer::do_write_immediately]write error({0}).", ec.message());
+            }
+            else
+            {
+                //这里记录发送字节数
+                self->add_send_finish_size(connect_id, send_buffer->buffer_length_);
             }
         });
 }

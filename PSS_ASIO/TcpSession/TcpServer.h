@@ -13,7 +13,6 @@ private:
     void do_accept();
 
     tcp::acceptor acceptor_;
-    uint32 connect_clinet_id_ = 0;
     uint32 packet_parse_id_ = 0;
     uint32 max_buffer_size_ = 0;
 };

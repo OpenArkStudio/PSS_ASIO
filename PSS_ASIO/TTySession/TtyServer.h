@@ -21,6 +21,8 @@ public:
 
     void do_write(uint32 connect_id) final;
 
+    void do_write_immediately(uint32 connect_id, const char* data, size_t length) final;
+
     void add_send_finish_size(uint32 connect_id, size_t send_length) final;
 
     void close();
