@@ -141,6 +141,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Common\CommunicationService.cpp" />
     <ClCompile Include="Common\ConnectCounter.cpp" />
     <ClCompile Include="Common\ServerService.cpp" />
     <ClCompile Include="Message\LoadModule.cpp" />
@@ -166,7 +167,9 @@
     <ClInclude Include="..\Common\TimerManager.hpp" />
     <ClInclude Include="..\Common\TimeStamp.hpp" />
     <ClInclude Include="..\Common\tms.hpp" />
+    <ClInclude Include="Common\CommunicationService.h" />
     <ClInclude Include="Common\ConnectCounter.h" />
+    <ClInclude Include="Common\CoreTimer.hpp" />
     <ClInclude Include="Common\FrameObject.hpp" />
     <ClInclude Include="Common\ISession.h" />
     <ClInclude Include="Common\SendBuffer.h" />

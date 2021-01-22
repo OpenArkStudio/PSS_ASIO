@@ -21,7 +21,7 @@ class CUdpClientSession : public std::enable_shared_from_this<CUdpClientSession>
 public:
     CUdpClientSession(asio::io_context& io_context);
 
-    void start(uint32 packet_parse_id, uint32 buffer_size, string server_ip, uint16 server_port);
+    void start(uint32 server_id, uint32 packet_parse_id, uint32 buffer_size, string server_ip, uint16 server_port);
 
     void do_receive();
 
@@ -39,6 +39,7 @@ public:
 
 private:
     udp::socket socket_;
+    uint32 server_id_  = 0;
     uint32 connect_id_ = 0;
     CSessionBuffer session_recv_buffer_;
     CSessionBuffer session_send_buffer_;

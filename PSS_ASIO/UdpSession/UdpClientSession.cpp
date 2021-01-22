@@ -5,10 +5,12 @@ CUdpClientSession::CUdpClientSession(asio::io_context& io_context)
 {
 }
 
-void CUdpClientSession::start(uint32 packet_parse_id, uint32 buffer_size, string server_ip, uint16 server_port)
+void CUdpClientSession::start(uint32 server_id, uint32 packet_parse_id, uint32 buffer_size, string server_ip, uint16 server_port)
 {
     session_recv_buffer_.Init(buffer_size);
     session_send_buffer_.Init(buffer_size);
+
+    server_id_ = server_id;
 
     //建立连接
     udp::endpoint end_point(asio::ip::address::from_string(server_ip.c_str()), server_port);

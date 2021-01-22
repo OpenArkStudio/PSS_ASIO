@@ -61,6 +61,9 @@ bool CServerService::init_servce()
     //初始化执行库
     App_WorkThreadLogic::instance()->init_work_thread_logic(3);
 
+    //初始化框架定时器
+    App_TimerManager::instance()->Start();
+
     //测试Tcp监听
     //auto tcp_service = make_shared<CTcpServer>(io_context_, "127.0.0.1", socket_serevr_port, 1, 102400);
     //tcp_service_list_.emplace_back(tcp_service);
@@ -68,6 +71,9 @@ bool CServerService::init_servce()
     //测试UDP监听
     auto udp_service = make_shared<CUdpServer>(io_context_, "127.0.0.1", socket_serevr_port, 1, 1024);
     udp_service_list_.emplace_back(udp_service);
+
+    //启动服务器间链接
+    App_CommunicationService::instance()->init_communication_service(io_context_);
 
     io_context_.run();
 
@@ -80,6 +86,10 @@ bool CServerService::init_servce()
 void CServerService::close_service()
 {
     PSS_LOGGER_DEBUG("[CServerService::close_service]begin.");
+
+    //关闭框架定时器
+    App_TimerManager::instance()->Close();
+
     //回收清理数据
     for (auto tcp_service : tcp_service_list_)
     {

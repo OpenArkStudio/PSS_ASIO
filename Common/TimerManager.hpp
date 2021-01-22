@@ -28,6 +28,12 @@ namespace brynet {
         TIMER_STATE_EXECUTE_TIMER,
     };
 
+    enum class ENUM_TIMER_TYPE
+    {
+        TIMER_TYPE_ONCE = 0,
+        TIMER_TYPE_LOOP,
+    };
+
     class TimerMgr;
 
     class Timer final
@@ -39,11 +45,13 @@ namespace brynet {
 
         Timer(std::chrono::steady_clock::time_point startTime,
             std::chrono::nanoseconds lastTime,
+            ENUM_TIMER_TYPE timertype,
             Callback&& callback)
             :
             mCallback(std::move(callback)),
             mStartTime(startTime),
-            mLastTime(lastTime)
+            mLastTime(lastTime),
+            mTimerType(timertype)
         {
         }
 
@@ -70,25 +78,43 @@ namespace brynet {
                 });
         }
 
-    private:
-        void            operator() ()
+        ENUM_TIMER_TYPE get_timer_type()
         {
-            Callback callback;
-            std::call_once(mExecuteOnceFlag, [&callback, this]() {
-                callback = std::move(mCallback);
-                mCallback = nullptr;
-                });
+            return mTimerType;
+        }
 
-            if (callback != nullptr)
+    private:
+        void operator() ()
+        {
+            if (mTimerType == ENUM_TIMER_TYPE::TIMER_TYPE_ONCE)
             {
-                callback();
+                Callback callback;
+                std::call_once(mExecuteOnceFlag, [&callback, this]() {
+                    //一次运行
+                    callback = std::move(mCallback);
+                    mCallback = nullptr;
+                    });
+
+                if (callback != nullptr)
+                {
+                    callback();
+                }
+            }
+            else
+            {
+                if (mCallback != nullptr)
+                {
+                    mCallback();
+                    mStartTime = std::chrono::steady_clock::now();
+                }
             }
         }
 
         std::once_flag                                  mExecuteOnceFlag;
         Callback                                        mCallback;
-        const std::chrono::steady_clock::time_point     mStartTime;
-        const std::chrono::nanoseconds                  mLastTime;
+        std::chrono::steady_clock::time_point           mStartTime;
+        std::chrono::nanoseconds                        mLastTime;
+        ENUM_TIMER_TYPE                                 mTimerType = ENUM_TIMER_TYPE::TIMER_TYPE_ONCE;
 
         friend class TimerMgr;
     };
@@ -99,6 +125,27 @@ namespace brynet {
         using Ptr = std::shared_ptr<TimerMgr>;
 
         template<typename F, typename ...TArgs>
+        Timer::WeakPtr  addTimer_loop(
+            std::chrono::nanoseconds timeout,
+            F&& callback,
+            TArgs&& ...args)
+        {
+            auto timer = std::make_shared<Timer>(
+                std::chrono::steady_clock::now(),
+                std::chrono::nanoseconds(timeout),
+                ENUM_TIMER_TYPE::TIMER_TYPE_LOOP,
+                std::bind(std::forward<F>(callback), std::forward<TArgs>(args)...));
+            mtx_queue.lock();
+            mTimers.push(timer);
+            mtx_queue.unlock();
+
+            //唤醒线程
+            timer_wakeup_state = EM_TIMER_STATE::TIMER_STATE_ADD_TIMER;
+            cv.notify_one();
+            return timer;
+        }
+
+        template<typename F, typename ...TArgs>
         Timer::WeakPtr  addTimer(
             std::chrono::nanoseconds timeout,
             F&& callback,
@@ -107,6 +154,7 @@ namespace brynet {
             auto timer = std::make_shared<Timer>(
                 std::chrono::steady_clock::now(),
                 std::chrono::nanoseconds(timeout),
+                ENUM_TIMER_TYPE::TIMER_TYPE_ONCE,
                 std::bind(std::forward<F>(callback), std::forward<TArgs>(args)...));
 
             mtx_queue.lock();
@@ -180,9 +228,16 @@ namespace brynet {
 
             mtx_queue.lock();
             mTimers.pop();
-            mtx_queue.unlock();
+
             (*tmp)();
-            timer_wakeup_state = EM_TIMER_STATE::TIMER_STATE_EXECUTE_TIMER;
+
+            //如果是循环消息，则自动添加。
+            if (ENUM_TIMER_TYPE::TIMER_TYPE_LOOP == tmp->get_timer_type())
+            {
+                //重新插入
+                mTimers.push(tmp);
+            }
+            mtx_queue.unlock();
 
             return ENUM_WHILE_STATE::WHILE_STATE_CONTINUE;
         }
@@ -266,36 +321,4 @@ namespace brynet {
 
 }
 
-class PSS_Timer_Manager
-{
-public:
-    void Start()
-    {
-        m_timerMgr = std::make_shared<brynet::TimerMgr>();
-
-        m_ttTimerThread = std::thread([this]()
-            {
-                m_timerMgr->schedule();
-                PSS_LOGGER_DEBUG("[PSS_Timer_Manager::start]End.");
-            });
-    };
-
-    void Close()
-    {
-        m_timerMgr->Close();
-
-        m_ttTimerThread.join();
-    };
-
-    brynet::TimerMgr::Ptr GetTimerPtr() const
-    {
-        return m_timerMgr;
-    };
-
-private:
-    brynet::TimerMgr::Ptr m_timerMgr;
-    std::thread           m_ttTimerThread;
-};
-
-using App_TimerManager = PSS_singleton<PSS_Timer_Manager>;
 #endif

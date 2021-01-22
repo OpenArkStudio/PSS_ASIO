@@ -72,6 +72,9 @@
     <ClCompile Include="UdpSession\UdpClientSession.cpp">
       <Filter>UdpSession</Filter>
     </ClCompile>
+    <ClCompile Include="Common\CommunicationService.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TcpSession\TcpServer.h">
@@ -148,6 +151,12 @@
     </ClInclude>
     <ClInclude Include="UdpSession\UdpClientSession.h">
       <Filter>UdpSession</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\CommunicationService.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\CoreTimer.hpp">
+      <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
