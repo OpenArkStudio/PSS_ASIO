@@ -84,7 +84,6 @@ bool CServerService::init_servce()
         tcp_service_list_.emplace_back(tcp_service);
     }
 
-
     //≤‚ ‘UDPº‡Ã˝
     for (auto udp_server : server_config_.get_config_udp_list())
     {
