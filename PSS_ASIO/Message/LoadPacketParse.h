@@ -35,7 +35,7 @@ class CLoadPacketParse
 public:
     CLoadPacketParse() = default;
 
-    bool LoadPacketInfo(uint32 u4PacketParseID, const char* pPacketParsePath, const char* szPacketParseName);
+    bool LoadPacketInfo(uint32 u4PacketParseID, const std::string& packet_parse_path, const std::string& packet_parse_file);
 
     void Close();
 

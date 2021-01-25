@@ -1,0 +1,92 @@
+#include "serverconfig.h"
+
+bool CServerConfig::read_server_config_file(std::string file_name)
+{
+    std::ifstream config_input(file_name);
+    json json_config;
+    config_input >> json_config;
+
+    //读取相关参数
+    auto config_work_thread = json_config["work thread"];
+    config_work_thread_.work_thread_count_ = config_work_thread["work thread count"];
+
+    for (auto packet_parse : json_config["packet parse library"])
+    {
+        CConfigPacketParseInfo config_packet;
+        config_packet.packet_parse_id_ = packet_parse["packet parse id"];
+        config_packet.packet_parse_path_ = packet_parse["packet parse path"];
+        config_packet.packet_parse_file_name_ = packet_parse["packet parse file"];
+        config_packet_list_.emplace_back(config_packet);
+    }
+
+    for (auto logic_parse : json_config["logic library"])
+    {
+        CConfigLogicInfo config_logic;
+        config_logic.logic_path_ = logic_parse["logic path"];
+        config_logic.logic_file_name_ = logic_parse["logic file"];
+        config_logic.logic_param_ = logic_parse["logic param"];
+        config_logic_list_.emplace_back(config_logic);
+    }
+
+    for (auto tcp : json_config["tcp server"])
+    {
+        CConfigNetIO config_netio;
+        config_netio.ip_ = tcp["tcp ip"];
+        config_netio.port_ = tcp["tcp port"];
+        config_netio.packet_parse_id_ = tcp["packet parse id"];
+        config_netio.recv_buff_size_ = tcp["recv buff size"];
+        config_netio.send_buff_size_ = tcp["send buff size"];
+        config_tcp_list_.emplace_back(config_netio);
+    }
+
+    for (auto udp : json_config["udp server"])
+    {
+        CConfigNetIO config_netio;
+        config_netio.ip_ = udp["udp ip"];
+        config_netio.port_ = udp["udp port"];
+        config_netio.packet_parse_id_ = udp["packet parse id"];
+        config_netio.recv_buff_size_ = udp["recv buff size"];
+        config_netio.send_buff_size_ = udp["send buff size"];
+        config_udp_list_.emplace_back(config_netio);
+    }
+
+    auto config_output = json_config["console output"];
+    config_output_.file_output_ = config_output["file write"];
+    config_output_.file_count_ = config_output["log file count"];
+    config_output_.max_file_size_ = config_output["max log file size"] * 1024;
+    config_output_.file_name_ = config_output["file name"];
+    config_output_.output_level_ = config_output["output level"];
+
+    config_input.close();
+    return true;
+}
+
+config_packet_list& CServerConfig::get_config_packet_list()
+{
+    return config_packet_list_;
+}
+
+config_logic_list& CServerConfig::get_config_logic_list()
+{
+    return config_logic_list_;
+}
+
+config_tcp_list& CServerConfig::get_config_tcp_list()
+{
+    return config_tcp_list_;
+}
+
+config_udp_list& CServerConfig::get_config_udp_list()
+{
+    return config_udp_list_;
+}
+
+CConfigConsole& CServerConfig::get_config_console()
+{
+    return config_output_;
+}
+
+CConfigWorkThread& CServerConfig::get_config_workthread()
+{
+    return config_work_thread_;
+}

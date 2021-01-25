@@ -143,6 +143,7 @@
   <ItemGroup>
     <ClCompile Include="Common\CommunicationService.cpp" />
     <ClCompile Include="Common\ConnectCounter.cpp" />
+    <ClCompile Include="Common\serverconfig.cpp" />
     <ClCompile Include="Common\ServerService.cpp" />
     <ClCompile Include="Message\LoadModule.cpp" />
     <ClCompile Include="Message\LoadPacketParse.cpp" />
@@ -173,6 +174,8 @@
     <ClInclude Include="Common\FrameObject.hpp" />
     <ClInclude Include="Common\ISession.h" />
     <ClInclude Include="Common\SendBuffer.h" />
+    <ClInclude Include="Common\serverconfig.h" />
+    <ClInclude Include="Common\serverconfigtype.h" />
     <ClInclude Include="Common\ServerService.h" />
     <ClInclude Include="Message\LoadModule.h" />
     <ClInclude Include="Message\LoadPacketParse.h" />
@@ -185,6 +188,9 @@
     <ClInclude Include="TTySession\TtyServer.h" />
     <ClInclude Include="UdpSession\UdpClientSession.h" />
     <ClInclude Include="UdpSession\UdpServer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Build\Windows\server_config.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

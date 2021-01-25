@@ -7,6 +7,7 @@
 #include "UdpServer.h"
 #include "TtyServer.h"
 #include "CommunicationService.h"
+#include "serverconfig.h"
 
 #if PSS_PLATFORM == PLATFORM_WIN
 #include <tchar.h>
@@ -26,6 +27,7 @@ private:
     vector<shared_ptr<CUdpServer>> udp_service_list_;
     vector<shared_ptr<CTTyServer>> tty_service_list_;
 
+    CServerConfig server_config_;
     asio::io_context io_context_;
 };
 

@@ -1,14 +1,12 @@
 #include "UdpServer.h"
 
-CUdpServer::CUdpServer(asio::io_context& io_context, std::string server_ip, short port, uint32 packet_parse_id, uint32 max_buffer_length)
-    : socket_(io_context, udp::endpoint(asio::ip::address_v4::from_string(server_ip), port)), packet_parse_id_(packet_parse_id)
+CUdpServer::CUdpServer(asio::io_context& io_context, std::string server_ip, short port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size)
+    : socket_(io_context, udp::endpoint(asio::ip::address_v4::from_string(server_ip), port)), packet_parse_id_(packet_parse_id), max_recv_size_(max_recv_size), max_send_size_(max_recv_size)
 {
     //处理链接建立消息
     std::cout << "[CUdpServer::do_accept](" << socket_.local_endpoint() << ") Begin Accept." << std::endl;
 
-    session_recv_buffer_.Init(max_buffer_length);
-
-    max_buffer_length_ = max_buffer_length;
+    session_recv_buffer_.Init(max_recv_size_);
 
     packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(packet_parse_id);
 
@@ -22,7 +20,7 @@ void CUdpServer::do_receive()
         [this](std::error_code ec, std::size_t length)
         {
             //查询当前的connect_id
-            auto connect_id = add_udp_endpoint(recv_endpoint_, length, max_buffer_length_);
+            auto connect_id = add_udp_endpoint(recv_endpoint_, length, max_send_size_);
             
             if (!ec && length > 0)
             {

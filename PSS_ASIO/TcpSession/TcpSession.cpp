@@ -5,14 +5,14 @@ CTcpSession::CTcpSession(tcp::socket socket)
 {
 }
 
-void CTcpSession::open(uint32 packet_parse_id, uint32 buffer_size)
+void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size, uint32 send_size)
 {
     connect_id_ = App_ConnectCounter::instance()->CreateCounter();
 
     packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(packet_parse_id);
 
-    session_recv_buffer_.Init(buffer_size);
-    session_send_buffer_.Init(buffer_size);
+    session_recv_buffer_.Init(recv_size);
+    session_send_buffer_.Init(send_size);
 
     //处理链接建立消息
     _ClientIPInfo remote_ip;

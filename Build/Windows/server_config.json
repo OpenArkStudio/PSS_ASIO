@@ -1,0 +1,49 @@
+{
+  "work thread": {
+    "work thread count": 3
+  },
+
+  "packet parse library": [
+    {
+      "packet parse id": 1,
+      "packet parse path": "./",
+      "packet parse file": "PacketParse_Inferface.dll"
+    }
+  ],
+
+  "logic library": [
+    {
+      "logic path": "./",
+      "logic file": "Test_Logic.dll",
+      "logic param": "logic config param"
+    }
+  ],
+
+  "tcp server": [
+    {
+      "tcp ip": "127.0.0.1",
+      "tcp port": 10002,
+      "packet parse id": 1,
+      "recv buff size": 102400,
+      "send buff size": 102400
+    },
+    {
+      "tcp ip": "127.0.0.1",
+      "tcp port": 10003,
+      "packet parse id": 1,
+      "recv buff size": 102400,
+      "send buff size": 102400
+    }
+  ],
+
+  "udp server": [
+  ],
+
+  "console output": {
+    "file write": false,
+    "log file count": 3,
+    "max log file size": 1024,
+    "file name": "./serverlog",
+    "output level": "debug"
+  }
+}

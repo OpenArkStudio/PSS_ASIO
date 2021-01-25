@@ -88,17 +88,11 @@ template <typename T>
 void PSS_UNUSED_ARG(T&&)
 { }
 
-inline void Init_Console_Output(int nTurnOn, int nFileCount, int nLogFileMaxSize, string strConsoleName, string strLevel)
+inline void Init_Console_Output(bool blTurnOn, int nFileCount, int nLogFileMaxSize, string strConsoleName, string strLevel)
 {
     Console_Output_Info obj_Console_Output_Info;
-    if (nTurnOn == 0)
-    {
-        obj_Console_Output_Info.m_blTunOn = true;
-    }
-    else
-    {
-        obj_Console_Output_Info.m_blTunOn = false;
-    }
+    obj_Console_Output_Info.m_blTunOn = blTurnOn;
+
     obj_Console_Output_Info.m_nFileCount = nFileCount;
     obj_Console_Output_Info.m_nLogFileMaxSize = nLogFileMaxSize;
     obj_Console_Output_Info.m_strConsoleName = strConsoleName;

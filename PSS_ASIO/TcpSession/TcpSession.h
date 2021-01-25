@@ -21,7 +21,7 @@ class CTcpSession : public std::enable_shared_from_this<CTcpSession>, public ISe
 public:
     CTcpSession(tcp::socket socket);
 
-    void open(uint32 packet_parse_id, uint32 buffer_size);
+    void open(uint32 packet_parse_id, uint32 recv_size, uint32 send_size);
 
     void close(uint32 connect_id) final;
 

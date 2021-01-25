@@ -30,20 +30,28 @@ bool CServerService::init_servce()
     }
 #endif
 
+    //读取配置文件
+    server_config_.read_server_config_file();
+
+    auto config_output = server_config_.get_config_console();
+
     //初始化输出
-    Init_Console_Output(0,
-        1,
-        1024000,
-        "./serverlog",
-        "debug");
+    Init_Console_Output(config_output.file_output_,
+        config_output.file_count_,
+        config_output.max_file_size_,
+        config_output.file_name_,
+        config_output.output_level_);
 
     //初始化PacketParse插件
-    if (false == App_PacketParseLoader::instance()->LoadPacketInfo(1, "./", "PacketParse_Inferface.dll"))
+    for (auto packet_parse : server_config_.get_config_packet_list())
     {
-        PSS_LOGGER_DEBUG("[App_PacketParseLoader] load error.");
+        if (false == App_PacketParseLoader::instance()->LoadPacketInfo(packet_parse.packet_parse_id_, 
+            packet_parse.packet_parse_path_,
+            packet_parse.packet_parse_file_name_))
+        {
+            PSS_LOGGER_DEBUG("[App_PacketParseLoader] load error.");
+        }
     }
-
-    int socket_serevr_port = 8888;
 
 #if PSS_PLATFORM == PLATFORM_WIN
     ::SetConsoleCtrlHandler(ConsoleHandlerRoutine, TRUE);
@@ -59,18 +67,35 @@ bool CServerService::init_servce()
         });
 
     //初始化执行库
-    App_WorkThreadLogic::instance()->init_work_thread_logic(3);
+    App_WorkThreadLogic::instance()->init_work_thread_logic(server_config_.get_config_workthread().work_thread_count_);
 
     //初始化框架定时器
     App_TimerManager::instance()->Start();
 
     //测试Tcp监听
-    //auto tcp_service = make_shared<CTcpServer>(io_context_, "127.0.0.1", socket_serevr_port, 1, 102400);
-    //tcp_service_list_.emplace_back(tcp_service);
+    for(auto tcp_server : server_config_.get_config_tcp_list())
+    {
+        auto tcp_service = make_shared<CTcpServer>(io_context_, 
+            tcp_server.ip_, 
+            tcp_server.port_, 
+            tcp_server.packet_parse_id_,
+            tcp_server.recv_buff_size_,
+            tcp_server.send_buff_size_);
+        tcp_service_list_.emplace_back(tcp_service);
+    }
+
 
     //测试UDP监听
-    auto udp_service = make_shared<CUdpServer>(io_context_, "127.0.0.1", socket_serevr_port, 1, 1024);
-    udp_service_list_.emplace_back(udp_service);
+    for (auto udp_server : server_config_.get_config_udp_list())
+    {
+        auto udp_service = make_shared<CUdpServer>(io_context_, 
+            udp_server.ip_,
+            udp_server.port_,
+            udp_server.packet_parse_id_,
+            udp_server.recv_buff_size_,
+            udp_server.send_buff_size_);
+        udp_service_list_.emplace_back(udp_service);
+    }
 
     //启动服务器间链接
     App_CommunicationService::instance()->init_communication_service(io_context_);

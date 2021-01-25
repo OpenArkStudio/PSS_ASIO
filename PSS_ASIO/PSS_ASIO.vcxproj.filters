@@ -28,6 +28,9 @@
     <Filter Include="TTySession">
       <UniqueIdentifier>{bc12e155-3ff1-4110-9f58-2134d25f17d0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="config">
+      <UniqueIdentifier>{166dadcd-947f-4891-9682-fdd7d5eaba21}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PSS_ASIO.cpp">
@@ -73,6 +76,9 @@
       <Filter>UdpSession</Filter>
     </ClCompile>
     <ClCompile Include="Common\CommunicationService.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\serverconfig.cpp">
       <Filter>Common</Filter>
     </ClCompile>
   </ItemGroup>
@@ -158,5 +164,16 @@
     <ClInclude Include="Common\CoreTimer.hpp">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="Common\serverconfig.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\serverconfigtype.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Build\Windows\server_config.json">
+      <Filter>config</Filter>
+    </None>
   </ItemGroup>
 </Project>
