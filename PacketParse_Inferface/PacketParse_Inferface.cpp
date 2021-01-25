@@ -78,8 +78,6 @@ bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, ve
         {
             //拼接完整包，放入整包处理结构
             CMessage_Packet logic_packet;
-            logic_packet.connect_id_ = connect_id;
-            logic_packet.type_ = emIOType;
             logic_packet.command_id_ = command_id;
             logic_packet.buffer_.append(&packet_buffer_data[0], (size_t)40);
             message_list.emplace_back(logic_packet);
@@ -100,8 +98,6 @@ bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, ve
             {
                 //拼接完整包，放入整包处理结构
                 CMessage_Packet logic_packet;
-                logic_packet.connect_id_ = connect_id;
-                logic_packet.type_ = emIOType;
                 logic_packet.command_id_ = command_id;
                 logic_packet.buffer_.append(&packet_buffer_data[0], (size_t)40 + packet_body_length);
                 message_list.emplace_back(logic_packet);

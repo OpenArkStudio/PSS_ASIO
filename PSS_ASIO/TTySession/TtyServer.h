@@ -25,7 +25,9 @@ public:
 
     void add_send_finish_size(uint32 connect_id, size_t send_length) final;
 
-    void close();
+    EM_CONNECT_IO_TYPE get_io_type() final;
+
+    void close(uint32 connect_id) final;
 
 private:
     void do_receive();
@@ -42,5 +44,7 @@ private:
     CSessionBuffer session_recv_buffer_;
     CSessionBuffer session_send_buffer_;
     shared_ptr<_Packet_Parse_Info> packet_parse_interface_ = nullptr;
+
+    EM_CONNECT_IO_TYPE io_type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_TTY;
 };
 

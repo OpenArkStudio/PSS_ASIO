@@ -33,6 +33,8 @@ public:
 
     void add_send_finish_size(uint32 connect_id, size_t send_length) final;
 
+    EM_CONNECT_IO_TYPE get_io_type() final;
+
     void clear_write_buffer();
 
 private:
@@ -46,4 +48,6 @@ private:
 
     size_t recv_data_size_  = 0;
     size_t send_data_size_  = 0;
+
+    EM_CONNECT_IO_TYPE io_type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_TCP;
 };

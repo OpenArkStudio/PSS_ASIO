@@ -67,7 +67,8 @@ bool CServerService::init_servce()
         });
 
     //初始化执行库
-    App_WorkThreadLogic::instance()->init_work_thread_logic(server_config_.get_config_workthread().work_thread_count_);
+    App_WorkThreadLogic::instance()->init_work_thread_logic(server_config_.get_config_workthread().work_thread_count_,
+        server_config_.get_config_logic_list());
 
     //初始化框架定时器
     App_TimerManager::instance()->Start();

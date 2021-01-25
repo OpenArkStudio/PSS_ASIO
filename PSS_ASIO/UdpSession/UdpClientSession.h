@@ -37,6 +37,8 @@ public:
 
     void do_write_immediately(uint32 connect_id, const char* data, size_t length) final;
 
+    EM_CONNECT_IO_TYPE get_io_type() final;
+
 private:
     udp::socket socket_;
     uint32 server_id_  = 0;
@@ -50,5 +52,7 @@ private:
 
     size_t recv_data_size_ = 0;
     size_t send_data_size_ = 0;
+
+    EM_CONNECT_IO_TYPE io_type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_UDP;
 };
 

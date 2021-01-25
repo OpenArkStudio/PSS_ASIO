@@ -5,7 +5,7 @@ void CCommunicationService::init_communication_service(asio::io_context& io_serv
     //读取配置文件，链接服务器
 
     //测试定时器
-    App_TimerManager::instance()->GetTimerPtr()->addTimer_loop(chrono::seconds(2), [this]()
+    App_TimerManager::instance()->GetTimerPtr()->addTimer_loop(chrono::seconds(60), [this]()
         {
             run_check_task();
         });

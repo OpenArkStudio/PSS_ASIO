@@ -53,13 +53,20 @@ enum class EM_CONNECT_IO_TYPE
     WORKTHREAD_CLOSE         //关闭当前工作线程
 };
 
+class CMessage_Source
+{
+public:
+    uint16 work_thread_id_ = 0;
+    uint32 connect_id_ = 0;
+    uint32 connect_server_id_ = 0;
+    EM_CONNECT_IO_TYPE type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_TCP;
+};
+
 class CMessage_Packet
 {
 public:
-    EM_CONNECT_IO_TYPE type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_TCP;
     string buffer_;
     uint16 command_id_;
-    uint32 connect_id_;
 };
 
 //客户端IP信息

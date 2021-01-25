@@ -1,8 +1,9 @@
 #include "ModuleLogic.h"
 
-void CModuleLogic::init_logic(command_to_module_function command_to_module_function)
+void CModuleLogic::init_logic(command_to_module_function command_to_module_function, uint16 work_thread_id)
 {
     modules_interface_.copy_from_module_list(command_to_module_function);
+    work_thread_id_ = work_thread_id;
 }
 
 void CModuleLogic::add_session(uint32 connect_id, shared_ptr<ISession> session)
@@ -26,12 +27,17 @@ void CModuleLogic::close()
     sessions_interface_.close();
 }
 
-int CModuleLogic::do_thread_module_logic(CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
+int CModuleLogic::do_thread_module_logic(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
 {
-    return modules_interface_.do_module_message(recv_packet.command_id_, recv_packet, send_packet);
+    return modules_interface_.do_module_message(source, recv_packet, send_packet);
 }
 
-void CWorkThreadLogic::init_work_thread_logic(int thread_count)
+uint16 CModuleLogic::get_work_thread_id()
+{
+    return work_thread_id_;
+}
+
+void CWorkThreadLogic::init_work_thread_logic(int thread_count, config_logic_list& logic_list)
 {
     //初始化线程数
     thread_count_ = thread_count;
@@ -39,14 +45,19 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count)
     App_tms::instance()->Init();
 
     //初始化插件加载
-    load_module_.load_plugin_module("./", "Test_Logic.dll", "test param");
+    for (auto logic_library : logic_list)
+    {
+        load_module_.load_plugin_module(logic_library.logic_path_, 
+            logic_library.logic_file_name_, 
+            logic_library.logic_param_);
+    }
 
     //执行线程对应创建
     for (int i = 0; i < thread_count; i++)
     {
         auto thread_logic = make_shared<CModuleLogic>();
 
-        thread_logic->init_logic(load_module_.get_module_function_list());
+        thread_logic->init_logic(load_module_.get_module_function_list(), i);
 
         thread_module_list_.emplace_back(thread_logic);
 
@@ -109,10 +120,16 @@ int CWorkThreadLogic::do_thread_module_logic(const uint32 connect_id, vector<CMe
     //添加到数据队列处理
     App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, message_list, module_logic]() {
         //PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
+        CMessage_Source source;
         CMessage_Packet send_packet;
+
+        source.connect_id_ = connect_id;
+        source.work_thread_id_ = module_logic->get_work_thread_id();
+        source.type_ = session->get_io_type();
+
         for (auto recv_packet : message_list)
         {
-            module_logic->do_thread_module_logic(recv_packet, send_packet);
+            module_logic->do_thread_module_logic(source, recv_packet, send_packet);
         }
 
         session->set_write_buffer(connect_id, send_packet.buffer_.c_str(), send_packet.buffer_.size());

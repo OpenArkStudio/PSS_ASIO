@@ -40,7 +40,7 @@ void CUdpClientSession::start(uint32 server_id, uint32 packet_parse_id, uint32 b
         PSS_LOGGER_DEBUG("[CUdpClientSession::start]remote({0}:{1})", remote_ip.m_strClientIP, remote_ip.m_u2Port);
         PSS_LOGGER_DEBUG("[CUdpClientSession::start]local({0}:{1})", local_ip.m_strClientIP, local_ip.m_u2Port);
 
-        packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip, local_ip, EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_UDP);
+        packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip, local_ip, io_type_);
 
         do_receive();
     }
@@ -50,7 +50,7 @@ void CUdpClientSession::close(uint32 connect_id)
 {
     socket_.close();
 
-    packet_parse_interface_->packet_disconnect_ptr_(connect_id, EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_UDP);
+    packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_);
 
     //输出接收发送字节数
     PSS_LOGGER_DEBUG("[CUdpClientSession::Close]recv:{0}, send:{1}", recv_data_size_, send_data_size_);
@@ -85,7 +85,7 @@ void CUdpClientSession::do_receive()
 
                 //处理数据拆包
                 vector<CMessage_Packet> message_list;
-                bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
+                bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
                 if (!ret)
                 {
                     //链接断开(解析包不正确)
@@ -185,5 +185,10 @@ void CUdpClientSession::do_write_immediately(uint32 connect_id, const char* data
                 self->add_send_finish_size(connect_id, length);
             }
         });
+}
+
+EM_CONNECT_IO_TYPE CUdpClientSession::get_io_type()
+{
+    return io_type_;
 }
 

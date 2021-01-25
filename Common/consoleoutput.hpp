@@ -45,7 +45,7 @@ public:
         m_Console_Output_Info = obj_Console_Output_Info;
 
         std::shared_ptr<spdlog::logger> console = nullptr;
-        if (m_Console_Output_Info.m_blTunOn)
+        if (!m_Console_Output_Info.m_blTunOn)
         {
             //ÆÁÄ»Êä³ö
             console = spdlog::stdout_logger_mt("console");

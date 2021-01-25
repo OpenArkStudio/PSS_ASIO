@@ -22,7 +22,7 @@ using namespace std;
 
 DECLDIR int load_module(IFrame_Object* frame_object, string module_param);
 DECLDIR void unload_module();
-DECLDIR int do_module_message(const uint16 command_id, CMessage_Packet& recv_packet, CMessage_Packet& send_packet);
+DECLDIR int do_module_message(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet);
 DECLDIR int module_state();
 DECLDIR void set_output(shared_ptr<spdlog::logger> logger);
 
@@ -49,12 +49,12 @@ void unload_module()
 }
 
 //执行消息处理
-int do_module_message(const uint16 command_id, CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
+int do_module_message(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
 {
     //插件消息处理
     //PSS_LOGGER_DEBUG("[do_module_message]command_id={0}.", command_id);
 
-    if (command_id == COMMAND_TEST_SYNC)
+    if (recv_packet.command_id_ == COMMAND_TEST_SYNC)
     {
         //处理数据
         send_packet.buffer_.append(recv_packet.buffer_.c_str(), recv_packet.buffer_.size());

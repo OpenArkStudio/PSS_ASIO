@@ -40,7 +40,7 @@ void CUdpServer::do_receive()
 
                 //处理数据拆包
                 vector<CMessage_Packet> message_list;
-                bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_client_id_, &session_recv_buffer_, message_list, EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
+                bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_client_id_, &session_recv_buffer_, message_list, io_type_);
                 if (!ret)
                 {
                     //链接断开(解析包不正确)
@@ -204,7 +204,7 @@ uint32 CUdpServer::add_udp_endpoint(udp::endpoint recv_endpoint_, size_t length,
         remote_ip.m_u2Port = recv_endpoint_.port();
         local_ip.m_strClientIP = socket_.local_endpoint().address().to_string();
         local_ip.m_u2Port = socket_.local_endpoint().port();
-        packet_parse_interface_->packet_connect_ptr_(connect_id, remote_ip, local_ip, EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
+        packet_parse_interface_->packet_connect_ptr_(connect_id, remote_ip, local_ip, io_type_);
 
         //添加映射关系
         App_WorkThreadLogic::instance()->add_thread_session(connect_id, shared_from_this());
@@ -230,7 +230,7 @@ void CUdpServer::close_udp_endpoint_by_id(uint32 connect_id)
     if (f != udp_id_2_endpoint_list.end())
     {
         //调用packet parse 断开消息
-        packet_parse_interface_->packet_disconnect_ptr_(connect_id, EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
+        packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_);
 
         auto session_endpoint = f->second->send_endpoint;
         udp_id_2_endpoint_list.erase(f);
@@ -248,5 +248,10 @@ void CUdpServer::add_send_finish_size(uint32 connect_id, size_t length)
     {
         f->second->send_data_size_ += length;
     }
+}
+
+EM_CONNECT_IO_TYPE CUdpServer::get_io_type()
+{
+    return io_type_;
 }
 
