@@ -207,7 +207,7 @@ uint32 CUdpServer::add_udp_endpoint(udp::endpoint recv_endpoint_, size_t length,
         packet_parse_interface_->packet_connect_ptr_(connect_id, remote_ip, local_ip, io_type_);
 
         //Ìí¼ÓÓ³Éä¹ØÏµ
-        App_WorkThreadLogic::instance()->add_thread_session(connect_id, shared_from_this());
+        App_WorkThreadLogic::instance()->add_thread_session(connect_id, shared_from_this(), local_ip, local_ip);
 
         return connect_id;
     }
@@ -253,5 +253,11 @@ void CUdpServer::add_send_finish_size(uint32 connect_id, size_t length)
 EM_CONNECT_IO_TYPE CUdpServer::get_io_type()
 {
     return io_type_;
+}
+
+uint32 CUdpServer::get_mark_id(uint32 connect_id)
+{
+    PSS_UNUSED_ARG(connect_id);
+    return 0;
 }
 

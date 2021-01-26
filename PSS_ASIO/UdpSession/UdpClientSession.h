@@ -39,6 +39,8 @@ public:
 
     EM_CONNECT_IO_TYPE get_io_type() final;
 
+    uint32 get_mark_id(uint32 connect_id);
+
 private:
     udp::socket socket_;
     uint32 server_id_  = 0;

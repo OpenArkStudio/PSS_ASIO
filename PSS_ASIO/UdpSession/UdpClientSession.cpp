@@ -42,6 +42,9 @@ void CUdpClientSession::start(uint32 server_id, uint32 packet_parse_id, uint32 b
 
         packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip, local_ip, io_type_);
 
+        //Ìí¼ÓÓ³Éä¹ØÏµ
+        App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip, local_ip);
+
         do_receive();
     }
 }
@@ -190,5 +193,11 @@ void CUdpClientSession::do_write_immediately(uint32 connect_id, const char* data
 EM_CONNECT_IO_TYPE CUdpClientSession::get_io_type()
 {
     return io_type_;
+}
+
+uint32 CUdpClientSession::get_mark_id(uint32 connect_id)
+{
+    PSS_UNUSED_ARG(connect_id);
+    return server_id_;
 }
 

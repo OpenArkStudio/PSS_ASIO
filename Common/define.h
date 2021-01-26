@@ -56,9 +56,9 @@ enum class EM_CONNECT_IO_TYPE
 class CMessage_Source
 {
 public:
-    uint16 work_thread_id_ = 0;
-    uint32 connect_id_ = 0;
-    uint32 connect_server_id_ = 0;
+    uint16 work_thread_id_ = 0;     //当前工作线程ID
+    uint32 connect_id_ = 0;         //当前链接ID
+    uint32 connect_mark_id_ = 0;    //当前标记ID，用于服务器间链接的ID
     EM_CONNECT_IO_TYPE type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_TCP;
 };
 
@@ -73,7 +73,7 @@ public:
 class _ClientIPInfo
 {
 public:
-    string  m_strClientIP;      //客户端的IP地址
+    string  m_strClientIP = "invalid ip";      //客户端的IP地址
     uint16 m_u2Port  = 0;        //客户端的端口
 };
 

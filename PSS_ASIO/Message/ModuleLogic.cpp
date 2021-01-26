@@ -6,9 +6,9 @@ void CModuleLogic::init_logic(command_to_module_function command_to_module_funct
     work_thread_id_ = work_thread_id;
 }
 
-void CModuleLogic::add_session(uint32 connect_id, shared_ptr<ISession> session)
+void CModuleLogic::add_session(uint32 connect_id, shared_ptr<ISession> session, const _ClientIPInfo& local_info, const _ClientIPInfo& romote_info)
 {
-    sessions_interface_.add_session_interface(connect_id, session);
+    sessions_interface_.add_session_interface(connect_id, session, local_info, romote_info);
 }
 
 shared_ptr<ISession> CModuleLogic::get_session_interface(uint32 connect_id)
@@ -83,12 +83,12 @@ void CWorkThreadLogic::close()
     load_module_.Close();
 }
 
-void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession> session)
+void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession> session, _ClientIPInfo& local_info, const _ClientIPInfo& romote_info)
 {
     //session 建立连接
     uint16 curr_thread_index = connect_id % thread_count_;
 
-    thread_module_list_[curr_thread_index]->add_session(connect_id, session);
+    thread_module_list_[curr_thread_index]->add_session(connect_id, session, local_info, romote_info);
 }
 
 void CWorkThreadLogic::delete_thread_session(uint32 connect_id)
@@ -126,6 +126,7 @@ int CWorkThreadLogic::do_thread_module_logic(const uint32 connect_id, vector<CMe
         source.connect_id_ = connect_id;
         source.work_thread_id_ = module_logic->get_work_thread_id();
         source.type_ = session->get_io_type();
+        source.connect_mark_id_ = session->get_mark_id(connect_id);
 
         for (auto recv_packet : message_list)
         {

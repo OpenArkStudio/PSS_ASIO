@@ -14,7 +14,7 @@ public:
 
     void init_logic(command_to_module_function command_to_module_function, uint16 work_thread_id);
 
-    void add_session(uint32 connect_id, shared_ptr<ISession> session);
+    void add_session(uint32 connect_id, shared_ptr<ISession> session, const _ClientIPInfo& local_info, const _ClientIPInfo& romote_info);
 
     shared_ptr<ISession> get_session_interface(uint32 connect_id);
 
@@ -41,7 +41,7 @@ public:
 
     void close();
 
-    void add_thread_session(uint32 connect_id, shared_ptr<ISession> session);
+    void add_thread_session(uint32 connect_id, shared_ptr<ISession> session, _ClientIPInfo& local_info, const _ClientIPInfo& romote_info);
 
     void delete_thread_session(uint32 connect_id);
 

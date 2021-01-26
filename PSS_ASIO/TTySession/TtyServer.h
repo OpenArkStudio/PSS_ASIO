@@ -29,6 +29,8 @@ public:
 
     void close(uint32 connect_id) final;
 
+    uint32 get_mark_id(uint32 connect_id);
+
 private:
     void do_receive();
 

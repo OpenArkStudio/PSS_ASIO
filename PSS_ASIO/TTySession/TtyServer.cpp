@@ -11,7 +11,17 @@ CTTyServer::CTTyServer(shared_ptr<asio::serial_port> serial_port_param, uint32 p
 
     packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(packet_parse_id);
 
-    App_WorkThreadLogic::instance()->add_thread_session(connect_client_id_, shared_from_this());
+    _ClientIPInfo local_info;
+    _ClientIPInfo romote_info;
+
+    asio::serial_port::baud_rate option;
+    serial_port_param->get_option(option);
+
+    local_info.m_strClientIP = "tty";
+    romote_info.m_strClientIP = "tty";
+    romote_info.m_u2Port = option.value();
+
+    App_WorkThreadLogic::instance()->add_thread_session(connect_client_id_, shared_from_this(), local_info, romote_info);
 
     _ClientIPInfo remote_ip;
     _ClientIPInfo local_ip;
@@ -166,5 +176,11 @@ void CTTyServer::close(uint32 connect_id)
 {
     PSS_UNUSED_ARG(connect_id);
     packet_parse_interface_->packet_disconnect_ptr_(connect_client_id_, io_type_);
+}
+
+uint32 CTTyServer::get_mark_id(uint32 connect_id)
+{
+    PSS_UNUSED_ARG(connect_id);
+    return 0;
 }
 

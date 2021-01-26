@@ -43,6 +43,9 @@ void CTcpClientSession::start(uint32 server_id, uint32 buffer_size, string serve
 
         packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip, local_ip, io_type_);
 
+        //Ìí¼ÓÓ³Éä¹ØÏµ
+        App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip, local_ip);
+
         do_read();
     }
 }
@@ -186,6 +189,12 @@ void CTcpClientSession::add_send_finish_size(uint32 connect_id, size_t send_leng
 EM_CONNECT_IO_TYPE CTcpClientSession::get_io_type()
 {
     return io_type_;
+}
+
+uint32 CTcpClientSession::get_mark_id(uint32 connect_id)
+{
+    PSS_UNUSED_ARG(connect_id);
+    return server_id_;
 }
 
 void CTcpClientSession::clear_write_buffer()

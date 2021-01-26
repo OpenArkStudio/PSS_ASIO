@@ -3,7 +3,7 @@
 #if PSS_PLATFORM == PLATFORM_WIN
 BOOL WINAPI ConsoleHandlerRoutine(DWORD dwCtrlType)
 {
-    if (dwCtrlType == CTRL_CLOSE_EVENT)
+    if (dwCtrlType == CTRL_CLOSE_EVENT || dwCtrlType == CTRL_C_EVENT)
     {
         //在这里处理窗口服务器关闭回收资源
         PSS_LOGGER_DEBUG("[ConsoleHandlerRoutine]server is close.");
