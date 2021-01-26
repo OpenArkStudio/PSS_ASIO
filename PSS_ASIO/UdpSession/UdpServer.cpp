@@ -226,6 +226,8 @@ shared_ptr<CUdp_Session_Info> CUdpServer::find_udp_endpoint_by_id(uint32 connect
 
 void CUdpServer::close_udp_endpoint_by_id(uint32 connect_id)
 {
+    auto self(shared_from_this());
+
     auto f = udp_id_2_endpoint_list.find(connect_id);
     if (f != udp_id_2_endpoint_list.end())
     {
@@ -238,7 +240,7 @@ void CUdpServer::close_udp_endpoint_by_id(uint32 connect_id)
     }
 
     //É¾³ýÓ³Éä¹ØÏµ
-    App_WorkThreadLogic::instance()->delete_thread_session(connect_id);
+    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
 }
 
 void CUdpServer::add_send_finish_size(uint32 connect_id, size_t length)

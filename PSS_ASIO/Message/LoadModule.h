@@ -9,6 +9,7 @@
 #include "TimeStamp.hpp"
 #include "FrameObject.hpp"
 #include "tms.hpp"
+#include "ISessionService.h"
 
 //定义插件函数指针入口
 using load_module_function_ptr = int(*)(IFrame_Object*, string module_param);
@@ -44,6 +45,8 @@ public:
 
     void Close();
 
+    void set_session_service(ISessionService* session_service);
+
     bool load_plugin_module(const string& module_file_path, const string& module_file_name, const string& module_param);
     bool unload_plugin_module(const string& module_file_name, bool is_delete);
 
@@ -69,6 +72,7 @@ private:
     vector<string>                     module_name_list_;               //当前插件名称列表
 
     command_to_module_function command_to_module_function_;
+    ISessionService* session_service_;
 };
 
 #endif

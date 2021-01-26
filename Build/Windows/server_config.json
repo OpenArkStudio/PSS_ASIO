@@ -1,6 +1,7 @@
 {
   "work thread": {
-    "work thread count": 3
+    "work thread count": 3,
+    "time check": 60
   },
 
   "packet parse library": [

@@ -1,4 +1,4 @@
-#include "SessionInterfalce.h"
+#include "SessionInterface.h"
 
 void CSessionInterface::add_session_interface(uint32 connect_id, shared_ptr<ISession> session, const _ClientIPInfo& local_info, const _ClientIPInfo& romote_info)
 {

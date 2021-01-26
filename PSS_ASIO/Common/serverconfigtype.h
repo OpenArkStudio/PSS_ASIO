@@ -11,6 +11,7 @@ class CConfigWorkThread
 {
 public:
     int work_thread_count_ = 1;
+    int timeout_seconds_ = 60;
 };
 
 class CConfigPacketParseInfo

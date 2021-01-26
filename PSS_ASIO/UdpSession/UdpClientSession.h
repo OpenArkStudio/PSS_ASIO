@@ -19,9 +19,9 @@ using asio::ip::udp;
 class CUdpClientSession : public std::enable_shared_from_this<CUdpClientSession>, public ISession
 {
 public:
-    CUdpClientSession(asio::io_context& io_context);
+    CUdpClientSession(asio::io_context* io_context);
 
-    void start(uint32 server_id, uint32 packet_parse_id, uint32 buffer_size, string server_ip, uint16 server_port);
+    void start(const CConnect_IO_Info& io_type);
 
     void do_receive();
 

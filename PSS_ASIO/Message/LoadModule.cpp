@@ -20,6 +20,11 @@ void CLoadModule::Close()
     module_name_list_.clear();
 }
 
+void CLoadModule::set_session_service(ISessionService* session_service)
+{
+    session_service_ = session_service;
+}
+
 bool CLoadModule::load_plugin_module(const string& module_file_path, const string& module_file_name, const string& module_param)
 {
     auto module_info = std::make_shared<_ModuleInfo>();
@@ -47,6 +52,7 @@ bool CLoadModule::load_plugin_module(const string& module_file_path, const strin
 
     //开始调用模块初始化动作
     CFrame_Object module_frame_object;
+    module_frame_object.session_service_ = session_service_;
     int nRet = module_info->load_module_((IFrame_Object* )&module_frame_object, module_info->module_param_);
 
     if (nRet != 0)

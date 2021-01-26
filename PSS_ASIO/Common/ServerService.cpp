@@ -60,18 +60,25 @@ bool CServerService::init_servce()
     //注册监控中断事件(LINUX)
     asio::signal_set signals(io_context_, SIGINT, SIGTERM);
     signals.async_wait(
-        [&](std::error_code ec, int /*signo*/)
+        [&](std::error_code ec, int)
         {
             PSS_LOGGER_DEBUG("[signals] server is error({0}).", ec.message());
             io_context_.stop();
         });
+    
+    //初始化框架定时器
+    App_TimerManager::instance()->Start();
+
+    //启动服务器间链接库
+    App_CommunicationService::instance()->init_communication_service(&io_context_,
+        server_config_.get_config_workthread().timeout_seconds_);
+
+    App_WorkThreadLogic::instance()->init_communication_service(App_CommunicationService::instance());
 
     //初始化执行库
     App_WorkThreadLogic::instance()->init_work_thread_logic(server_config_.get_config_workthread().work_thread_count_,
-        server_config_.get_config_logic_list());
-
-    //初始化框架定时器
-    App_TimerManager::instance()->Start();
+        server_config_.get_config_logic_list(),
+        App_SessionService::instance());
 
     //测试Tcp监听
     for(auto tcp_server : server_config_.get_config_tcp_list())
@@ -96,9 +103,6 @@ bool CServerService::init_servce()
             udp_server.send_buff_size_);
         udp_service_list_.emplace_back(udp_service);
     }
-
-    //启动服务器间链接
-    App_CommunicationService::instance()->init_communication_service(io_context_);
 
     io_context_.run();
 

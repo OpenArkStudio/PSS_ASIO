@@ -31,6 +31,7 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size, uint32 send_siz
 
 void CTcpSession::close(uint32 connect_id)
 {
+    auto self(shared_from_this());
     socket_.close();
 
     //输出接收发送字节数
@@ -39,7 +40,7 @@ void CTcpSession::close(uint32 connect_id)
     //断开连接
     packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_);
 
-    App_WorkThreadLogic::instance()->delete_thread_session(connect_id);
+    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
 }
 
 void CTcpSession::do_read()

@@ -1,19 +1,19 @@
 #include "UdpClientSession.h"
 
-CUdpClientSession::CUdpClientSession(asio::io_context& io_context)
-    : socket_(io_context)
+CUdpClientSession::CUdpClientSession(asio::io_context* io_context)
+    : socket_(*io_context)
 {
 }
 
-void CUdpClientSession::start(uint32 server_id, uint32 packet_parse_id, uint32 buffer_size, string server_ip, uint16 server_port)
+void CUdpClientSession::start(const CConnect_IO_Info& io_type)
 {
-    session_recv_buffer_.Init(buffer_size);
-    session_send_buffer_.Init(buffer_size);
+    session_recv_buffer_.Init(io_type.recv_size);
+    session_send_buffer_.Init(io_type.send_size);
 
-    server_id_ = server_id;
+    server_id_ = io_type.server_id;
 
     //建立连接
-    udp::endpoint end_point(asio::ip::address::from_string(server_ip.c_str()), server_port);
+    udp::endpoint end_point(asio::ip::address::from_string(io_type.server_ip.c_str()), io_type.server_port);
     send_endpoint_ = end_point;
     asio::error_code connect_error;
     socket_.connect(end_point, connect_error);
@@ -27,7 +27,7 @@ void CUdpClientSession::start(uint32 server_id, uint32 packet_parse_id, uint32 b
     {
         connect_id_ = App_ConnectCounter::instance()->CreateCounter();
 
-        packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(packet_parse_id);
+        packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(io_type.packet_parse_id);
 
         //处理链接建立消息
         _ClientIPInfo remote_ip;
@@ -51,12 +51,17 @@ void CUdpClientSession::start(uint32 server_id, uint32 packet_parse_id, uint32 b
 
 void CUdpClientSession::close(uint32 connect_id)
 {
+    auto self(shared_from_this());
+
     socket_.close();
 
     packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_);
 
     //输出接收发送字节数
     PSS_LOGGER_DEBUG("[CUdpClientSession::Close]recv:{0}, send:{1}", recv_data_size_, send_data_size_);
+
+    //删除映射关系
+    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
 }
 
 

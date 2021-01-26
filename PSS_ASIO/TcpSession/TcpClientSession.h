@@ -17,9 +17,9 @@ using asio::ip::tcp;
 class CTcpClientSession : public std::enable_shared_from_this<CTcpClientSession>, public ISession
 {
 public:
-    CTcpClientSession(asio::io_context& io_context);
+    CTcpClientSession(asio::io_context* io_context);
 
-    void start(uint32 server_id, uint32 buffer_size, string server_ip, uint16 server_port, uint32 packet_parse_id);
+    bool start(const CConnect_IO_Info& io_info);
 
     void do_read();
 

@@ -2,20 +2,20 @@
 
 #include "TcpSession.h"
 
-CTcpClientSession::CTcpClientSession(asio::io_context& io_context)
-    : socket_(io_context)
+CTcpClientSession::CTcpClientSession(asio::io_context* io_context)
+    : socket_(*io_context)
 {
 }
 
-void CTcpClientSession::start(uint32 server_id, uint32 buffer_size, string server_ip, uint16 server_port, uint32 packet_parse_id)
+bool CTcpClientSession::start(const CConnect_IO_Info& io_info)
 {
-    server_id_ = server_id;
+    server_id_ = io_info.server_id;
 
-    session_recv_buffer_.Init(buffer_size);
-    session_send_buffer_.Init(buffer_size);
+    session_recv_buffer_.Init(io_info.recv_size);
+    session_send_buffer_.Init(io_info.send_size);
 
     //建立连接
-    tcp::endpoint end_point(asio::ip::address::from_string(server_ip.c_str()), server_port);
+    tcp::endpoint end_point(asio::ip::address::from_string(io_info.server_ip.c_str()), io_info.server_port);
     asio::error_code connect_error;
     socket_.connect(end_point, connect_error);
 
@@ -23,12 +23,13 @@ void CTcpClientSession::start(uint32 server_id, uint32 buffer_size, string serve
     {
         //连接建立失败
         PSS_LOGGER_DEBUG("[CTcpClientSession::start]error({})", connect_error.message());
+        return false;
     }
     else
     {
         connect_id_ = App_ConnectCounter::instance()->CreateCounter();
 
-        packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(packet_parse_id);
+        packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(io_info.packet_parse_id);
 
         //处理链接建立消息
         _ClientIPInfo remote_ip;
@@ -47,11 +48,14 @@ void CTcpClientSession::start(uint32 server_id, uint32 buffer_size, string serve
         App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip, local_ip);
 
         do_read();
+
+        return true;
     }
 }
 
 void CTcpClientSession::close(uint32 connect_id)
 {
+    auto self(shared_from_this());
     socket_.close();
 
     //输出接收发送字节数
@@ -60,7 +64,7 @@ void CTcpClientSession::close(uint32 connect_id)
     //断开连接
     packet_parse_interface_->packet_disconnect_ptr_(connect_id_, io_type_);
 
-    App_WorkThreadLogic::instance()->delete_thread_session(connect_id);
+    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
 }
 
 void CTcpClientSession::set_write_buffer(uint32 connect_id, const char* data, size_t length)

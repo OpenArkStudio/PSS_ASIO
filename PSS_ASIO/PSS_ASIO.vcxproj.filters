@@ -60,9 +60,6 @@
     <ClCompile Include="Message\ModuleInterfalce.cpp">
       <Filter>Message</Filter>
     </ClCompile>
-    <ClCompile Include="Message\SessionInterfalce.cpp">
-      <Filter>Message</Filter>
-    </ClCompile>
     <ClCompile Include="Message\ModuleLogic.cpp">
       <Filter>Message</Filter>
     </ClCompile>
@@ -80,6 +77,12 @@
     </ClCompile>
     <ClCompile Include="Common\serverconfig.cpp">
       <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Message\SessionInterface.cpp">
+      <Filter>Message</Filter>
+    </ClCompile>
+    <ClCompile Include="Message\SessionService.cpp">
+      <Filter>Message</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -143,9 +146,6 @@
     <ClInclude Include="Common\FrameObject.hpp">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="Message\SessionInterfalce.h">
-      <Filter>Message</Filter>
-    </ClInclude>
     <ClInclude Include="Message\ModuleLogic.h">
       <Filter>Message</Filter>
     </ClInclude>
@@ -169,6 +169,15 @@
     </ClInclude>
     <ClInclude Include="Common\serverconfigtype.h">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\ICommunicationService.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\ISessionService.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Message\SessionService.h">
+      <Filter>Message</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

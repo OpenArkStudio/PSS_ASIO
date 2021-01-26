@@ -77,6 +77,18 @@ public:
     uint16 m_u2Port  = 0;        //客户端的端口
 };
 
+//服务器间链接结构
+class CConnect_IO_Info
+{
+public:
+    uint32 server_id = 0; 
+    string server_ip; 
+    uint16 server_port = 0;
+    uint32 packet_parse_id = 1;
+    uint32 recv_size = 1024;
+    uint32 send_size = 1024;
+};
+
 //定义操作宏
 #define PSS_LOGGER_DEBUG(...) SPDLOG_LOGGER_DEBUG(spdlog::default_logger(), __VA_ARGS__);
 #define PSS_LOGGER_INFO(...) SPDLOG_LOGGER_INFO(spdlog::default_logger(), __VA_ARGS__);

@@ -1,26 +1,50 @@
 #pragma once
 
-#include "define.h"
+#include "ICommunicationService.h"
 #include "TcpClientSession.h"
 #include "UdpClientSession.h"
+#include "tms.hpp"
 #include "CoreTimer.hpp"
 
 //管理服务器间链接，自动重连的类
 //add by freeeyes
 
-class CCommunicationService
+class CCommunicationIOInfo
+{
+public:
+    shared_ptr<ISession> session_;
+    uint32 connect_id_;
+    CConnect_IO_Info io_info_;
+    EM_CONNECT_IO_TYPE io_type_;
+};
+
+class CCommunicationService : public ICommunicationInterface
 {
 public:
     CCommunicationService() = default;
 
-    void init_communication_service(asio::io_context& io_service_context);
+    void init_communication_service(asio::io_context* io_service_context, uint16 timeout_seconds) final;
+
+    bool add_connect(const CConnect_IO_Info& io_info, EM_CONNECT_IO_TYPE io_type) final;
+
+    void set_connect_id(uint32 server_id, uint32 connect_id) final;
+
+    void close_connect(uint32 server_id) final;
+
+    bool is_exist(uint32 server_id) final;
+
+    void close() final;
 
     void run_check_task();
 
+    void io_connect(CCommunicationIOInfo& connect_info);
+
 private:
-    using communication_list = unordered_map<uint32, shared_ptr<ISession>>;
+    using communication_list = unordered_map<uint32, CCommunicationIOInfo>;
     communication_list communication_list_;
-    std::mutex thread_lock_;
+    std::mutex mutex_;
+    asio::io_context* io_service_context_;
 };
 
 using App_CommunicationService = PSS_singleton<CCommunicationService>;
+

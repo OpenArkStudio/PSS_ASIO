@@ -174,8 +174,13 @@ EM_CONNECT_IO_TYPE CTTyServer::get_io_type()
 
 void CTTyServer::close(uint32 connect_id)
 {
+    auto self(shared_from_this());
+
     PSS_UNUSED_ARG(connect_id);
     packet_parse_interface_->packet_disconnect_ptr_(connect_client_id_, io_type_);
+
+    //É¾³ýÓ³Éä¹ØÏµ
+    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
 }
 
 uint32 CTTyServer::get_mark_id(uint32 connect_id)

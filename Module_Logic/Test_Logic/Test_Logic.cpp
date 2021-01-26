@@ -30,6 +30,8 @@ DECLDIR void set_output(shared_ptr<spdlog::logger> logger);
 const uint16 COMMAND_TEST_SYNC = 0x2101;
 const uint16 COMMAND_TEST_ASYN = 0x2102;
 
+ISessionService* session_service = nullptr;
+
 //插件加载
 int load_module(IFrame_Object* frame_object, string module_param)
 {
@@ -38,6 +40,8 @@ int load_module(IFrame_Object* frame_object, string module_param)
     frame_object->Regedit_command(COMMAND_TEST_ASYN);
 
     PSS_LOGGER_DEBUG("[load_module]({0})finish.", module_param);
+
+    session_service = frame_object->get_session_service();
 
     return 0;
 }

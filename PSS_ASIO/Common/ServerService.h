@@ -6,8 +6,9 @@
 #include "TcpServer.h"
 #include "UdpServer.h"
 #include "TtyServer.h"
-#include "CommunicationService.h"
 #include "serverconfig.h"
+#include "CommunicationService.h"
+#include "SessionService.h"
 
 #if PSS_PLATFORM == PLATFORM_WIN
 #include <tchar.h>
