@@ -4,7 +4,9 @@ CTcpServer::CTcpServer(asio::io_context& io_context, std::string server_ip, shor
     : acceptor_(io_context, tcp::endpoint(asio::ip::address_v4::from_string(server_ip), port)), packet_parse_id_(packet_parse_id), max_recv_size_(max_buffer_size), max_send_size_(max_send_size)
 {
     //处理链接建立消息
-    std::cout << "[CTcpServer::do_accept](" << acceptor_.local_endpoint() << ") Begin Accept." << std::endl;
+    PSS_LOGGER_INFO("[CTcpServer::do_accept]({0}:{1}) Begin Accept.", 
+        acceptor_.local_endpoint().address().to_string(),
+        acceptor_.local_endpoint().port());
 
     do_accept();
 }

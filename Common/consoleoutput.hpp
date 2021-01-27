@@ -10,6 +10,7 @@
 #include "spdlog/cfg/env.h"
 #include "spdlog/sinks/stdout_sinks.h"
 #include "spdlog/sinks/rotating_file_sink.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
 
 #include "singleton.h"
 
@@ -48,7 +49,7 @@ public:
         if (!m_Console_Output_Info.m_blTunOn)
         {
             //屏幕输出
-            console = spdlog::stdout_logger_mt("console");
+            console = spdlog::stdout_color_mt("console");
         }
         else
         {
@@ -60,7 +61,7 @@ public:
         }
 
         //设置输出抬头
-        console->set_pattern("[%Y-%m-%d %H:%M:%S.%e][%@] %v");
+        console->set_pattern("[%Y-%m-%d %H:%M:%S.%e:%t][%@] %v");
         
         spd::level::level_enum console_level = spdlog::level::info;
         //设置输出等级

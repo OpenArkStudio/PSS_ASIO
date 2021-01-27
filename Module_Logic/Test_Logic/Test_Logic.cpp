@@ -58,7 +58,39 @@ void unload_module()
     PSS_LOGGER_DEBUG("[unload_module]finish.");
 }
 
-//测试逻辑代码
+//测试逻辑代码（消息处理部分）
+void logic_connect_tcp()
+{
+    //测试服务器间链接，链接本地10003端口
+    CConnect_IO_Info io_info;
+    EM_CONNECT_IO_TYPE io_type = EM_CONNECT_IO_TYPE::CONNECT_IO_TCP;
+
+    io_info.send_size = 1024;
+    io_info.recv_size = 1024;
+    io_info.server_ip = "127.0.0.1";
+    io_info.server_port = 10003;
+    io_info.server_id = 1001;
+    io_info.packet_parse_id = 1;
+
+    session_service->connect_io_server(io_info, io_type);
+}
+
+void logic_connect_udp()
+{
+    //测试服务器间链接，链接本地10003端口
+    CConnect_IO_Info io_info;
+    EM_CONNECT_IO_TYPE io_type = EM_CONNECT_IO_TYPE::CONNECT_IO_UDP;
+
+    io_info.send_size = 1024;
+    io_info.recv_size = 1024;
+    io_info.server_ip = "127.0.0.1";
+    io_info.server_port = 10003;
+    io_info.server_id = 1001;
+    io_info.packet_parse_id = 1;
+
+    session_service->connect_io_server(io_info, io_type);
+}
+
 void logic_connect(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
 {
     PSS_LOGGER_DEBUG("[logic_connect]connand={}, connect", source.connect_id_);
@@ -81,6 +113,10 @@ void logic_connect(const CMessage_Source& source, const CMessage_Packet& recv_pa
     else if (source.type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_TCP)
     {
         PSS_LOGGER_DEBUG("[logic_connect]connand={}, CONNECT_IO_SERVER_TCP", source.connect_id_);
+        PSS_LOGGER_DEBUG("[logic_connect]connand={}, server_id={}", source.connect_id_, source.connect_mark_id_);
+
+        //测试关闭链接
+        session_service->close_io_session(source.connect_id_);
     }
     else if (source.type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_UDP)
     {
@@ -97,6 +133,9 @@ void logic_test_sync(const CMessage_Source& source, const CMessage_Packet& recv_
 {
     //处理发送数据(同步)
     send_packet.buffer_.append(recv_packet.buffer_.c_str(), recv_packet.buffer_.size());
+
+    //测试服务器间链接
+    logic_connect_tcp();
 }
 
 void logic_test_asyn(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)

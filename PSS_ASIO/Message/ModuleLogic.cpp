@@ -164,11 +164,15 @@ void CWorkThreadLogic::close_session_event(uint32 connect_id)
 {
     //session 关闭事件分发
     uint16 curr_thread_index = connect_id % thread_count_;
+    auto module_logic = thread_module_list_[curr_thread_index];
 
-    auto session = thread_module_list_[curr_thread_index]->get_session_interface(connect_id);
-
-    App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id]() {
-        session->close(connect_id);
+    App_tms::instance()->AddMessage(curr_thread_index, [module_logic, connect_id]() {
+        auto session = module_logic->get_session_interface(connect_id);
+        if (session != nullptr)
+        {
+            session->close(connect_id);
+        }
+        module_logic->delete_session_interface(connect_id);
         });
 }
 
@@ -232,5 +236,10 @@ bool CWorkThreadLogic::connect_io_server(const CConnect_IO_Info& io_info, EM_CON
 void CWorkThreadLogic::close_io_server(uint32 server_id)
 {
     communicate_service_->close_connect(server_id);
+}
+
+uint32 CWorkThreadLogic::get_io_server_id(uint32 connect_id)
+{
+    return communicate_service_->get_server_id(connect_id);
 }
 

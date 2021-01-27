@@ -59,6 +59,8 @@ public:
 
     void close_io_server(uint32 server_id);
 
+    uint32 get_io_server_id(uint32 connect_id);
+
 private:
     vector<shared_ptr<CModuleLogic>> thread_module_list_;
     CLoadModule load_module_;

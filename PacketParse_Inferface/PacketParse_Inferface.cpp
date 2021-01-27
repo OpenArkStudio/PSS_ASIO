@@ -115,7 +115,8 @@ bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, ve
 bool connect(uint32 u4ConnectID, const _ClientIPInfo& remote_ip, const _ClientIPInfo& local_ip, EM_CONNECT_IO_TYPE emIOType)
 {
     PSS_UNUSED_ARG(emIOType);
-    PSS_LOGGER_INFO("[Connect]{}:{} ==> {}:{}",
+    PSS_LOGGER_INFO("[Connect]u4ConnectID = {}, {}:{} ==> {}:{}",
+        u4ConnectID,
         remote_ip.m_strClientIP,
         remote_ip.m_u2Port,
         local_ip.m_strClientIP,

@@ -35,14 +35,18 @@ public:
 
     void close() final;
 
+    uint32 get_server_id(uint32 connect_id) final;
+
     void run_check_task();
 
     void io_connect(CCommunicationIOInfo& connect_info);
 
 private:
     using communication_list = unordered_map<uint32, CCommunicationIOInfo>;
+    using server_connect_id_list = unordered_map<uint32, uint32>;
     communication_list communication_list_;
-    std::mutex mutex_;
+    server_connect_id_list server_connect_id_list_;
+    std::recursive_mutex mutex_;
     asio::io_context* io_service_context_;
 };
 

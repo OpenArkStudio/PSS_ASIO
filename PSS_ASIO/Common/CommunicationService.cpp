@@ -14,7 +14,7 @@ void CCommunicationService::init_communication_service(asio::io_context* io_serv
 
 bool CCommunicationService::add_connect(const CConnect_IO_Info& io_info, EM_CONNECT_IO_TYPE io_type)
 {
-    std::lock_guard <std::mutex> lock(mutex_);
+    std::lock_guard <std::recursive_mutex> lock(mutex_);
     CCommunicationIOInfo connect_info;
     connect_info.connect_id_ = 0;
     connect_info.io_info_ = io_info;
@@ -26,7 +26,6 @@ bool CCommunicationService::add_connect(const CConnect_IO_Info& io_info, EM_CONN
 
 void CCommunicationService::set_connect_id(uint32 server_id, uint32 connect_id)
 {
-    std::lock_guard <std::mutex> lock(mutex_);
     auto f = communication_list_.find(server_id);
     if (f != communication_list_.end())
     {
@@ -35,12 +34,24 @@ void CCommunicationService::set_connect_id(uint32 server_id, uint32 connect_id)
         if (connect_id == 0)
         {
             f->second.session_ = nullptr;
+
+            //删除映射关系
+            server_connect_id_list_.erase(connect_id);
+        }
+        else
+        {
+            //添加映射关系
+            server_connect_id_list_[connect_id] = server_id;
         }
     }
+
+
 }
 
 void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
 {
+    communication_list_[connect_info.io_info_.server_id] = connect_info;
+
     if (connect_info.io_type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_TCP)
     {
         //默认是TCP
@@ -57,19 +68,23 @@ void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
         udp_client_session->start(connect_info.io_info_);
         connect_info.session_ = udp_client_session;
     }
-
-    communication_list_[connect_info.io_info_.server_id] = connect_info;
 }
 
 void CCommunicationService::close_connect(uint32 server_id)
 {
-    std::lock_guard <std::mutex> lock(mutex_);
+    std::lock_guard <std::recursive_mutex> lock(mutex_);
     communication_list_.erase(server_id);
+
+    auto connect_id = get_server_id(server_id);
+    if (connect_id > 0)
+    {
+        server_connect_id_list_.erase(connect_id);
+    }
 }
 
 bool CCommunicationService::is_exist(uint32 server_id)
 {
-    std::lock_guard <std::mutex> lock(mutex_);
+    std::lock_guard <std::recursive_mutex> lock(mutex_);
     auto f = communication_list_.find(server_id);
     if (f != communication_list_.end())
     {
@@ -83,8 +98,8 @@ bool CCommunicationService::is_exist(uint32 server_id)
 
 void CCommunicationService::run_check_task()
 {
-    std::lock_guard <std::mutex> lock(mutex_);
-    PSS_LOGGER_DEBUG("[CCommunicationService::run_check_task]begin.");
+    std::lock_guard <std::recursive_mutex> lock(mutex_);
+    PSS_LOGGER_DEBUG("[CCommunicationService::run_check_task]begin size={}.", communication_list_.size());
 
     for (auto& client_info : communication_list_)
     {
@@ -100,6 +115,22 @@ void CCommunicationService::run_check_task()
 
 void CCommunicationService::close()
 {
-    std::lock_guard <std::mutex> lock(mutex_);
+    std::lock_guard <std::recursive_mutex> lock(mutex_);
+
+    server_connect_id_list_.clear();
     communication_list_.clear();
+}
+
+uint32 CCommunicationService::get_server_id(uint32 connect_id)
+{
+    std::lock_guard <std::recursive_mutex> lock(mutex_);
+    auto f = server_connect_id_list_.find(connect_id);
+    if (f != server_connect_id_list_.end())
+    {
+        return f->second;
+    }
+    else
+    {
+        return 0;
+    }
 }

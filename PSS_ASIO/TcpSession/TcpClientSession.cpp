@@ -64,6 +64,7 @@ void CTcpClientSession::close(uint32 connect_id)
     //断开连接
     packet_parse_interface_->packet_disconnect_ptr_(connect_id_, io_type_);
 
+    //发送链接断开消息
     App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
 }
 
@@ -127,7 +128,7 @@ void CTcpClientSession::do_read()
             else
             {
                 //链接断开
-                close(connect_id);
+                App_WorkThreadLogic::instance()->close_session_event(connect_id_);
             }
         });
 }
