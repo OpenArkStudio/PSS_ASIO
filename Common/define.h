@@ -53,6 +53,14 @@ enum class EM_CONNECT_IO_TYPE
     WORKTHREAD_CLOSE         //关闭当前工作线程
 };
 
+//客户端IP信息
+class _ClientIPInfo
+{
+public:
+    string  m_strClientIP = "unset ip";      //客户端的IP地址
+    uint16 m_u2Port = 0;        //客户端的端口
+};
+
 class CMessage_Source
 {
 public:
@@ -60,6 +68,8 @@ public:
     uint32 connect_id_ = 0;         //当前链接ID
     uint32 connect_mark_id_ = 0;    //当前标记ID，用于服务器间链接的ID
     EM_CONNECT_IO_TYPE type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_TCP;
+    _ClientIPInfo local_ip_;
+    _ClientIPInfo remote_ip_;
 };
 
 class CMessage_Packet
@@ -67,14 +77,6 @@ class CMessage_Packet
 public:
     string buffer_;
     uint16 command_id_;
-};
-
-//客户端IP信息
-class _ClientIPInfo
-{
-public:
-    string  m_strClientIP = "invalid ip";      //客户端的IP地址
-    uint16 m_u2Port  = 0;        //客户端的端口
 };
 
 //服务器间链接结构
@@ -96,11 +98,8 @@ public:
 #define PSS_LOGGER_ERROR(...) SPDLOG_LOGGER_ERROR(spdlog::default_logger(), __VA_ARGS__);
 
 //链接消息命令
-enum class ENUM_LOGIC_COMMAND
-{
-    LOGIC_COMMAND_CONNECT = 0x0001,
-    LOGIC_COMMAND_DISCONNECT = 0x0002,
-};
+const uint16 LOGIC_COMMAND_CONNECT = 0x0001;
+const uint16 LOGIC_COMMAND_DISCONNECT = 0x0002;
 
 //暂不使用的参数
 template <typename T>

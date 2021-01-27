@@ -96,8 +96,7 @@ void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession
 {
     //session 建立连接
     uint16 curr_thread_index = connect_id % thread_count_;
-
-    thread_module_list_[curr_thread_index]->add_session(connect_id, session, local_info, romote_info);
+    auto module_logic = thread_module_list_[curr_thread_index];
 
     auto server_id = session->get_mark_id(connect_id);
     if (server_id > 0)
@@ -105,14 +104,36 @@ void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession
         //关联服务器间链接
         communicate_service_->set_connect_id(server_id, connect_id);
     }
+
+    //向插件告知链接建立消息
+    App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, module_logic, local_info, romote_info]() {
+        //PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
+
+        module_logic->add_session(connect_id, session, local_info, romote_info);
+
+        CMessage_Source source;
+        CMessage_Packet recv_packet;
+        CMessage_Packet send_packet;
+
+        recv_packet.command_id_ = LOGIC_COMMAND_CONNECT;
+
+        source.connect_id_ = connect_id;
+        source.work_thread_id_ = module_logic->get_work_thread_id();
+        source.type_ = session->get_io_type();
+        source.connect_mark_id_ = session->get_mark_id(connect_id);
+        source.local_ip_ = local_info;
+        source.remote_ip_ = romote_info;
+
+        module_logic->do_thread_module_logic(source, recv_packet, send_packet);
+        });
 }
 
 void CWorkThreadLogic::delete_thread_session(uint32 connect_id, shared_ptr<ISession> session)
 {
     //session 连接断开
     uint16 curr_thread_index = connect_id % thread_count_;
-
-    thread_module_list_[curr_thread_index]->delete_session_interface(connect_id);
+    auto module_logic = thread_module_list_[curr_thread_index];
+    module_logic->delete_session_interface(connect_id);
 
     auto server_id = session->get_mark_id(connect_id);
     if (server_id > 0)
@@ -120,6 +141,23 @@ void CWorkThreadLogic::delete_thread_session(uint32 connect_id, shared_ptr<ISess
         //取消服务器间链接
         communicate_service_->set_connect_id(server_id, 0);
     }
+
+    //向插件告知链接建立消息
+    App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, module_logic]() {
+        //PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
+        CMessage_Source source;
+        CMessage_Packet recv_packet;
+        CMessage_Packet send_packet;
+
+        recv_packet.command_id_ = LOGIC_COMMAND_DISCONNECT;
+
+        source.connect_id_ = connect_id;
+        source.work_thread_id_ = module_logic->get_work_thread_id();
+        source.type_ = session->get_io_type();
+        source.connect_mark_id_ = session->get_mark_id(connect_id);
+
+        module_logic->do_thread_module_logic(source, recv_packet, send_packet);
+        });
 }
 
 void CWorkThreadLogic::close_session_event(uint32 connect_id)

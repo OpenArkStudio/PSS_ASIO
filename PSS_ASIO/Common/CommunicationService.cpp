@@ -26,6 +26,7 @@ bool CCommunicationService::add_connect(const CConnect_IO_Info& io_info, EM_CONN
 
 void CCommunicationService::set_connect_id(uint32 server_id, uint32 connect_id)
 {
+    std::lock_guard <std::mutex> lock(mutex_);
     auto f = communication_list_.find(server_id);
     if (f != communication_list_.end())
     {
