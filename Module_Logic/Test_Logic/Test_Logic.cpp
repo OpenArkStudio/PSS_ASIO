@@ -63,7 +63,7 @@ void logic_connect(const CMessage_Source& source, const CMessage_Packet& recv_pa
 {
     PSS_LOGGER_DEBUG("[logic_connect]connand={}, connect", source.connect_id_);
     PSS_LOGGER_DEBUG("[logic_connect]connand={}, local ip={} local port={}", source.connect_id_, source.local_ip_.m_strClientIP, source.local_ip_.m_u2Port);
-    PSS_LOGGER_DEBUG("[logic_connect]connand={}, local ip={} local port={}", source.connect_id_, source.remote_ip_.m_strClientIP, source.remote_ip_.m_u2Port);
+    PSS_LOGGER_DEBUG("[logic_connect]connand={}, remote ip={} remote port={}", source.connect_id_, source.remote_ip_.m_strClientIP, source.remote_ip_.m_u2Port);
     PSS_LOGGER_DEBUG("[logic_connect]connand={}, work thread id={}", source.connect_id_, source.work_thread_id_);
 
     if (source.type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_TCP)

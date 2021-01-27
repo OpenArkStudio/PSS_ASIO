@@ -24,7 +24,7 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size, uint32 send_siz
     packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip, local_ip, io_type_);
 
     //¼ÓÈësession Ó³Éä
-    App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip, local_ip);
+    App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip, remote_ip);
 
     do_read();
 }

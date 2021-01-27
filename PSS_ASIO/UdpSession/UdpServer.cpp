@@ -207,7 +207,7 @@ uint32 CUdpServer::add_udp_endpoint(udp::endpoint recv_endpoint_, size_t length,
         packet_parse_interface_->packet_connect_ptr_(connect_id, remote_ip, local_ip, io_type_);
 
         //Ìí¼ÓÓ³Éä¹ØÏµ
-        App_WorkThreadLogic::instance()->add_thread_session(connect_id, shared_from_this(), local_ip, local_ip);
+        App_WorkThreadLogic::instance()->add_thread_session(connect_id, shared_from_this(), local_ip, remote_ip);
 
         return connect_id;
     }
