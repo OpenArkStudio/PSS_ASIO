@@ -15,6 +15,8 @@ public:
 
     virtual void set_connect_id(uint32 server_id, uint32 connect_id) = 0;
 
+    virtual void reset_connect(uint32 server_id) = 0;
+
     virtual void close_connect(uint32 server_id) = 0;
 
     virtual bool is_exist(uint32 server_id) = 0;

@@ -212,7 +212,7 @@ void CWorkThreadLogic::send_io_message(uint32 connect_id, CMessage_Packet send_p
     auto module_logic = thread_module_list_[curr_thread_index];
 
     //添加到数据队列处理
-    App_tms::instance()->AddMessage(curr_thread_index, [connect_id, send_packet, module_logic]() {
+    App_tms::instance()->AddMessage(curr_thread_index, [this, connect_id, send_packet, module_logic]() {
         if (nullptr != module_logic->get_session_interface(connect_id))
         {
             module_logic->get_session_interface(connect_id)->do_write_immediately(connect_id,
@@ -222,6 +222,12 @@ void CWorkThreadLogic::send_io_message(uint32 connect_id, CMessage_Packet send_p
         else
         {
             //查找是不是服务器间链接，如果是，则调用重连。
+            auto server_id = communicate_service_->get_server_id(connect_id);
+            if (server_id > 0)
+            {
+                //重连服务器
+                communicate_service_->reset_connect(server_id);
+            }
         }
         });
 }

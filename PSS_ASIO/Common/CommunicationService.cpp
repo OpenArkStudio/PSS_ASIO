@@ -44,8 +44,6 @@ void CCommunicationService::set_connect_id(uint32 server_id, uint32 connect_id)
             server_connect_id_list_[connect_id] = server_id;
         }
     }
-
-
 }
 
 void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
@@ -132,5 +130,15 @@ uint32 CCommunicationService::get_server_id(uint32 connect_id)
     else
     {
         return 0;
+    }
+}
+
+void CCommunicationService::reset_connect(uint32 server_id)
+{
+    std::lock_guard <std::recursive_mutex> lock(mutex_);
+    auto f = communication_list_.find(server_id);
+    if (f != communication_list_.end())
+    {
+        io_connect(f->second);
     }
 }

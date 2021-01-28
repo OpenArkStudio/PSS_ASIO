@@ -37,6 +37,8 @@ public:
 
     uint32 get_server_id(uint32 connect_id) final;
 
+    void reset_connect(uint32 server_id) final;
+
     void run_check_task();
 
     void io_connect(CCommunicationIOInfo& connect_info);
