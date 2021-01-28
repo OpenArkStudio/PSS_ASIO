@@ -8,14 +8,14 @@
     {
       "packet parse id": 1,
       "packet parse path": "./",
-      "packet parse file": "PacketParse_Inferface.dll"
+      "packet parse file": "libPacketParse_Inferface.so"
     }
   ],
 
   "logic library": [
     {
       "logic path": "./",
-      "logic file": "Test_Logic.dll",
+      "logic file": "libTest_Logic.so",
       "logic param": "logic config param"
     }
   ],

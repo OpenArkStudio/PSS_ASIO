@@ -179,6 +179,9 @@
     <ClInclude Include="Message\SessionService.h">
       <Filter>Message</Filter>
     </ClInclude>
+    <ClInclude Include="Message\SessionInterface.h">
+      <Filter>Message</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Build\Windows\server_config.json">

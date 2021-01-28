@@ -184,6 +184,7 @@
     <ClInclude Include="Message\LoadPacketParse.h" />
     <ClInclude Include="Message\ModuleInterfalce.h" />
     <ClInclude Include="Message\ModuleLogic.h" />
+    <ClInclude Include="Message\SessionInterface.h" />
     <ClInclude Include="Message\SessionService.h" />
     <ClInclude Include="TcpSession\TcpClientSession.h" />
     <ClInclude Include="TcpSession\TcpServer.h" />
