@@ -213,9 +213,16 @@ void CWorkThreadLogic::send_io_message(uint32 connect_id, CMessage_Packet send_p
 
     //添加到数据队列处理
     App_tms::instance()->AddMessage(curr_thread_index, [connect_id, send_packet, module_logic]() {
-        module_logic->get_session_interface(connect_id)->do_write_immediately(connect_id,
-            send_packet.buffer_.c_str(),
-            send_packet.buffer_.size());
+        if (nullptr != module_logic->get_session_interface(connect_id))
+        {
+            module_logic->get_session_interface(connect_id)->do_write_immediately(connect_id,
+                send_packet.buffer_.c_str(),
+                send_packet.buffer_.size());
+        }
+        else
+        {
+            //查找是不是服务器间链接，如果是，则调用重连。
+        }
         });
 }
 

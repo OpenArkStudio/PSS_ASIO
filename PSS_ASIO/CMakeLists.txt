@@ -1,0 +1,79 @@
+if(UNIX)
+	set(BIN_OUTPUT_DIR ${ROOT_DIR}/Build/Linux/)
+	set(LIB_OUTPUT_DIR ${ROOT_DIR}/Build/Linux/)
+else()
+	set(BIN_OUTPUT_DIR ${ROOT_DIR}/Build/Windows/)
+	set(LIB_OUTPUT_DIR ${ROOT_DIR}/Build/Windows/)
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${BIN_OUTPUT_DIR}")
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${BIN_OUTPUT_DIR}")
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG "${BIN_OUTPUT_DIR}")
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${BIN_OUTPUT_DIR}")
+	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${BIN_OUTPUT_DIR}")
+	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${BIN_OUTPUT_DIR}")
+endif()
+
+include_directories(
+	../third_Include
+	../Common
+	./Message
+	./TcpSession
+	./Common
+	./UdpSession
+	./TTySession)
+
+file(GLOB_RECURSE COMMON_FILES Common/*.h Common/*.cpp)
+source_group("Common" FILES ${COMMON_FILES})
+
+file(GLOB_RECURSE MESSAGE_FILES Message/*.h Message/*.cpp)
+source_group("Message" FILES ${MESSAGE_FILES})
+
+file(GLOB_RECURSE TCPSESSION_FILES TcpSession/*.h TcpSession/*.cpp)
+source_group("TcpSession" FILES ${TCPSESSION_FILES})
+
+file(GLOB_RECURSE UDPSESSION_FILES UdpSession/*.h UdpSession/*.cpp)
+source_group("UdpSession" FILES ${UDPSESSION_FILES})
+
+file(GLOB_RECURSE TTYSESSION_FILES TTySession/*.h TTySession/*.cpp)
+source_group("TTySession" FILES ${TTYSESSION_FILES})
+
+file(GLOB_RECURSE MAIN_FILES PSS_ASIO.cpp)
+source_group("Main" FILES ${MAIN_FILES})
+
+link_directories(${ACE_ROOT}/lib)
+
+add_executable(pss_asio 
+	${COMMON_FILES}
+	${MESSAGE_FILES}
+	${TCPSESSION_FILES}
+	${UDPSESSION_FILES}
+	${TTYSESSION_FILES}
+	)
+
+#ifwindows	
+#_DEBUG;_CONSOLE;_WIN32_WINDOWS;_WINSOCK_DEPRECATED_NO_WARNINGS;ASIO_HAS_SERIAL_PORT;ASIO_HAS_IOCP;
+if(WIN32)
+	message("OS is windows...")
+	if(CMAKE_BUILD_TYPE MATCHES "debug")
+		add_definitions(
+		-D_DEBUG
+		-D_CONSOLE
+		-D_WIN32_WINDOWS
+		-D_WINSOCK_DEPRECATED_NO_WARNINGS
+		-DASIO_HAS_SERIAL_PORT
+		-DASIO_HAS_IOCP)
+	else()
+		add_definitions(
+		-DNDEBUG
+		-D_CONSOLE
+		-D_WIN32_WINDOWS
+		-D_WINSOCK_DEPRECATED_NO_WARNINGS
+		-DASIO_HAS_SERIAL_PORT
+		-DASIO_HAS_IOCP)		
+	endif
+endif()
+
+set_target_properties(pss_asio PROPERTIES 
+	OUTPUT_NAME_DEBUG "pss_asio"
+	ARCHIVE_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIR}
+    RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIR}
+    LIBRARY_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIR})
