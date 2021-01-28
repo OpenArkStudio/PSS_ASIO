@@ -11,15 +11,12 @@ else()
 	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${BIN_OUTPUT_DIR}")
 	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${BIN_OUTPUT_DIR}")
 endif()
+	
+file(GLOB_RECURSE PROC_COMMON ${PROJECT_SOURCE_DIR}/COMMON/*.h ${PROJECT_SOURCE_DIR}/COMMON/*.hpp)
+source_group("proc_common" FILES ${PROC_COMMON})
 
-include_directories(
-	../third_Include
-	../Common
-	./Message
-	./TcpSession
-	./Common
-	./UdpSession
-	./TTySession)
+file(GLOB_RECURSE THIRD_INCLUDE ${PROJECT_SOURCE_DIR}/third_Include/*.h ${PROJECT_SOURCE_DIR}/third_Include/*.hpp)
+source_group("third_Include" FILES ${THIRD_INCLUDE})
 
 file(GLOB_RECURSE COMMON_FILES Common/*.h Common/*.cpp)
 source_group("Common" FILES ${COMMON_FILES})
@@ -36,12 +33,22 @@ source_group("UdpSession" FILES ${UDPSESSION_FILES})
 file(GLOB_RECURSE TTYSESSION_FILES TTySession/*.h TTySession/*.cpp)
 source_group("TTySession" FILES ${TTYSESSION_FILES})
 
-file(GLOB_RECURSE MAIN_FILES PSS_ASIO.cpp)
+file(GLOB_RECURSE MAIN_FILES ${PROJECT_SOURCE_DIR}/PSS_ASIO.cpp)
 source_group("Main" FILES ${MAIN_FILES})
 
-link_directories(${ACE_ROOT}/lib)
+include_directories(
+	${PROJECT_SOURCE_DIR}/third_include
+	${PROJECT_SOURCE_DIR}/Common
+	Message
+	TcpSession
+	Common
+	UdpSession
+	TTySession)
 
 add_executable(pss_asio 
+	${MAIN_FILES}
+	${PROC_COMMON}
+	${THIRD_INCLUDE}
 	${COMMON_FILES}
 	${MESSAGE_FILES}
 	${TCPSESSION_FILES}
@@ -69,7 +76,11 @@ if(WIN32)
 		-D_WINSOCK_DEPRECATED_NO_WARNINGS
 		-DASIO_HAS_SERIAL_PORT
 		-DASIO_HAS_IOCP)		
-	endif
+	endif()
+endif()
+
+if(UNIX)
+	target_link_libraries(pss_asio -lpthread -ldl)
 endif()
 
 set_target_properties(pss_asio PROPERTIES 

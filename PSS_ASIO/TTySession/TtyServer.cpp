@@ -1,7 +1,7 @@
 #include "TtyServer.h"
 
 CTTyServer::CTTyServer(shared_ptr<asio::serial_port> serial_port_param, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size)
-    : packet_parse_id_(packet_parse_id), serial_port_param_(serial_port_param)
+    : serial_port_param_(serial_port_param)
 {
     //处理链接建立消息
     session_recv_buffer_.Init(max_recv_size);

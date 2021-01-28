@@ -54,7 +54,7 @@ bool CServerConfig::read_server_config_file(std::string file_name)
     auto config_output = json_config["console output"];
     config_output_.file_output_ = config_output["file write"];
     config_output_.file_count_ = config_output["log file count"];
-    config_output_.max_file_size_ = config_output["max log file size"] * 1024;
+    config_output_.max_file_size_ = (unsigned int)(config_output["max log file size"]) * 1024;
     config_output_.file_name_ = config_output["file name"];
     config_output_.output_level_ = config_output["output level"];
 

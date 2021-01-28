@@ -36,9 +36,8 @@ private:
 
     void clear_write_buffer();
 
-    shared_ptr<asio::serial_port> serial_port_param_;
+    shared_ptr<asio::serial_port> serial_port_param_= nullptr;
     uint32 connect_client_id_ = 0;
-    uint32 packet_parse_id_ = 0;
 
     size_t recv_data_size_ = 0;
     size_t send_data_size_ = 0;
