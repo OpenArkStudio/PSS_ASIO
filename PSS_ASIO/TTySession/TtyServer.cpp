@@ -10,24 +10,34 @@ CTTyServer::CTTyServer(shared_ptr<asio::serial_port> serial_port_param, uint32 p
     connect_client_id_ = App_ConnectCounter::instance()->CreateCounter();
 
     packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(packet_parse_id);
+}
 
+void CTTyServer::start()
+{
     _ClientIPInfo local_info;
     _ClientIPInfo romote_info;
 
     asio::serial_port::baud_rate option;
-    serial_port_param->get_option(option);
+    std::error_code ec;
+    serial_port_param_->get_option(option, ec);
+    if (ec)
+    {
+        PSS_LOGGER_DEBUG("[CTTyServer::CTTyServer]connect error={}.", ec.message());
+    }
+    else
+    {
+        local_info.m_strClientIP = "tty";
+        romote_info.m_strClientIP = "tty";
+        romote_info.m_u2Port = option.value();
 
-    local_info.m_strClientIP = "tty";
-    romote_info.m_strClientIP = "tty";
-    romote_info.m_u2Port = option.value();
+        App_WorkThreadLogic::instance()->add_thread_session(connect_client_id_, shared_from_this(), local_info, romote_info);
 
-    App_WorkThreadLogic::instance()->add_thread_session(connect_client_id_, shared_from_this(), local_info, romote_info);
+        _ClientIPInfo remote_ip;
+        _ClientIPInfo local_ip;
+        packet_parse_interface_->packet_connect_ptr_(connect_client_id_, remote_ip, local_ip, io_type_);
 
-    _ClientIPInfo remote_ip;
-    _ClientIPInfo local_ip;
-    packet_parse_interface_->packet_connect_ptr_(connect_client_id_, remote_ip, local_ip, io_type_);
-
-    do_receive();
+        do_receive();
+    }
 }
 
 void CTTyServer::do_receive()

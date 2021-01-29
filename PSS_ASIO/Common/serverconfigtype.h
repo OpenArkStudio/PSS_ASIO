@@ -47,6 +47,19 @@ public:
 using config_tcp_list = std::vector<CConfigNetIO>;
 using config_udp_list = std::vector<CConfigNetIO>;
 
+class CTTyIO
+{
+public:
+    std::string tty_name_;
+    unsigned int tty_port_ = 9000;
+    int char_size_ = 8;
+    unsigned int packet_parse_id_ = 0;
+    unsigned int recv_buff_size_ = 1024;
+    unsigned int send_buff_size_ = 1024;
+};
+
+using config_tty_list = std::vector<CTTyIO>;
+
 class CConfigConsole
 {
 public:

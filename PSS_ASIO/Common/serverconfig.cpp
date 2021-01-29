@@ -51,6 +51,18 @@ bool CServerConfig::read_server_config_file(std::string file_name)
         config_udp_list_.emplace_back(config_netio);
     }
 
+    for (auto tty : json_config["tty server"])
+    {
+        CTTyIO config_tty;
+        config_tty.tty_name_ = tty["port name"];
+        config_tty.tty_port_ = tty["serial port"];
+        config_tty.char_size_ = tty["char size"];
+        config_tty.packet_parse_id_ = tty["packet parse id"];
+        config_tty.recv_buff_size_ = tty["recv buff size"];
+        config_tty.send_buff_size_ = tty["send buff size"];
+        config_tty_list_.emplace_back(config_tty);
+    }
+
     auto config_output = json_config["console output"];
     config_output_.file_output_ = config_output["file write"];
     config_output_.file_count_ = config_output["log file count"];
@@ -80,6 +92,11 @@ config_tcp_list& CServerConfig::get_config_tcp_list()
 config_udp_list& CServerConfig::get_config_udp_list()
 {
     return config_udp_list_;
+}
+
+config_tty_list& CServerConfig::get_config_tty_list()
+{
+    return config_tty_list_;
 }
 
 CConfigConsole& CServerConfig::get_config_console()

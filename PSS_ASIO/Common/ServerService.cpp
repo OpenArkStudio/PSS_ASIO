@@ -80,7 +80,7 @@ bool CServerService::init_servce()
         server_config_.get_config_logic_list(),
         App_SessionService::instance());
 
-    //≤‚ ‘Tcpº‡Ã˝
+    //º”‘ÿTcpº‡Ã˝
     for(auto tcp_server : server_config_.get_config_tcp_list())
     {
         auto tcp_service = make_shared<CTcpServer>(io_context_, 
@@ -92,7 +92,7 @@ bool CServerService::init_servce()
         tcp_service_list_.emplace_back(tcp_service);
     }
 
-    //≤‚ ‘UDPº‡Ã˝
+    //º”‘ÿUDPº‡Ã˝
     for (auto udp_server : server_config_.get_config_udp_list())
     {
         auto udp_service = make_shared<CUdpServer>(io_context_, 
@@ -102,6 +102,21 @@ bool CServerService::init_servce()
             udp_server.recv_buff_size_,
             udp_server.send_buff_size_);
         udp_service_list_.emplace_back(udp_service);
+    }
+
+    //º”‘ÿttyº‡Ã˝
+    for (auto tty_server : server_config_.get_config_tty_list())
+    {
+        auto tty_serial_port = add_serial_port(io_context_, tty_server);
+        if (nullptr != tty_serial_port)
+        {
+            auto tty_service = make_shared<CTTyServer>(tty_serial_port,
+                tty_server.packet_parse_id_,
+                tty_server.recv_buff_size_,
+                tty_server.send_buff_size_);
+            tty_service->start();
+            tty_service_list_.emplace_back(tty_service);
+        }
     }
 
     io_context_.run();
@@ -135,4 +150,26 @@ void CServerService::stop_service()
 {
     //Õ£÷π£¨ªÿ ’«Â¿Ì
     io_context_.stop();
+}
+
+shared_ptr<asio::serial_port> CServerService::add_serial_port(asio::io_context& io_context, const CTTyIO& tty_io)
+{
+    std::error_code ec;
+    auto serial_port = std::make_shared<asio::serial_port>(io_context);
+
+    serial_port->open(tty_io.tty_name_, ec);
+
+    if (ec)
+    {
+        PSS_LOGGER_DEBUG("[CServerService::add_serial_port]connect error={}.", ec.message());
+        return nullptr;
+    }
+
+    serial_port->set_option(asio::serial_port::baud_rate(tty_io.tty_port_), ec);
+    serial_port->set_option(asio::serial_port::flow_control(asio::serial_port::flow_control::none), ec);
+    serial_port->set_option(asio::serial_port::parity(asio::serial_port::parity::none), ec);
+    serial_port->set_option(asio::serial_port::stop_bits(asio::serial_port::stop_bits::one), ec);
+    serial_port->set_option(asio::serial_port::character_size(tty_io.char_size_), ec);
+
+    return serial_port;
 }

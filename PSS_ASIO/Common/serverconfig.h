@@ -19,6 +19,7 @@ public:
     config_logic_list& get_config_logic_list();
     config_tcp_list& get_config_tcp_list();
     config_udp_list& get_config_udp_list();
+    config_tty_list& get_config_tty_list();
     CConfigConsole& get_config_console();
     CConfigWorkThread& get_config_workthread();
 
@@ -27,6 +28,7 @@ private:
     config_logic_list config_logic_list_;
     config_tcp_list config_tcp_list_;
     config_udp_list config_udp_list_;
+    config_tty_list config_tty_list_;
     CConfigConsole config_output_;
     CConfigWorkThread config_work_thread_;
 };

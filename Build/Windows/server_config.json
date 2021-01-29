@@ -40,6 +40,17 @@
   "udp server": [
   ],
 
+  "tty server": [
+    {
+      "port name" : "COM2", 
+      "serial port": 9600,
+      "char size": 8,
+      "packet parse id": 1,
+      "recv buff size": 1024,
+      "send buff size": 1024
+    }
+  ],
+
   "console output": {
     "file write": false,
     "log file count": 3,
