@@ -68,7 +68,7 @@ void logic_connect_tcp()
     io_info.send_size = 1024;
     io_info.recv_size = 1024;
     io_info.server_ip = "127.0.0.1";
-    io_info.server_port = 10003;
+    io_info.server_port = 10005;
     io_info.server_id = 1001;
     io_info.packet_parse_id = 1;
 
@@ -116,7 +116,7 @@ void logic_connect(const CMessage_Source& source, const CMessage_Packet& recv_pa
         PSS_LOGGER_DEBUG("[logic_connect]connand={}, server_id={}", source.connect_id_, source.connect_mark_id_);
 
         //测试关闭链接
-        session_service->close_io_session(source.connect_id_);
+        //session_service->close_io_session(source.connect_id_);
     }
     else if (source.type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_UDP)
     {

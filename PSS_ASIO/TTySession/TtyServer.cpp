@@ -7,15 +7,17 @@ CTTyServer::CTTyServer(shared_ptr<asio::serial_port> serial_port_param, uint32 p
     session_recv_buffer_.Init(max_recv_size);
     session_send_buffer_.Init(max_send_size);
 
-    connect_client_id_ = App_ConnectCounter::instance()->CreateCounter();
+    connect_id_ = App_ConnectCounter::instance()->CreateCounter();
 
     packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(packet_parse_id);
 }
 
-void CTTyServer::start()
+void CTTyServer::start(uint32 server_id)
 {
     _ClientIPInfo local_info;
     _ClientIPInfo romote_info;
+
+    server_id_ = server_id;
 
     asio::serial_port::baud_rate option;
     std::error_code ec;
@@ -30,11 +32,11 @@ void CTTyServer::start()
         romote_info.m_strClientIP = "tty";
         romote_info.m_u2Port = option.value();
 
-        App_WorkThreadLogic::instance()->add_thread_session(connect_client_id_, shared_from_this(), local_info, romote_info);
+        App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_info, romote_info);
 
         _ClientIPInfo remote_ip;
         _ClientIPInfo local_ip;
-        packet_parse_interface_->packet_connect_ptr_(connect_client_id_, remote_ip, local_ip, io_type_);
+        packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip, local_ip, io_type_);
 
         do_receive();
     }
@@ -45,7 +47,7 @@ void CTTyServer::do_receive()
     serial_port_param_->async_read_some(asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()),
         [this](std::error_code ec, std::size_t length)
         {
-            auto connect_id = connect_client_id_;
+            auto connect_id = connect_id_;
 
             if (!ec && length > 0)
             {
@@ -67,7 +69,7 @@ void CTTyServer::do_receive()
 
                 //处理数据拆包
                 vector<CMessage_Packet> message_list;
-                bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_client_id_, &session_recv_buffer_, message_list, io_type_);
+                bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
                 if (!ret)
                 {
                     //链接断开(解析包不正确)
@@ -187,7 +189,7 @@ void CTTyServer::close(uint32 connect_id)
     auto self(shared_from_this());
 
     PSS_UNUSED_ARG(connect_id);
-    packet_parse_interface_->packet_disconnect_ptr_(connect_client_id_, io_type_);
+    packet_parse_interface_->packet_disconnect_ptr_(connect_id_, io_type_);
 
     //删除映射关系
     App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
@@ -196,6 +198,6 @@ void CTTyServer::close(uint32 connect_id)
 uint32 CTTyServer::get_mark_id(uint32 connect_id)
 {
     PSS_UNUSED_ARG(connect_id);
-    return 0;
+    return server_id_;
 }
 

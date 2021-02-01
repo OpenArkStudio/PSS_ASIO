@@ -17,7 +17,7 @@ class CTTyServer : public std::enable_shared_from_this<CTTyServer>, public ISess
 public:
     CTTyServer(shared_ptr<asio::serial_port> serial_port_param, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size);
 
-    void start();
+    void start(uint32 server_id);
 
     void set_write_buffer(uint32 connect_id, const char* data, size_t length) final;
 
@@ -39,7 +39,8 @@ private:
     void clear_write_buffer();
 
     shared_ptr<asio::serial_port> serial_port_param_= nullptr;
-    uint32 connect_client_id_ = 0;
+    uint32 connect_id_ = 0;
+    uint32 server_id_ = 0;
 
     size_t recv_data_size_ = 0;
     size_t send_data_size_ = 0;
