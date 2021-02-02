@@ -1,5 +1,4 @@
-#ifndef _LOADPACKETPARSE_H
-#define _LOADPACKETPARSE_H
+#pragma once
 
 #include "singleton.h"
 #include <unordered_map>
@@ -48,4 +47,3 @@ private:
 
 using App_PacketParseLoader = PSS_singleton<CLoadPacketParse>;
 
-#endif

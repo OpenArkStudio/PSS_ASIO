@@ -51,6 +51,9 @@ private:
     size_t recv_data_size_ = 0;
     size_t send_data_size_ = 0;
 
+    _ClientIPInfo remote_ip_;
+    _ClientIPInfo local_ip_;
+
     EM_CONNECT_IO_TYPE io_type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_TCP;
 };
 

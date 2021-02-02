@@ -15,16 +15,14 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size, uint32 send_siz
     session_send_buffer_.Init(send_size);
 
     //处理链接建立消息
-    _ClientIPInfo remote_ip;
-    _ClientIPInfo local_ip;
-    remote_ip.m_strClientIP = socket_.remote_endpoint().address().to_string();
-    remote_ip.m_u2Port = socket_.remote_endpoint().port();
-    local_ip.m_strClientIP = socket_.local_endpoint().address().to_string();
-    local_ip.m_u2Port = socket_.local_endpoint().port();
-    packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip, local_ip, io_type_);
+    remote_ip_.m_strClientIP = socket_.remote_endpoint().address().to_string();
+    remote_ip_.m_u2Port = socket_.remote_endpoint().port();
+    local_ip_.m_strClientIP = socket_.local_endpoint().address().to_string();
+    local_ip_.m_u2Port = socket_.local_endpoint().port();
+    packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip_, local_ip_, io_type_);
 
     //加入session 映射
-    App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip, remote_ip);
+    App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip_, remote_ip_);
 
     do_read();
 }

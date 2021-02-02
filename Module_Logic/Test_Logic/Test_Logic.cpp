@@ -135,7 +135,7 @@ void logic_test_sync(const CMessage_Source& source, const CMessage_Packet& recv_
     send_packet.buffer_.append(recv_packet.buffer_.c_str(), recv_packet.buffer_.size());
 
     //测试服务器间链接
-    logic_connect_tcp();
+    //logic_connect_tcp();
 }
 
 void logic_test_asyn(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)

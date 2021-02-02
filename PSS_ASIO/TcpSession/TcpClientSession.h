@@ -46,6 +46,9 @@ private:
     CSessionBuffer session_recv_buffer_;
     CSessionBuffer session_send_buffer_;
 
+    _ClientIPInfo remote_ip_;
+    _ClientIPInfo local_ip_;
+
     shared_ptr<_Packet_Parse_Info> packet_parse_interface_ = nullptr;
 
     size_t recv_data_size_  = 0;

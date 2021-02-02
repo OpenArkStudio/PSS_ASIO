@@ -14,7 +14,7 @@ public:
 	uint32 CreateCounter();  //得到唯一的新ID
 	
 private:
-	uint32 count_index       = 0;
+	uint32 count_index       = 1;
 	mutable std::mutex _mutex;//同步锁
 };
 

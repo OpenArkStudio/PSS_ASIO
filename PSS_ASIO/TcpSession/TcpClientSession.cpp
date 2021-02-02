@@ -32,20 +32,19 @@ bool CTcpClientSession::start(const CConnect_IO_Info& io_info)
         packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(io_info.packet_parse_id);
 
         //处理链接建立消息
-        _ClientIPInfo remote_ip;
-        _ClientIPInfo local_ip;
-        remote_ip.m_strClientIP = socket_.remote_endpoint().address().to_string();
-        remote_ip.m_u2Port = socket_.remote_endpoint().port();
-        local_ip.m_strClientIP = socket_.local_endpoint().address().to_string();
-        local_ip.m_u2Port = socket_.local_endpoint().port();
 
-        PSS_LOGGER_DEBUG("[CTcpClientSession::start]remote({0}:{1})", remote_ip.m_strClientIP, remote_ip.m_u2Port);
-        PSS_LOGGER_DEBUG("[CTcpClientSession::start]local({0}:{1})", local_ip.m_strClientIP, local_ip.m_u2Port);
+        remote_ip_.m_strClientIP = socket_.remote_endpoint().address().to_string();
+        remote_ip_.m_u2Port = socket_.remote_endpoint().port();
+        local_ip_.m_strClientIP = socket_.local_endpoint().address().to_string();
+        local_ip_.m_u2Port = socket_.local_endpoint().port();
 
-        packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip, local_ip, io_type_);
+        PSS_LOGGER_DEBUG("[CTcpClientSession::start]remote({0}:{1})", remote_ip_.m_strClientIP, remote_ip_.m_u2Port);
+        PSS_LOGGER_DEBUG("[CTcpClientSession::start]local({0}:{1})", local_ip_.m_strClientIP, local_ip_.m_u2Port);
+
+        packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip_, local_ip_, io_type_);
 
         //添加映射关系
-        App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip, remote_ip);
+        App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip_, remote_ip_);
 
         do_read();
 

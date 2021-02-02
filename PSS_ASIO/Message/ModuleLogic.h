@@ -5,6 +5,7 @@
 #include "serverconfigtype.h"
 #include "ICommunicationService.h"
 #include "ISessionService.h"
+#include "IotoIo.h"
 
 //根据线程的逻辑插件处理模块
 //add by freeeyes

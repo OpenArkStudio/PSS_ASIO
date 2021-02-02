@@ -1,5 +1,4 @@
-#ifndef _LOADMODULE_H
-#define _LOADMODULE_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -74,5 +73,3 @@ private:
     command_to_module_function command_to_module_function_;
     ISessionService* session_service_;
 };
-
-#endif

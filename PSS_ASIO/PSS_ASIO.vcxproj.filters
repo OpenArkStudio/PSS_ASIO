@@ -84,6 +84,9 @@
     <ClCompile Include="Message\SessionService.cpp">
       <Filter>Message</Filter>
     </ClCompile>
+    <ClCompile Include="Message\IotoIo.cpp">
+      <Filter>Message</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TcpSession\TcpServer.h">
@@ -180,6 +183,9 @@
       <Filter>Message</Filter>
     </ClInclude>
     <ClInclude Include="Message\SessionInterface.h">
+      <Filter>Message</Filter>
+    </ClInclude>
+    <ClInclude Include="Message\IotoIo.h">
       <Filter>Message</Filter>
     </ClInclude>
   </ItemGroup>

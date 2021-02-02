@@ -12,12 +12,10 @@ CTTyServer::CTTyServer(shared_ptr<asio::serial_port> serial_port_param, uint32 p
     packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(packet_parse_id);
 }
 
-void CTTyServer::start(uint32 server_id)
+void CTTyServer::start(std::string tty_name, uint32 server_id)
 {
-    _ClientIPInfo local_info;
-    _ClientIPInfo romote_info;
-
     server_id_ = server_id;
+    tty_name_ = tty_name;
 
     asio::serial_port::baud_rate option;
     std::error_code ec;
@@ -28,15 +26,13 @@ void CTTyServer::start(uint32 server_id)
     }
     else
     {
-        local_info.m_strClientIP = "tty";
-        romote_info.m_strClientIP = "tty";
-        romote_info.m_u2Port = option.value();
+        local_ip_.m_strClientIP = "tty";
+        remote_ip_.m_strClientIP = tty_name_;
+        remote_ip_.m_u2Port = option.value();
 
-        App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_info, romote_info);
+        App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip_, remote_ip_);
 
-        _ClientIPInfo remote_ip;
-        _ClientIPInfo local_ip;
-        packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip, local_ip, io_type_);
+        packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip_, local_ip_, io_type_);
 
         do_receive();
     }

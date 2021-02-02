@@ -114,7 +114,7 @@ bool CServerService::init_servce()
                 tty_server.packet_parse_id_,
                 tty_server.recv_buff_size_,
                 tty_server.send_buff_size_);
-            tty_service->start(0);
+            tty_service->start(tty_server.tty_name_, 0);
             tty_service_list_.emplace_back(tty_service);
         }
     }
