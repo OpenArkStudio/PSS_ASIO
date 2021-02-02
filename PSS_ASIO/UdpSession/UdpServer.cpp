@@ -177,8 +177,8 @@ void CUdpServer::do_write_immediately(uint32 connect_id, const char* data, size_
 
 uint32 CUdpServer::add_udp_endpoint(udp::endpoint recv_endpoint_, size_t length, uint32 max_buffer_length)
 {
-    auto f = udp_endpoint_2_id_list.find(recv_endpoint_);
-    if (f != udp_endpoint_2_id_list.end())
+    auto f = udp_endpoint_2_id_list_.find(recv_endpoint_);
+    if (f != udp_endpoint_2_id_list_.end())
     {
         //找到了，返回ID
         return f->second;
@@ -194,8 +194,8 @@ uint32 CUdpServer::add_udp_endpoint(udp::endpoint recv_endpoint_, size_t length,
         session_info->udp_state = EM_UDP_VALID::UDP_VALUD;
         session_info->session_send_buffer_.Init(max_buffer_length);
 
-        udp_endpoint_2_id_list[recv_endpoint_] = connect_id;
-        udp_id_2_endpoint_list[connect_id] = session_info;
+        udp_endpoint_2_id_list_[recv_endpoint_] = connect_id;
+        udp_id_2_endpoint_list_[connect_id] = session_info;
 
         //调用packet parse 链接建立
         _ClientIPInfo remote_ip;
@@ -215,8 +215,8 @@ uint32 CUdpServer::add_udp_endpoint(udp::endpoint recv_endpoint_, size_t length,
 
 shared_ptr<CUdp_Session_Info> CUdpServer::find_udp_endpoint_by_id(uint32 connect_id)
 {
-    auto f = udp_id_2_endpoint_list.find(connect_id);
-    if (f != udp_id_2_endpoint_list.end())
+    auto f = udp_id_2_endpoint_list_.find(connect_id);
+    if (f != udp_id_2_endpoint_list_.end())
     {
         return f->second;
     }
@@ -228,25 +228,33 @@ void CUdpServer::close_udp_endpoint_by_id(uint32 connect_id)
 {
     auto self(shared_from_this());
 
-    auto f = udp_id_2_endpoint_list.find(connect_id);
-    if (f != udp_id_2_endpoint_list.end())
+    auto f = udp_id_2_endpoint_list_.find(connect_id);
+    if (f != udp_id_2_endpoint_list_.end())
     {
         //调用packet parse 断开消息
         packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_);
 
         auto session_endpoint = f->second->send_endpoint;
-        udp_id_2_endpoint_list.erase(f);
-        udp_endpoint_2_id_list.erase(session_endpoint);
+        udp_id_2_endpoint_list_.erase(f);
+        udp_endpoint_2_id_list_.erase(session_endpoint);
     }
 
-    //删除映射关系
-    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
+    //删除映射关系、
+    _ClientIPInfo remote_ip;
+    auto end_f = udp_id_2_endpoint_list_.find(connect_id);
+    if (end_f != udp_id_2_endpoint_list_.end())
+    {
+        remote_ip.m_strClientIP = end_f->second->send_endpoint.address().to_string();
+        remote_ip.m_u2Port = end_f->second->send_endpoint.port();
+    }
+
+    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip, self);
 }
 
 void CUdpServer::add_send_finish_size(uint32 connect_id, size_t length)
 {
-    auto f = udp_id_2_endpoint_list.find(connect_id);
-    if (f != udp_id_2_endpoint_list.end())
+    auto f = udp_id_2_endpoint_list_.find(connect_id);
+    if (f != udp_id_2_endpoint_list_.end())
     {
         f->second->send_data_size_ += length;
     }

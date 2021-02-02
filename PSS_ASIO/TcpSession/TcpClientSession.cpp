@@ -64,7 +64,7 @@ void CTcpClientSession::close(uint32 connect_id)
     packet_parse_interface_->packet_disconnect_ptr_(connect_id_, io_type_);
 
     //发送链接断开消息
-    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
+    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip_, self);
 }
 
 void CTcpClientSession::set_write_buffer(uint32 connect_id, const char* data, size_t length)

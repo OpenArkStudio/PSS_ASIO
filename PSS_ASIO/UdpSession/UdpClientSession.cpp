@@ -61,7 +61,11 @@ void CUdpClientSession::close(uint32 connect_id)
     PSS_LOGGER_DEBUG("[CUdpClientSession::Close]recv:{0}, send:{1}", recv_data_size_, send_data_size_);
 
     //É¾³ýÓ³Éä¹ØÏµ
-    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
+    _ClientIPInfo remote_ip;
+    remote_ip.m_strClientIP = send_endpoint_.address().to_string();
+    remote_ip.m_u2Port = send_endpoint_.port();
+
+    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip, self);
 }
 
 

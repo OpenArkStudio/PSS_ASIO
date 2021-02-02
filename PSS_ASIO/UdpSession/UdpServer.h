@@ -67,8 +67,8 @@ private:
     
     using mapudpid2endpoint = map<uint32, shared_ptr<CUdp_Session_Info>>;
     using mapudpendpoint2id = map<udp::endpoint, uint32>;
-    mapudpid2endpoint udp_id_2_endpoint_list;
-    mapudpendpoint2id udp_endpoint_2_id_list;
+    mapudpid2endpoint udp_id_2_endpoint_list_;
+    mapudpendpoint2id udp_endpoint_2_id_list_;
 
     uint32 max_recv_size_ = 0;
     uint32 max_send_size_ = 0;

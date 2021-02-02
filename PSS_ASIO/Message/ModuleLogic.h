@@ -48,7 +48,7 @@ public:
 
     void add_thread_session(uint32 connect_id, shared_ptr<ISession> session, _ClientIPInfo& local_info, const _ClientIPInfo& romote_info);
 
-    void delete_thread_session(uint32 connect_id, shared_ptr<ISession> session);
+    void delete_thread_session(uint32 connect_id, _ClientIPInfo from_io, shared_ptr<ISession> session);
 
     void close_session_event(uint32 connect_id);
 
@@ -62,10 +62,13 @@ public:
 
     uint32 get_io_server_id(uint32 connect_id);
 
+    bool add_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type, _ClientIPInfo to_io, EM_CONNECT_IO_TYPE to_io_type);
+
 private:
     vector<shared_ptr<CModuleLogic>> thread_module_list_;
     CLoadModule load_module_;
     uint16      thread_count_ = 0;
+    CIotoIo     io_to_io_;
     ICommunicationInterface* communicate_service_ = nullptr;
 };
 

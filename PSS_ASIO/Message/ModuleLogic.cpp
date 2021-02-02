@@ -105,6 +105,9 @@ void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession
         communicate_service_->set_connect_id(server_id, connect_id);
     }
 
+    //添加点对点映射
+    io_to_io_.regedit_session_id(romote_info, session->get_io_type(), connect_id);
+
     //向插件告知链接建立消息
     App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, module_logic, local_info, romote_info]() {
         //PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
@@ -128,7 +131,7 @@ void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession
         });
 }
 
-void CWorkThreadLogic::delete_thread_session(uint32 connect_id, shared_ptr<ISession> session)
+void CWorkThreadLogic::delete_thread_session(uint32 connect_id, _ClientIPInfo from_io, shared_ptr<ISession> session)
 {
     //session 连接断开
     uint16 curr_thread_index = connect_id % thread_count_;
@@ -141,6 +144,9 @@ void CWorkThreadLogic::delete_thread_session(uint32 connect_id, shared_ptr<ISess
         //取消服务器间链接
         communicate_service_->set_connect_id(server_id, 0);
     }
+
+    //清除点对点转发消息映射
+    io_to_io_.unregedit_session_id(from_io, session->get_io_type());
 
     //向插件告知链接建立消息
     App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, module_logic]() {
@@ -182,25 +188,46 @@ int CWorkThreadLogic::do_thread_module_logic(const uint32 connect_id, vector<CMe
     uint16 curr_thread_index = connect_id % thread_count_;
     auto module_logic = thread_module_list_[curr_thread_index];
 
-    //添加到数据队列处理
-    App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, message_list, module_logic]() {
-        //PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
-        CMessage_Source source;
-        CMessage_Packet send_packet;
+    auto io_2_io_session_id = io_to_io_.get_to_session_id(connect_id);
+    if (io_2_io_session_id > 0)
+    {
+        curr_thread_index = io_2_io_session_id % thread_count_;
+        auto module_logic = thread_module_list_[io_2_io_session_id];
 
-        source.connect_id_ = connect_id;
-        source.work_thread_id_ = module_logic->get_work_thread_id();
-        source.type_ = session->get_io_type();
-        source.connect_mark_id_ = session->get_mark_id(connect_id);
-
-        for (auto recv_packet : message_list)
-        {
-            module_logic->do_thread_module_logic(source, recv_packet, send_packet);
-        }
-
-        session->set_write_buffer(connect_id, send_packet.buffer_.c_str(), send_packet.buffer_.size());
-        session->do_write(connect_id);
+        //存在点对点透传，直接透传数据
+        App_tms::instance()->AddMessage(curr_thread_index, [session, io_2_io_session_id, message_list, module_logic]() {
+            for (auto recv_packet : message_list)
+            {
+                auto session = module_logic->get_session_interface(io_2_io_session_id);
+                if (nullptr != session)
+                {
+                    session->do_write_immediately(io_2_io_session_id, recv_packet.buffer_.c_str(), recv_packet.buffer_.size());
+                }
+            }
         });
+    }
+    else
+    {
+        //添加到数据队列处理
+        App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, message_list, module_logic]() {
+            //PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
+            CMessage_Source source;
+            CMessage_Packet send_packet;
+
+            source.connect_id_ = connect_id;
+            source.work_thread_id_ = module_logic->get_work_thread_id();
+            source.type_ = session->get_io_type();
+            source.connect_mark_id_ = session->get_mark_id(connect_id);
+
+            for (auto recv_packet : message_list)
+            {
+                module_logic->do_thread_module_logic(source, recv_packet, send_packet);
+            }
+
+            session->set_write_buffer(connect_id, send_packet.buffer_.c_str(), send_packet.buffer_.size());
+            session->do_write(connect_id);
+            });
+    }
 
     return 0;
 }
@@ -254,5 +281,10 @@ void CWorkThreadLogic::close_io_server(uint32 server_id)
 uint32 CWorkThreadLogic::get_io_server_id(uint32 connect_id)
 {
     return communicate_service_->get_server_id(connect_id);
+}
+
+bool CWorkThreadLogic::add_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type, _ClientIPInfo to_io, EM_CONNECT_IO_TYPE to_io_type)
+{
+    return io_to_io_.add_session_io_mapping(from_io, from_io_type, to_io, to_io_type);
 }
 

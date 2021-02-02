@@ -38,7 +38,7 @@ void CTcpSession::close(uint32 connect_id)
     //¶Ï¿ªÁ¬½Ó
     packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_);
 
-    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
+    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip_, self);
 }
 
 void CTcpSession::do_read()
