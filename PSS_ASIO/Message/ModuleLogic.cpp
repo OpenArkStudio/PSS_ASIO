@@ -288,3 +288,8 @@ bool CWorkThreadLogic::add_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_
     return io_to_io_.add_session_io_mapping(from_io, from_io_type, to_io, to_io_type);
 }
 
+bool CWorkThreadLogic::delete_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type)
+{
+    return io_to_io_.delete_session_io_mapping(from_io, from_io_type);
+}
+

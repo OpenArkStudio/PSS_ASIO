@@ -29,6 +29,8 @@ class CIotoIo
 public:
     bool add_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type, _ClientIPInfo to_io, EM_CONNECT_IO_TYPE to_io_type);
 
+    bool delete_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type);
+
     void regedit_session_id(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE io_type, uint32 session_id);
 
     void unregedit_session_id(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE io_type);
@@ -41,8 +43,11 @@ private:
 
     std::string get_connect_list_key(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE io_type);
 
+    void delete_session_list(uint32 session_id);
+
     using hashmapconnectlist = unordered_map<std::string, uint32>;
     hashmapconnectlist connect_list_;
     vector<CIo_Connect_Info> io_2_io_list_;
     vector<CIo_Session_to_Session> session_to_session_list_;
+    std::mutex mutex_;
 };

@@ -26,6 +26,10 @@ void test_io_2_io()
 
     cout << "get session id=" << io_to_io.get_to_session_id(1) << endl;
 
+    io_to_io.delete_session_io_mapping(to_io, to_io_type);
+
+    cout << "get session id=" << io_to_io.get_to_session_id(1) << endl;
+
     io_to_io.unregedit_session_id(from_io, from_io_type);
 
     cout << "get session id=" << io_to_io.get_to_session_id(1) << endl;

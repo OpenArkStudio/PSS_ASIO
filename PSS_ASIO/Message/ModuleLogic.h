@@ -64,6 +64,8 @@ public:
 
     bool add_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type, _ClientIPInfo to_io, EM_CONNECT_IO_TYPE to_io_type);
 
+    bool delete_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type);
+
 private:
     vector<shared_ptr<CModuleLogic>> thread_module_list_;
     CLoadModule load_module_;

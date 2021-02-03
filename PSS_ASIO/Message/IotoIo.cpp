@@ -2,6 +2,7 @@
 
 bool CIotoIo::add_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type, _ClientIPInfo to_io, EM_CONNECT_IO_TYPE to_io_type)
 {
+    std::lock_guard <std::mutex> lock(mutex_);
     for (auto Connect_Info : io_2_io_list_)
     {
         if (true == compare_connect_io(from_io, from_io_type, Connect_Info.from_io_, Connect_Info.from_io_type_))
@@ -37,8 +38,47 @@ bool CIotoIo::add_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE f
     return true;
 }
 
+bool CIotoIo::delete_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type)
+{
+    //删除对应的点对点透传关系
+    std::lock_guard <std::mutex> lock(mutex_);
+    
+    int connect_pos = 0;
+    uint32 session_id = 0;
+
+    for (auto io_connect : io_2_io_list_)
+    {
+        if (true == compare_connect_io(from_io, from_io_type, io_connect.from_io_, io_connect.from_io_type_))
+        {
+            //找到了，删除之
+            session_id = io_connect.from_session_id_;
+            io_2_io_list_.erase(io_2_io_list_.begin() + connect_pos);
+            break;
+        }
+
+        if (true == compare_connect_io(from_io, from_io_type, io_connect.to_io_, io_connect.to_io_type_))
+        {
+            //找到了，删除之
+            session_id = io_connect.to_session_id_;
+            io_2_io_list_.erase(io_2_io_list_.begin() + connect_pos);
+            break;
+        }
+
+        connect_pos++;
+    }
+
+    //如果发现存在session_id，则解除关联
+    if (session_id > 0)
+    {
+        delete_session_list(session_id);
+    }
+
+    return true;
+}
+
 void CIotoIo::regedit_session_id(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE io_type, uint32 session_id)
 {
+    std::lock_guard <std::mutex> lock(mutex_);
     auto from_io_key = get_connect_list_key(from_io, io_type);
     connect_list_[from_io_key] = session_id;
 
@@ -69,6 +109,7 @@ void CIotoIo::regedit_session_id(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE io_ty
 
 void CIotoIo::unregedit_session_id(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE io_type)
 {
+    std::lock_guard <std::mutex> lock(mutex_);
     //链接失效
     auto from_io_key = get_connect_list_key(from_io, io_type);
 
@@ -96,22 +137,14 @@ void CIotoIo::unregedit_session_id(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE io_
         }
 
         //清理链接失败信息
-        int nPos = 0;
-        for (auto s_2_s : session_to_session_list_)
-        {
-            if (s_2_s.from_session_id_ == session_id || s_2_s.to_session_id_ == session_id)
-            {
-                session_to_session_list_.erase(session_to_session_list_.begin() + nPos);
-                break;
-            }
-            nPos++;
-        }
+        delete_session_list(session_id);
     }
 
 }
 
 uint32 CIotoIo::get_to_session_id(uint32 session_id)
 {
+    std::lock_guard <std::mutex> lock(mutex_);
     for (auto s_2_s : session_to_session_list_)
     {
         if (s_2_s.from_session_id_ == session_id)
@@ -178,4 +211,18 @@ std::string CIotoIo::get_connect_list_key(_ClientIPInfo from_io, EM_CONNECT_IO_T
     }
 
     return from_io_key;
+}
+
+void CIotoIo::delete_session_list(uint32 session_id)
+{
+    int session_list_pos = 0;
+    for (auto s_2_s : session_to_session_list_)
+    {
+        if (s_2_s.from_session_id_ == session_id || s_2_s.to_session_id_ == session_id)
+        {
+            session_to_session_list_.erase(session_to_session_list_.begin() + session_list_pos);
+            break;
+        }
+        session_list_pos++;
+    }
 }

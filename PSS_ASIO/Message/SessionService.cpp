@@ -29,3 +29,17 @@ void CSessionService::close_io_session(uint32 connect_id)
 
 }
 
+bool CSessionService::add_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type, _ClientIPInfo to_io, EM_CONNECT_IO_TYPE to_io_type)
+{
+    return App_WorkThreadLogic::instance()->add_session_io_mapping(from_io,
+        from_io_type,
+        to_io,
+        to_io_type);
+}
+
+bool CSessionService::delete_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type)
+{
+    return App_WorkThreadLogic::instance()->delete_session_io_mapping(from_io,
+        from_io_type);
+}
+
