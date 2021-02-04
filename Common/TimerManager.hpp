@@ -1,10 +1,5 @@
-﻿// add by freeeyes
-// 2020-12-18
-
-#ifndef _TIMEMANAGER_H
+﻿#ifndef _TIMEMANAGER_H
 #define _TIMEMANAGER_H
-
-#include "define.h"
 
 #include <functional>
 #include <queue>
@@ -17,7 +12,7 @@
 #include <thread>
 
 //当定时器中没有数据，最多等待的时间
-const uint16 timer_default_wait = 300;
+const int timer_default_wait = 300;
 
 //定时器组件
 namespace brynet {
@@ -26,6 +21,12 @@ namespace brynet {
     {
         TIMER_STATE_ADD_TIMER = 0,
         TIMER_STATE_EXECUTE_TIMER,
+    };
+
+    enum class ENUM_WHILE_STATE
+    {
+        WHILE_STATE_CONTINUE = 0,
+        WHILE_STATE_BREAK,
     };
 
     enum class ENUM_TIMER_TYPE
@@ -45,13 +46,15 @@ namespace brynet {
 
         Timer(std::chrono::steady_clock::time_point startTime,
             std::chrono::nanoseconds lastTime,
+            std::chrono::seconds delayTime,
             ENUM_TIMER_TYPE timertype,
             Callback&& callback)
             :
             mCallback(std::move(callback)),
             mStartTime(startTime),
             mLastTime(lastTime),
-            mTimerType(timertype)
+            mTimerType(timertype),
+            mDelayTime(delayTime)
         {
         }
 
@@ -65,10 +68,12 @@ namespace brynet {
             return mLastTime;
         }
 
-        std::chrono::nanoseconds    getLeftTime() const
+        std::chrono::nanoseconds getLeftTime()
         {
             const auto now = std::chrono::steady_clock::now();
-            return getLastTime() - (now - getStartTime());
+            auto delayTime = mDelayTime;
+            mDelayTime = std::chrono::seconds(0);
+            return getLastTime() - (now - getStartTime()) + delayTime;
         }
 
         void    cancel()
@@ -114,6 +119,7 @@ namespace brynet {
         Callback                                        mCallback;
         std::chrono::steady_clock::time_point           mStartTime;
         std::chrono::nanoseconds                        mLastTime;
+        std::chrono::seconds                            mDelayTime;
         ENUM_TIMER_TYPE                                 mTimerType = ENUM_TIMER_TYPE::TIMER_TYPE_ONCE;
 
         friend class TimerMgr;
@@ -126,6 +132,7 @@ namespace brynet {
 
         template<typename F, typename ...TArgs>
         Timer::WeakPtr  addTimer_loop(
+            std::chrono::seconds delayseconds,
             std::chrono::nanoseconds timeout,
             F&& callback,
             TArgs&& ...args)
@@ -133,6 +140,7 @@ namespace brynet {
             auto timer = std::make_shared<Timer>(
                 std::chrono::steady_clock::now(),
                 std::chrono::nanoseconds(timeout),
+                delayseconds,
                 ENUM_TIMER_TYPE::TIMER_TYPE_LOOP,
                 std::bind(std::forward<F>(callback), std::forward<TArgs>(args)...));
             mtx_queue.lock();
@@ -154,9 +162,9 @@ namespace brynet {
             auto timer = std::make_shared<Timer>(
                 std::chrono::steady_clock::now(),
                 std::chrono::nanoseconds(timeout),
+                std::chrono::seconds(0),
                 ENUM_TIMER_TYPE::TIMER_TYPE_ONCE,
                 std::bind(std::forward<F>(callback), std::forward<TArgs>(args)...));
-
             mtx_queue.lock();
             mTimers.push(timer);
             mtx_queue.unlock();
@@ -169,9 +177,9 @@ namespace brynet {
 
         void addTimer(const Timer::Ptr& timer)
         {
-            mtx_queue.lock();
+            std::unique_lock <std::mutex> lck(mtx);
             mTimers.push(timer);
-            mtx_queue.unlock();
+
             //唤醒线程
             timer_wakeup_state = EM_TIMER_STATE::TIMER_STATE_ADD_TIMER;
             cv.notify_one();
@@ -179,6 +187,7 @@ namespace brynet {
 
         void Close()
         {
+            std::unique_lock <std::mutex> lck(mtx);
             timer_run_ = false;
             //唤醒线程
             timer_wakeup_state = EM_TIMER_STATE::TIMER_STATE_ADD_TIMER;
@@ -193,10 +202,12 @@ namespace brynet {
             {
                 //当前没有定时器，等待唤醒
                 cv.wait_for(lck, std::chrono::seconds(timer_default_wait));
+                std::cout << "wake up" << std::endl;
             }
 
             if (!timer_run_)
             {
+                std::cout << "end up" << std::endl;
                 return ENUM_WHILE_STATE::WHILE_STATE_BREAK;
             }
 
@@ -214,6 +225,7 @@ namespace brynet {
             {
                 //还需要等待下一个到期时间
                 cv.wait_for(lck, timer_wait);
+                std::cout << "[cv]cv.wait_for=" << timer_wait.count() << std::endl;
 
                 if (timer_wakeup_state == EM_TIMER_STATE::TIMER_STATE_ADD_TIMER)
                 {
@@ -237,7 +249,12 @@ namespace brynet {
                 //重新插入
                 mTimers.push(tmp);
             }
+
             mtx_queue.unlock();
+
+
+
+            timer_wakeup_state = EM_TIMER_STATE::TIMER_STATE_EXECUTE_TIMER;
 
             return ENUM_WHILE_STATE::WHILE_STATE_CONTINUE;
         }
@@ -260,25 +277,26 @@ namespace brynet {
                 }
             }
 
-            PSS_LOGGER_DEBUG("[TimerMgr::schedule]Time manager is end.");
+            std::cout << "[TimerMgr::schedule]Time manager is end.\n" << std::endl;
         }
 
-        bool isEmpty() const
+        bool isEmpty()
         {
+            std::unique_lock <std::mutex> lck(mtx);
             return mTimers.empty();
         }
 
         // if timer empty, return zero
         std::chrono::nanoseconds nearLeftTime()
         {
+            std::unique_lock <std::mutex> lck(mtx);
             if (mTimers.empty())
             {
                 return std::chrono::nanoseconds::zero();
             }
 
-            mtx_queue.lock();
             auto result = mTimers.top()->getLeftTime();
-            mtx_queue.unlock();
+
             if (result < std::chrono::nanoseconds::zero())
             {
                 return std::chrono::nanoseconds::zero();
@@ -289,11 +307,10 @@ namespace brynet {
 
         void clear()
         {
+            std::unique_lock <std::mutex> lck(mtx);
             while (!mTimers.empty())
             {
-                mtx_queue.lock();
                 mTimers.pop();
-                mtx_queue.unlock();
             }
         }
 

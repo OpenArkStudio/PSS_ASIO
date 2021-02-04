@@ -6,7 +6,7 @@ void CCommunicationService::init_communication_service(asio::io_context* io_serv
     io_service_context_ = io_service_context;
 
     //²âÊÔ¶¨Ê±Æ÷
-    App_TimerManager::instance()->GetTimerPtr()->addTimer_loop(chrono::seconds(timeout_seconds), [this]()
+    App_TimerManager::instance()->GetTimerPtr()->addTimer_loop(chrono::seconds(0), chrono::seconds(timeout_seconds), [this]()
         {
             run_check_task();
         });
