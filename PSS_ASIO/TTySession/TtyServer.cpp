@@ -1,7 +1,6 @@
 #include "TtyServer.h"
 
-CTTyServer::CTTyServer(shared_ptr<asio::serial_port> serial_port_param, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size)
-    : serial_port_param_(serial_port_param)
+CTTyServer::CTTyServer(uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size)
 {
     //处理链接建立消息
     session_recv_buffer_.Init(max_recv_size);
@@ -12,8 +11,13 @@ CTTyServer::CTTyServer(shared_ptr<asio::serial_port> serial_port_param, uint32 p
     packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(packet_parse_id);
 }
 
-void CTTyServer::start(std::string tty_name, uint32 server_id)
+void CTTyServer::start(asio::io_context* io_context, std::string tty_name, uint16 tty_port, uint8 char_size, uint32 server_id)
 {
+    if (false == add_serial_port(io_context, tty_name, tty_port, char_size))
+    {
+        return;
+    };
+
     server_id_ = server_id;
     tty_name_ = tty_name;
 
@@ -106,6 +110,28 @@ void CTTyServer::set_write_buffer(uint32 connect_id, const char* data, size_t le
 void CTTyServer::clear_write_buffer()
 {
     session_send_buffer_.move(session_send_buffer_.get_write_size());
+}
+
+bool CTTyServer::add_serial_port(asio::io_context* io_context, std::string tty_name, uint16 tty_port, uint8 char_size)
+{
+    std::error_code ec;
+    serial_port_param_ = std::make_shared<asio::serial_port>(*io_context);
+
+    serial_port_param_->open(tty_name, ec);
+
+    if (ec)
+    {
+        PSS_LOGGER_DEBUG("[CServerService::add_serial_port]connect error={}.", ec.message());
+        return false;
+    }
+
+    serial_port_param_->set_option(asio::serial_port::baud_rate(tty_port), ec);
+    serial_port_param_->set_option(asio::serial_port::flow_control(asio::serial_port::flow_control::none), ec);
+    serial_port_param_->set_option(asio::serial_port::parity(asio::serial_port::parity::none), ec);
+    serial_port_param_->set_option(asio::serial_port::stop_bits(asio::serial_port::stop_bits::one), ec);
+    serial_port_param_->set_option(asio::serial_port::character_size(char_size), ec);
+
+    return true;
 }
 
 void CTTyServer::do_write(uint32 connect_id)

@@ -52,19 +52,33 @@ void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
 
     if (connect_info.io_type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_TCP)
     {
-        //默认是TCP
+        //IO是TCP
         auto tcp_client_session = make_shared<CTcpClientSession>(io_service_context_);
         if (true == tcp_client_session->start(connect_info.io_info_))
         {
             connect_info.session_ = tcp_client_session;
         }
     }
-    else
+    else if(connect_info.io_type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_UDP)
     {
-        //默认都是UDP
+        //IO是UDP
         auto udp_client_session = make_shared<CUdpClientSession>(io_service_context_);
         udp_client_session->start(connect_info.io_info_);
         connect_info.session_ = udp_client_session;
+    }
+    else if (connect_info.io_type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_TTY)
+    {
+        //IO是TTY
+        auto tty_client_session = make_shared<CTTyServer>(
+            connect_info.io_info_.packet_parse_id,
+            connect_info.io_info_.recv_size,
+            connect_info.io_info_.send_size);
+        tty_client_session->start(io_service_context_,
+            connect_info.io_info_.server_ip,
+            connect_info.io_info_.server_port,
+            8,
+            connect_info.io_info_.server_id);
+        connect_info.session_ = tty_client_session;
     }
 }
 
