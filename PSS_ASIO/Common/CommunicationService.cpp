@@ -5,7 +5,7 @@ void CCommunicationService::init_communication_service(asio::io_context* io_serv
     //读取配置文件，链接服务器
     io_service_context_ = io_service_context;
 
-    //测试定时器
+    //定时检查任务，检查服务器间链接的状态。
     App_TimerManager::instance()->GetTimerPtr()->addTimer_loop(chrono::seconds(0), chrono::seconds(timeout_seconds), [this]()
         {
             run_check_task();

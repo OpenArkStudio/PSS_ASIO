@@ -13,7 +13,11 @@ void CModuleLogic::add_session(uint32 connect_id, shared_ptr<ISession> session, 
 
 shared_ptr<ISession> CModuleLogic::get_session_interface(uint32 connect_id)
 {
-    return sessions_interface_.get_session_interface(connect_id);
+    work_thread_state_ = ENUM_WORK_THREAD_STATE::WORK_THREAD_BEGIN;
+    auto ret = sessions_interface_.get_session_interface(connect_id);
+    work_thread_state_ = ENUM_WORK_THREAD_STATE::WORK_THREAD_END;
+    work_thread_run_time_ = std::chrono::steady_clock::now();
+    return ret;
 }
 
 void CModuleLogic::delete_session_interface(uint32 connect_id)
@@ -37,7 +41,21 @@ uint16 CModuleLogic::get_work_thread_id()
     return work_thread_id_;
 }
 
-void CWorkThreadLogic::init_work_thread_logic(int thread_count, config_logic_list& logic_list, ISessionService* session_service)
+int CModuleLogic::get_work_thread_timeout()
+{
+    std::chrono::seconds time_interval(0);
+    if(ENUM_WORK_THREAD_STATE::WORK_THREAD_BEGIN == work_thread_state_)
+    {
+        auto interval_seconds = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - work_thread_run_time_);
+        return (int)interval_seconds.count();
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_seconds, config_logic_list& logic_list, ISessionService* session_service)
 {
     //初始化线程数
     thread_count_ = thread_count;
@@ -66,6 +84,12 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, config_logic_lis
         //初始化线程
         App_tms::instance()->CreateLogic(i);
     }
+
+    //定时检查任务，定时检查服务器状态
+    App_TimerManager::instance()->GetTimerPtr()->addTimer_loop(chrono::seconds(0), chrono::seconds(timeout_seconds), [this, timeout_seconds]()
+        {
+            run_check_task(timeout_seconds);
+        });
     
 }
 
@@ -291,5 +315,19 @@ bool CWorkThreadLogic::add_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_
 bool CWorkThreadLogic::delete_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type)
 {
     return io_to_io_.delete_session_io_mapping(from_io, from_io_type);
+}
+
+void CWorkThreadLogic::run_check_task(uint32 timeout_seconds)
+{
+    for (auto module_logic : thread_module_list_)
+    {
+        auto work_thread_timeout = module_logic->get_work_thread_timeout();
+        if (work_thread_timeout > (int)timeout_seconds)
+        {
+            PSS_LOGGER_ERROR("[CWorkThreadLogic::run_check_task]work thread{0} is block.", module_logic->get_work_thread_id());
+        }
+    }
+
+    PSS_LOGGER_DEBUG("[CWorkThreadLogic::run_check_task]check is ok.");
 }
 

@@ -225,7 +225,7 @@ namespace brynet {
             {
                 //还需要等待下一个到期时间
                 cv.wait_for(lck, timer_wait);
-                std::cout << "[cv]cv.wait_for=" << timer_wait.count() << std::endl;
+                //std::cout << "[cv]cv.wait_for=" << timer_wait.count() << std::endl;
 
                 if (timer_wakeup_state == EM_TIMER_STATE::TIMER_STATE_ADD_TIMER)
                 {

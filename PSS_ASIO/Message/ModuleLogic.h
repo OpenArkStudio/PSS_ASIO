@@ -6,9 +6,18 @@
 #include "ICommunicationService.h"
 #include "ISessionService.h"
 #include "IotoIo.h"
+#include "CoreTimer.hpp"
 
 //根据线程的逻辑插件处理模块
 //add by freeeyes
+
+//工作线程的执行状态
+enum class ENUM_WORK_THREAD_STATE
+{
+    WORK_THREAD_INIT = 0,
+    WORK_THREAD_BEGIN,
+    WORK_THREAD_END,
+};
 
 class CModuleLogic
 {
@@ -29,10 +38,15 @@ public:
 
     uint16 get_work_thread_id();
 
+    int get_work_thread_timeout();
+
 private:
     CSessionInterface sessions_interface_;
     CModuleInterface modules_interface_;
     uint16 work_thread_id_ = 0;
+
+    ENUM_WORK_THREAD_STATE work_thread_state_ = ENUM_WORK_THREAD_STATE::WORK_THREAD_INIT;
+    std::chrono::steady_clock::time_point work_thread_run_time_ = std::chrono::steady_clock::now();
 };
 
 class CWorkThreadLogic 
@@ -40,7 +54,7 @@ class CWorkThreadLogic
 public:
     CWorkThreadLogic() = default;
 
-    void init_work_thread_logic(int thread_count, config_logic_list& logic_list, ISessionService* session_service);
+    void init_work_thread_logic(int thread_count, uint16 timeout_seconds, config_logic_list& logic_list, ISessionService* session_service);
 
     void init_communication_service(ICommunicationInterface* communicate_service);
 
@@ -65,6 +79,8 @@ public:
     bool add_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type, _ClientIPInfo to_io, EM_CONNECT_IO_TYPE to_io_type);
 
     bool delete_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type);
+
+    void run_check_task(uint32 timeout_seconds);
 
 private:
     vector<shared_ptr<CModuleLogic>> thread_module_list_;
