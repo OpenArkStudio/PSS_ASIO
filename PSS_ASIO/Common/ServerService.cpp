@@ -31,7 +31,10 @@ bool CServerService::init_servce()
 #endif
 
     //¶ÁÈ¡ÅäÖÃÎÄ¼ş
-    server_config_.read_server_config_file();
+    if (false == server_config_.read_server_config_file())
+    {
+        return false;
+    }
 
     auto config_output = server_config_.get_config_console();
 
