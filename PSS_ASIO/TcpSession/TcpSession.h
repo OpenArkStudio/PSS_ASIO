@@ -45,8 +45,12 @@ private:
     tcp::socket socket_;
     uint32 connect_id_ = 0;
     CSessionBuffer session_recv_buffer_;
-    CSessionBuffer session_send_buffer_;
+    std::string session_send_buffer_;
     shared_ptr<_Packet_Parse_Info> packet_parse_interface_ = nullptr;
+
+    std::mutex send_thread_mutex_;
+    bool is_send_finish = true;
+    uint32 io_send_count_ = 0;
 
     size_t recv_data_size_ = 0;
     size_t send_data_size_ = 0;

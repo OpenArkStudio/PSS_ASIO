@@ -148,12 +148,22 @@ int main()
         "./serverlog",
         "debug");
 
-    App_tms::instance()->CreateLogic(1);
+    //App_tms::instance()->CreateLogic(1);
+
     //test_connect_synchronize_server("127.0.0.1", 8888);
 
     //test_connect_asynchronous_server("127.0.0.1", 8888);
 
     //udp_test_connect_asynchronous_server("127.0.0.1", 8888);
+
+    asio::io_context io_context_;
+
+    int a = 0;
+    io_context_.dispatch([a]() {
+        cout << "a=" << a << endl;
+        });
+
+    io_context_.run();
 
     getchar();
 }

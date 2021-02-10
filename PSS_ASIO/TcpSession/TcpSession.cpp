@@ -12,7 +12,6 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size, uint32 send_siz
     packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(packet_parse_id);
 
     session_recv_buffer_.Init(recv_size);
-    session_send_buffer_.Init(send_size);
 
     //处理链接建立消息
     remote_ip_.m_strClientIP = socket_.remote_endpoint().address().to_string();
@@ -33,7 +32,7 @@ void CTcpSession::close(uint32 connect_id)
     socket_.close();
 
     //输出接收发送字节数
-    PSS_LOGGER_DEBUG("[CTcpSession::Close]recv:{0}, send:{1}", recv_data_size_, send_data_size_);
+    PSS_LOGGER_DEBUG("[CTcpSession::Close]recv:{0}, send:{1} io_send_count:{2}", recv_data_size_, send_data_size_, io_send_count_);
 
     //断开连接
     packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_);
@@ -91,12 +90,22 @@ void CTcpSession::do_read()
 
 void CTcpSession::do_write(uint32 connect_id)
 {
+    std::lock_guard<std::mutex> lck(send_thread_mutex_);
+
+    if (is_send_finish == false || session_send_buffer_.size() == 0)
+    {
+        //上次发送没有完成或者已经发送完成
+        return;
+    }
+
+    is_send_finish = false;
+
     //组装发送数据
     auto send_buffer = make_shared<CSendBuffer>();
-    send_buffer->data_.append(session_send_buffer_.read(), session_send_buffer_.get_write_size());
-    send_buffer->buffer_length_ = session_send_buffer_.get_write_size();
+    send_buffer->data_ = session_send_buffer_;
+    send_buffer->buffer_length_ = session_send_buffer_.size();
 
-    //PSS_LOGGER_DEBUG("[CTcpSession::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
+    //PSS_LOGGER_DEBUG("[CTcpSession::do_write]send_buffer->buffer_length_={}.", session_send_buffer_.size());
     clear_write_buffer();
 
     //异步发送
@@ -112,59 +121,40 @@ void CTcpSession::do_write(uint32 connect_id)
             else
             {
                 self->add_send_finish_size(connect_id, length);
+                
+                //继续发送
+                self->do_write(connect_id);
             }
         });
 }
 
 void CTcpSession::do_write_immediately(uint32 connect_id, const char* data, size_t length)
 {
-    //组装发送数据
-    auto send_buffer = make_shared<CSendBuffer>();
-    send_buffer->data_.append(data, length);
-    send_buffer->buffer_length_ = length;
-
-    //PSS_LOGGER_DEBUG("[CTcpSession::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
-
-    //异步发送
-    auto self(shared_from_this());
-    asio::async_write(socket_, asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
-        [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
-        {
-            if (ec)
-            {
-                //暂时不处理
-                PSS_LOGGER_DEBUG("[CTcpSession::do_write_immediately]write error({0}).", ec.message());
-            }
-            else
-            {
-                self->add_send_finish_size(connect_id, length);
-            }
-        });
+    set_write_buffer(connect_id, data, length);
+    do_write(connect_id);
 }
 
 void CTcpSession::set_write_buffer(uint32 connect_id, const char* data, size_t length)
 {
-    if (session_send_buffer_.get_buffer_size() <= length)
-    {
-        //发送些缓冲已经满了
-        PSS_LOGGER_DEBUG("[CTcpSession::set_write_buffer]connect_id={} is full.", connect_id);
-        return;
-    }
+    std::lock_guard<std::mutex> lck(send_thread_mutex_);
 
-    std::memcpy(session_send_buffer_.get_curr_write_ptr(),
-        data,
-        length);
-    session_send_buffer_.set_write_data(length);
+    session_send_buffer_.append(data, length);
 }
 
 void CTcpSession::clear_write_buffer()
 {
-    session_send_buffer_.move(session_send_buffer_.get_write_size());
+    session_send_buffer_.clear();
 }
 
 void CTcpSession::add_send_finish_size(uint32 connect_id, size_t send_length)
 {
+    std::lock_guard<std::mutex> lck(send_thread_mutex_);
+
     send_data_size_ += send_length;
+
+    io_send_count_++;
+
+    is_send_finish = true;
 }
 
 EM_CONNECT_IO_TYPE CTcpSession::get_io_type()

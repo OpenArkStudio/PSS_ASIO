@@ -50,11 +50,13 @@ int load_module(IFrame_Object* frame_object, string module_param)
     PSS_LOGGER_DEBUG("[load_module]({0})finish.", module_param);
 
     session_service = frame_object->get_session_service();
-
+    
+    /*
     CMessage_Packet send_message;
     send_message.command_id_ = COMMAND_TEST_FRAME;
     send_message.buffer_ = "freeeyes";
     session_service->send_frame_message(1, "time loop", send_message, std::chrono::seconds(5));
+    */
 
     return 0;
 }
