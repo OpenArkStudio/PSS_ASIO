@@ -43,3 +43,11 @@ bool CSessionService::delete_session_io_mapping(_ClientIPInfo from_io, EM_CONNEC
         from_io_type);
 }
 
+bool CSessionService::send_frame_message(uint16 tag_thread_id, std::string message_tag, CMessage_Packet send_packet, std::chrono::seconds delay_seconds)
+{
+    return App_WorkThreadLogic::instance()->send_frame_message(tag_thread_id,
+        message_tag,
+        send_packet,
+        delay_seconds);
+}
+

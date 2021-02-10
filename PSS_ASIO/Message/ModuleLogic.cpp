@@ -248,12 +248,38 @@ int CWorkThreadLogic::do_thread_module_logic(const uint32 connect_id, vector<CMe
                 module_logic->do_thread_module_logic(source, recv_packet, send_packet);
             }
 
-            session->set_write_buffer(connect_id, send_packet.buffer_.c_str(), send_packet.buffer_.size());
-            session->do_write(connect_id);
+            if (send_packet.buffer_.size() > 0)
+            {
+                //有需要发送的内容
+                session->set_write_buffer(connect_id, send_packet.buffer_.c_str(), send_packet.buffer_.size());
+                session->do_write(connect_id);
+            }
             });
     }
 
     return 0;
+}
+
+void CWorkThreadLogic::do_thread_module_logic(uint16 tag_thread_id, std::string message_tag, CMessage_Packet recv_packet)
+{
+    //处理线程的投递
+    auto module_logic = thread_module_list_[tag_thread_id];
+
+    //添加到数据队列处理
+    App_tms::instance()->AddMessage(tag_thread_id, [tag_thread_id, message_tag, recv_packet, module_logic]() {
+        //PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
+        CMessage_Source source;
+        CMessage_Packet send_packet;
+
+        source.work_thread_id_ = tag_thread_id;
+        source.remote_ip_.m_strClientIP = message_tag;
+        source.type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_FRAME;
+
+        module_logic->do_thread_module_logic(source, recv_packet, send_packet);
+
+        //内部模块回调不在处理 send_packet 部分。
+
+        });
 }
 
 void CWorkThreadLogic::send_io_message(uint32 connect_id, CMessage_Packet send_packet)
@@ -329,5 +355,31 @@ void CWorkThreadLogic::run_check_task(uint32 timeout_seconds)
     }
 
     PSS_LOGGER_DEBUG("[CWorkThreadLogic::run_check_task]check is ok.");
+}
+
+bool CWorkThreadLogic::send_frame_message(uint16 tag_thread_id, std::string message_tag, CMessage_Packet send_packet, std::chrono::seconds delay_seconds)
+{
+    if (tag_thread_id >= thread_count_)
+    {
+        PSS_LOGGER_DEBUG("[CWorkThreadLogic::send_frame_message]out of thread range.");
+        return false;
+    }
+
+    if (delay_seconds == std::chrono::seconds(0))
+    {
+        //不需要延时，立刻投递
+        do_thread_module_logic(tag_thread_id, message_tag, send_packet);
+    }
+    else
+    {
+        //需要延时，延时后投递
+        App_TimerManager::instance()->GetTimerPtr()->addTimer(delay_seconds, [this, tag_thread_id, message_tag, send_packet]()
+            {
+                //延时到期，进行投递
+                do_thread_module_logic(tag_thread_id, message_tag, send_packet);
+            });
+    }
+
+    return true;
 }
 

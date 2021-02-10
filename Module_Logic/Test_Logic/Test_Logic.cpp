@@ -29,6 +29,7 @@ DECLDIR void set_output(shared_ptr<spdlog::logger> logger);
 //定义处理插件的command_id
 const uint16 COMMAND_TEST_SYNC = 0x2101;
 const uint16 COMMAND_TEST_ASYN = 0x2102;
+const uint16 COMMAND_TEST_FRAME = 0x3100;
 
 ISessionService* session_service = nullptr;
 
@@ -44,10 +45,16 @@ int load_module(IFrame_Object* frame_object, string module_param)
     frame_object->Regedit_command(LOGIC_COMMAND_DISCONNECT);
     frame_object->Regedit_command(COMMAND_TEST_SYNC);
     frame_object->Regedit_command(COMMAND_TEST_ASYN);
+    frame_object->Regedit_command(COMMAND_TEST_FRAME);
 
     PSS_LOGGER_DEBUG("[load_module]({0})finish.", module_param);
 
     session_service = frame_object->get_session_service();
+
+    CMessage_Packet send_message;
+    send_message.command_id_ = COMMAND_TEST_FRAME;
+    send_message.buffer_ = "freeeyes";
+    session_service->send_frame_message(1, "time loop", send_message, std::chrono::seconds(5));
 
     return 0;
 }
@@ -147,6 +154,17 @@ void logic_test_asyn(const CMessage_Source& source, const CMessage_Packet& recv_
     session_service->send_io_message(source.connect_id_, send_asyn_packet);
 }
 
+void logic_test_frame(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
+{
+    //处理插件处理任务
+    PSS_LOGGER_DEBUG("[logic_test_frame] tag_name={0},data={1}.", source.remote_ip_.m_strClientIP, recv_packet.buffer_);
+
+    CMessage_Packet send_message;
+    send_message.command_id_ = COMMAND_TEST_FRAME;
+    send_message.buffer_ = "freeeyes";
+    session_service->send_frame_message(1, "time loop", send_message, std::chrono::seconds(5));
+}
+
 //执行消息处理
 int do_module_message(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
 {
@@ -158,6 +176,7 @@ int do_module_message(const CMessage_Source& source, const CMessage_Packet& recv
     MESSAGE_FUNCTION(LOGIC_COMMAND_DISCONNECT, logic_disconnect, source, recv_packet, send_packet);
     MESSAGE_FUNCTION(COMMAND_TEST_SYNC, logic_test_sync, source, recv_packet, send_packet);
     MESSAGE_FUNCTION(COMMAND_TEST_ASYN, logic_test_asyn, source, recv_packet, send_packet);
+    MESSAGE_FUNCTION(COMMAND_TEST_FRAME, logic_test_frame, source, recv_packet, send_packet);
     MESSAGE_FUNCTION_END;
 
     return 0;

@@ -82,6 +82,10 @@ public:
 
     void run_check_task(uint32 timeout_seconds);
 
+    bool send_frame_message(uint16 tag_thread_id, std::string message_tag, CMessage_Packet send_packet, std::chrono::seconds delay_seconds);
+
+    void do_thread_module_logic(uint16 tag_thread_id, std::string message_tag, CMessage_Packet recv_packet);
+
 private:
     vector<shared_ptr<CModuleLogic>> thread_module_list_;
     CLoadModule load_module_;
