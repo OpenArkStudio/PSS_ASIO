@@ -158,12 +158,23 @@ int main()
 
     asio::io_context io_context_;
 
-    int a = 0;
-    io_context_.dispatch([a]() {
-        cout << "a=" << a << endl;
+    int count_ = 1;
+    std::thread tt = std::thread([&io_context_, &count_]() {
+        asio::io_service::work worker(io_context_);
+        io_context_.run();
+
+        cout << "finish" << endl;
+    });
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    io_context_.dispatch([count_]() {
+        cout << "count_=" << count_ << endl;
         });
 
-    io_context_.run();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    io_context_.stop();
 
     getchar();
 }
