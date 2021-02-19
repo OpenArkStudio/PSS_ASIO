@@ -30,7 +30,11 @@ jobs:
       shell: bash
       run: cmake --build . --config $BUILD_TYPE
 
-    - name: check path
+    - name: check path and run program
       working-directory: ${{github.workspace}}/Build/Linux  
       shell: bash
-      run: ls -l
+      run: |
+        ls -l
+        ./pss_asio
+        sleep 10
+        killall -9 pss_asio
