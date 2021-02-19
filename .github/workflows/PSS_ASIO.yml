@@ -1,4 +1,4 @@
-name: CMake
+name: PSS_ASIO_CMake
 
 on: [push]
 
