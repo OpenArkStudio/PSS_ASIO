@@ -29,3 +29,8 @@ jobs:
       working-directory: ${{github.workspace}}/Build/Linux
       shell: bash
       run: cmake --build . --config $BUILD_TYPE
+
+    - name: check path
+      working-directory: ${{github.workspace}}/Build/Linux  
+      shell: bash
+      run: ls -l
