@@ -53,8 +53,8 @@ namespace brynet {
             mCallback(std::move(callback)),
             mStartTime(startTime),
             mLastTime(lastTime),
-            mTimerType(timertype),
-            mDelayTime(delayTime)
+            mDelayTime(delayTime),
+            mTimerType(timertype)
         {
         }
 
