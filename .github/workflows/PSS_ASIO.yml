@@ -35,6 +35,6 @@ jobs:
       shell: bash
       run: |
         ls -l
-        ./pss_asio
+        nohup ./pss_asio > pssout.file 2>&1 &
         sleep 10
-        killall -9 pss_asio
+        killall pss_asio

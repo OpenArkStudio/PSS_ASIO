@@ -29,7 +29,7 @@ bool CLoadPacketParse::LoadPacketInfo(uint32 u4PacketParseID, const std::string&
 
     if(nullptr == pPacketParseInfo->m_hModule || !pPacketParseInfo->packet_from_recv_buffer_ptr_)
     {
-        PSS_LOGGER_DEBUG("[CLoadPacketParse::LoadPacketInfo] strModuleName = {0}, Function Parse_Packet_Head_Info is error!", packet_parse_file);
+        PSS_LOGGER_DEBUG("[CLoadPacketParse::LoadPacketInfo] strModuleName = {0}, Function parse_packet_from_recv_buffer is error!", packet_parse_file);
         CLoadLibrary::PSS_dlClose(pPacketParseInfo->m_hModule);
         PSS_LOGGER_DEBUG("[CLoadPacketParse::LoadPacketInfo]PacketID={0}, ret={1}.", pPacketParseInfo->m_u4PacketParseID, nRet);
         return false;

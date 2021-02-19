@@ -15,7 +15,7 @@
 #define DECLDIR extern "C"__declspec(dllimport)
 #endif
 #else
-#define DECLDIR 
+#define DECLDIR extern "C"
 #endif
 
 using namespace std;
