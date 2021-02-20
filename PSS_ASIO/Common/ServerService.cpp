@@ -74,13 +74,13 @@ bool CServerService::init_servce()
 
     //启动服务器间链接库
     App_CommunicationService::instance()->init_communication_service(&io_context_,
-        server_config_.get_config_workthread().timeout_seconds_);
+        server_config_.get_config_workthread().s2s_timeout_seconds_);
 
     App_WorkThreadLogic::instance()->init_communication_service(App_CommunicationService::instance());
 
     //初始化执行库
     App_WorkThreadLogic::instance()->init_work_thread_logic(server_config_.get_config_workthread().work_thread_count_,
-        server_config_.get_config_workthread().timeout_seconds_,
+        server_config_.get_config_workthread().work_timeout_seconds_,
         server_config_.get_config_logic_list(),
         App_SessionService::instance());
 
@@ -122,6 +122,9 @@ bool CServerService::init_servce()
             0);
         tty_service_list_.emplace_back(tty_service);
     }
+
+    //打开服务器间链接
+    App_CommunicationService::instance()->run_server_to_server();
 
     io_context_.run();
 

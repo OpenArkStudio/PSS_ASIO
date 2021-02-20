@@ -22,8 +22,6 @@ public:
 class CCommunicationService : public ICommunicationInterface
 {
 public:
-    CCommunicationService() = default;
-
     void init_communication_service(asio::io_context* io_service_context, uint16 timeout_seconds) final;
 
     bool add_connect(const CConnect_IO_Info& io_info, EM_CONNECT_IO_TYPE io_type) final;
@@ -44,6 +42,8 @@ public:
 
     void io_connect(CCommunicationIOInfo& connect_info);
 
+    void run_server_to_server();
+
 private:
     using communication_list = unordered_map<uint32, CCommunicationIOInfo>;
     using server_connect_id_list = unordered_map<uint32, uint32>;
@@ -51,6 +51,7 @@ private:
     server_connect_id_list server_connect_id_list_;
     std::recursive_mutex mutex_;
     asio::io_context* io_service_context_;
+    bool communication_is_run_ = false;
 };
 
 using App_CommunicationService = PSS_singleton<CCommunicationService>;

@@ -37,36 +37,6 @@ ISessionService* session_service = nullptr;
 #define MESSAGE_FUNCTION(x,y,z,h,i) case x: { y(z,h,i); break; }
 #define MESSAGE_FUNCTION_END }
 
-//插件加载
-int load_module(IFrame_Object* frame_object, string module_param)
-{
-    //注册插件
-    frame_object->Regedit_command(LOGIC_COMMAND_CONNECT);
-    frame_object->Regedit_command(LOGIC_COMMAND_DISCONNECT);
-    frame_object->Regedit_command(COMMAND_TEST_SYNC);
-    frame_object->Regedit_command(COMMAND_TEST_ASYN);
-    frame_object->Regedit_command(COMMAND_TEST_FRAME);
-
-    PSS_LOGGER_DEBUG("[load_module]({0})finish.", module_param);
-
-    session_service = frame_object->get_session_service();
-    
-    /*
-    CMessage_Packet send_message;
-    send_message.command_id_ = COMMAND_TEST_FRAME;
-    send_message.buffer_ = "freeeyes";
-    session_service->send_frame_message(1, "time loop", send_message, std::chrono::seconds(5));
-    */
-
-    return 0;
-}
-
-//卸载插件
-void unload_module()
-{
-    PSS_LOGGER_DEBUG("[unload_module]finish.");
-}
-
 //测试逻辑代码（消息处理部分）
 void logic_connect_tcp()
 {
@@ -93,11 +63,43 @@ void logic_connect_udp()
     io_info.send_size = 1024;
     io_info.recv_size = 1024;
     io_info.server_ip = "127.0.0.1";
-    io_info.server_port = 10003;
+    io_info.server_port = 10005;
     io_info.server_id = 1001;
     io_info.packet_parse_id = 1;
 
     session_service->connect_io_server(io_info, io_type);
+}
+
+//插件加载
+int load_module(IFrame_Object* frame_object, string module_param)
+{
+    //注册插件
+    frame_object->Regedit_command(LOGIC_COMMAND_CONNECT);
+    frame_object->Regedit_command(LOGIC_COMMAND_DISCONNECT);
+    frame_object->Regedit_command(COMMAND_TEST_SYNC);
+    frame_object->Regedit_command(COMMAND_TEST_ASYN);
+    frame_object->Regedit_command(COMMAND_TEST_FRAME);
+
+    PSS_LOGGER_DEBUG("[load_module]({0})finish.", module_param);
+
+    session_service = frame_object->get_session_service();
+    
+    /*
+    CMessage_Packet send_message;
+    send_message.command_id_ = COMMAND_TEST_FRAME;
+    send_message.buffer_ = "freeeyes";
+    session_service->send_frame_message(1, "time loop", send_message, std::chrono::seconds(5));
+    */
+
+    logic_connect_tcp();
+
+    return 0;
+}
+
+//卸载插件
+void unload_module()
+{
+    PSS_LOGGER_DEBUG("[unload_module]finish.");
 }
 
 void logic_connect(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)

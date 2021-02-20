@@ -49,6 +49,12 @@ void CCommunicationService::set_connect_id(uint32 server_id, uint32 connect_id)
 void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
 {
     communication_list_[connect_info.io_info_.server_id] = connect_info;
+    
+    if (false == communication_is_run_)
+    {
+        //还在初始化中，不启动链接
+        return;
+    }
 
     if (connect_info.io_type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_TCP)
     {
@@ -80,6 +86,14 @@ void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
             connect_info.io_info_.server_id);
         connect_info.session_ = tty_client_session;
     }
+}
+
+void CCommunicationService::run_server_to_server()
+{
+    //开始运行
+    communication_is_run_ = true;
+
+    run_check_task();
 }
 
 void CCommunicationService::close_connect(uint32 server_id)

@@ -10,7 +10,8 @@ bool CServerConfig::read_server_config_file(std::string file_name)
         //读取相关参数
         auto config_work_thread = json_config["work thread"];
         config_work_thread_.work_thread_count_ = config_work_thread["work thread count"];
-        config_work_thread_.timeout_seconds_ = config_work_thread["time check"];
+        config_work_thread_.work_timeout_seconds_ = config_work_thread["work time check"];
+        config_work_thread_.s2s_timeout_seconds_ = config_work_thread["server to server time check"];
 
         for (auto packet_parse : json_config["packet parse library"])
         {
