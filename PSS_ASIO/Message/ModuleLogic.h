@@ -19,6 +19,15 @@ enum class ENUM_WORK_THREAD_STATE
     WORK_THREAD_END,
 };
 
+class CDelayPluginMessage
+{
+public:
+    uint16 tag_thread_id_ = 0;
+    std::string message_tag_ = "";
+    CMessage_Packet send_packet_;
+    std::chrono::seconds delay_seconds_ = std::chrono::seconds(0);
+};
+
 class CModuleLogic
 {
 public:
@@ -84,14 +93,21 @@ public:
 
     bool send_frame_message(uint16 tag_thread_id, std::string message_tag, CMessage_Packet send_packet, std::chrono::seconds delay_seconds);
 
-    void do_thread_module_logic(uint16 tag_thread_id, std::string message_tag, CMessage_Packet recv_packet);
+    void do_plugin_thread_module_logic(shared_ptr<CModuleLogic> module_logic, std::string message_tag, CMessage_Packet recv_packet);
+
+    bool create_frame_work_thread(uint32 thread_id);
 
 private:
+    using hashmappluginworkthread = unordered_map<uint32, shared_ptr<CModuleLogic>>;
     vector<shared_ptr<CModuleLogic>> thread_module_list_;
     CLoadModule load_module_;
     uint16      thread_count_ = 0;
     CIotoIo     io_to_io_;
     ICommunicationInterface* communicate_service_ = nullptr;
+    bool        module_init_finish_ = false;
+    vector<uint32> plugin_work_thread_buffer_list_;
+    vector<CDelayPluginMessage> plugin_work_thread_buffer_message_list_;
+    hashmappluginworkthread plugin_work_thread_list_;
 };
 
 using App_WorkThreadLogic = PSS_singleton<CWorkThreadLogic>;

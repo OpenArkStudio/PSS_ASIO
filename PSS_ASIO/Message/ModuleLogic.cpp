@@ -85,6 +85,41 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
         App_tms::instance()->CreateLogic(i);
     }
 
+    module_init_finish_ = true;
+
+    //创建插件使用的线程
+    for (auto thread_id : plugin_work_thread_buffer_list_)
+    {
+        //查找线程是否已经存在
+        auto f = plugin_work_thread_list_.find(thread_id);
+        if (f != plugin_work_thread_list_.end())
+        {
+            continue;
+        }
+
+        auto thread_logic = make_shared<CModuleLogic>();
+
+        thread_logic->init_logic(load_module_.get_module_function_list(), thread_id);
+
+        plugin_work_thread_list_[thread_id] = thread_logic;
+
+        //初始化线程
+        App_tms::instance()->CreateLogic(thread_id);
+    }
+
+    plugin_work_thread_buffer_list_.clear();
+
+    //加载插件投递事件
+    for (auto plugin_events : plugin_work_thread_buffer_message_list_)
+    {
+        send_frame_message(plugin_events.tag_thread_id_,
+            plugin_events.message_tag_,
+            plugin_events.send_packet_,
+            plugin_events.delay_seconds_);
+
+    }
+    plugin_work_thread_buffer_message_list_.clear();
+
     //定时检查任务，定时检查服务器状态
     App_TimerManager::instance()->GetTimerPtr()->addTimer_loop(chrono::seconds(0), chrono::seconds(timeout_seconds), [this, timeout_seconds]()
         {
@@ -260,18 +295,15 @@ int CWorkThreadLogic::do_thread_module_logic(const uint32 connect_id, vector<CMe
     return 0;
 }
 
-void CWorkThreadLogic::do_thread_module_logic(uint16 tag_thread_id, std::string message_tag, CMessage_Packet recv_packet)
+void CWorkThreadLogic::do_plugin_thread_module_logic(shared_ptr<CModuleLogic> module_logic, std::string message_tag, CMessage_Packet recv_packet)
 {
-    //处理线程的投递
-    auto module_logic = thread_module_list_[tag_thread_id];
-
     //添加到数据队列处理
-    App_tms::instance()->AddMessage(tag_thread_id, [tag_thread_id, message_tag, recv_packet, module_logic]() {
+    App_tms::instance()->AddMessage(module_logic->get_work_thread_id(), [message_tag, recv_packet, module_logic]() {
         //PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
         CMessage_Source source;
         CMessage_Packet send_packet;
 
-        source.work_thread_id_ = tag_thread_id;
+        source.work_thread_id_ = module_logic->get_work_thread_id();
         source.remote_ip_.m_strClientIP = message_tag;
         source.type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_FRAME;
 
@@ -280,6 +312,43 @@ void CWorkThreadLogic::do_thread_module_logic(uint16 tag_thread_id, std::string 
         //内部模块回调不在处理 send_packet 部分。
 
         });
+}
+
+bool CWorkThreadLogic::create_frame_work_thread(uint32 thread_id)
+{
+    if (thread_id < thread_count_)
+    {
+        PSS_LOGGER_DEBUG("[CWorkThreadLogic::create_frame_work_thread]thread id must more than config thread count.");
+        return false;
+    }
+
+    if (false == module_init_finish_)
+    {
+        //如果模块还没全部启动完毕，将这个创建线程的过程，放入vector里面，等模块全部加载完毕，启动。
+        plugin_work_thread_buffer_list_.emplace_back(thread_id);
+    }
+    else
+    {
+        //查找这个线程ID是否已经存在了
+        auto f = plugin_work_thread_list_.find(thread_id);
+        if (f != plugin_work_thread_list_.end())
+        {
+            PSS_LOGGER_DEBUG("[CWorkThreadLogic::create_frame_work_thread]thread id already exist.");
+            return false;
+        }
+
+        //创建线程
+        auto thread_logic = make_shared<CModuleLogic>();
+
+        thread_logic->init_logic(load_module_.get_module_function_list(), thread_id);
+
+        plugin_work_thread_list_[thread_id] = thread_logic;
+
+        //初始化线程
+        App_tms::instance()->CreateLogic(thread_id);
+    }
+
+    return true;
 }
 
 void CWorkThreadLogic::send_io_message(uint32 connect_id, CMessage_Packet send_packet)
@@ -359,24 +428,37 @@ void CWorkThreadLogic::run_check_task(uint32 timeout_seconds)
 
 bool CWorkThreadLogic::send_frame_message(uint16 tag_thread_id, std::string message_tag, CMessage_Packet send_packet, std::chrono::seconds delay_seconds)
 {
-    if (tag_thread_id >= thread_count_)
+    if (false == module_init_finish_)
     {
-        PSS_LOGGER_DEBUG("[CWorkThreadLogic::send_frame_message]out of thread range.");
+        CDelayPluginMessage plugin_message;
+        plugin_message.tag_thread_id_ = tag_thread_id;
+        plugin_message.message_tag_ = message_tag;
+        plugin_message.send_packet_ = send_packet;
+        plugin_message.delay_seconds_ = delay_seconds;
+        plugin_work_thread_buffer_message_list_.emplace_back(plugin_message);
+        return true;
+    }
+
+    auto f = plugin_work_thread_list_.find(tag_thread_id);
+    if (f == plugin_work_thread_list_.end())
+    {
         return false;
     }
+
+    auto plugin_thread = f->second;
 
     if (delay_seconds == std::chrono::seconds(0))
     {
         //不需要延时，立刻投递
-        do_thread_module_logic(tag_thread_id, message_tag, send_packet);
+        do_plugin_thread_module_logic(plugin_thread, message_tag, send_packet);
     }
     else
     {
         //需要延时，延时后投递
-        App_TimerManager::instance()->GetTimerPtr()->addTimer(delay_seconds, [this, tag_thread_id, message_tag, send_packet]()
+        App_TimerManager::instance()->GetTimerPtr()->addTimer(delay_seconds, [this, plugin_thread, message_tag, send_packet]()
             {
                 //延时到期，进行投递
-                do_thread_module_logic(tag_thread_id, message_tag, send_packet);
+                do_plugin_thread_module_logic(plugin_thread, message_tag, send_packet);
             });
     }
 

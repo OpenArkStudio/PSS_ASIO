@@ -31,6 +31,8 @@ const uint16 COMMAND_TEST_SYNC = 0x2101;
 const uint16 COMMAND_TEST_ASYN = 0x2102;
 const uint16 COMMAND_TEST_FRAME = 0x3100;
 
+const uint32 plugin_test_logic_thread_id = 1001;
+
 ISessionService* session_service = nullptr;
 
 #define MESSAGE_FUNCTION_BEGIN(x) switch(x) {
@@ -83,15 +85,13 @@ int load_module(IFrame_Object* frame_object, string module_param)
     PSS_LOGGER_DEBUG("[load_module]({0})finish.", module_param);
 
     session_service = frame_object->get_session_service();
-    
-    /*
+
+    session_service->create_frame_work_thread(plugin_test_logic_thread_id);
+
     CMessage_Packet send_message;
     send_message.command_id_ = COMMAND_TEST_FRAME;
     send_message.buffer_ = "freeeyes";
-    session_service->send_frame_message(1, "time loop", send_message, std::chrono::seconds(5));
-    */
-
-    logic_connect_tcp();
+    session_service->send_frame_message(plugin_test_logic_thread_id, "time loop", send_message, std::chrono::seconds(5));
 
     return 0;
 }
@@ -163,10 +163,12 @@ void logic_test_frame(const CMessage_Source& source, const CMessage_Packet& recv
     //处理插件处理任务
     PSS_LOGGER_DEBUG("[logic_test_frame] tag_name={0},data={1}.", source.remote_ip_.m_strClientIP, recv_packet.buffer_);
 
+    /*
     CMessage_Packet send_message;
     send_message.command_id_ = COMMAND_TEST_FRAME;
     send_message.buffer_ = "freeeyes";
-    session_service->send_frame_message(1, "time loop", send_message, std::chrono::seconds(5));
+    session_service->send_frame_message(plugin_test_logic_thread_id, "time loop", send_message, std::chrono::seconds(5));
+    */
 }
 
 //执行消息处理

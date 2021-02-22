@@ -51,3 +51,8 @@ bool CSessionService::send_frame_message(uint16 tag_thread_id, std::string messa
         delay_seconds);
 }
 
+bool CSessionService::create_frame_work_thread(uint32 thread_id)
+{
+    return App_WorkThreadLogic::instance()->create_frame_work_thread(thread_id);
+}
+

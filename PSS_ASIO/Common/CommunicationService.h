@@ -50,7 +50,7 @@ private:
     communication_list communication_list_;
     server_connect_id_list server_connect_id_list_;
     std::recursive_mutex mutex_;
-    asio::io_context* io_service_context_;
+    asio::io_context* io_service_context_ = nullptr;
     bool communication_is_run_ = false;
 };
 
