@@ -47,7 +47,7 @@ bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, ve
 
         //如果有完整的包头
         uint32 packet_version     = 0;             //协议版本号
-        uint32 command_id         = 0;             //CommandID
+        uint16 command_id         = 0;             //CommandID
         uint32 packet_body_length = 0;             //包体长度
         char   packet_session[33] = { '\0' };      //Session字符串
 
