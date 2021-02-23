@@ -18,5 +18,13 @@
     <ClCompile Include="Test_Logic.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="BaseCommand.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BaseCommand.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

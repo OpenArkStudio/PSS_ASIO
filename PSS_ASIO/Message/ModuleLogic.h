@@ -97,6 +97,10 @@ public:
 
     bool create_frame_work_thread(uint32 thread_id);
 
+    uint16 get_io_work_thread_count();
+
+    uint16 get_plugin_work_thread_count();
+
 private:
     using hashmappluginworkthread = unordered_map<uint32, shared_ptr<CModuleLogic>>;
     vector<shared_ptr<CModuleLogic>> thread_module_list_;

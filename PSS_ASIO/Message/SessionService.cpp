@@ -56,3 +56,13 @@ bool CSessionService::create_frame_work_thread(uint32 thread_id)
     return App_WorkThreadLogic::instance()->create_frame_work_thread(thread_id);
 }
 
+uint16 CSessionService::get_io_work_thread_count()
+{
+    return App_WorkThreadLogic::instance()->get_io_work_thread_count();
+}
+
+uint16 CSessionService::get_plugin_work_thread_count()
+{
+    return App_WorkThreadLogic::instance()->get_plugin_work_thread_count();
+}
+

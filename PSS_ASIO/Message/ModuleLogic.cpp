@@ -351,6 +351,16 @@ bool CWorkThreadLogic::create_frame_work_thread(uint32 thread_id)
     return true;
 }
 
+uint16 CWorkThreadLogic::get_io_work_thread_count()
+{
+    return thread_count_;
+}
+
+uint16 CWorkThreadLogic::get_plugin_work_thread_count()
+{
+    return (uint16)plugin_work_thread_list_.size();
+}
+
 void CWorkThreadLogic::send_io_message(uint32 connect_id, CMessage_Packet send_packet)
 {
     //处理线程的投递
