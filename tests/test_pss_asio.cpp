@@ -11,11 +11,11 @@ TEST(run_test_iotoio, test_iotoio)
     EXPECT_EQ(run_test_iotoio(), 0);
 }
 
-int main()
+int main(int argc, char* argv[])
 {
     //运行google test 测试用例
-    ::testing::GTEST_FLAG(output) = "xml:Test_add.xml";
-    ::testing::InitGoogleTest();
+    ::testing::GTEST_FLAG(output) = "xml:Test_Pss_Asio.xml";
+    ::testing::InitGoogleTest(&argc, argv);
 
     return RUN_ALL_TESTS();
 }

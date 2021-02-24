@@ -38,3 +38,16 @@ jobs:
         nohup ./pss_asio > pssout.file 2>&1 &
         sleep 10
         killall pss_asio
+    - name: install google test
+      working-directory: ${{github.workspace}}/tests
+      shell: bash 
+      run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make
+
+    - name: run google test
+      working-directory: ${{github.workspace}}/tests
+      shell: bash 
+      run: |
+        apt list --installed | grep gtest
+        cmake .
+        cmake --build . --config debug
+        ./test_pss_asio
