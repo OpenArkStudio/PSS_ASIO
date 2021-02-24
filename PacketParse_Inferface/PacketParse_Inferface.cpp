@@ -57,13 +57,13 @@ bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, ve
         uint32 u4Pos = 0;
 
         //解析包头
-        //std::memcpy(&packet_version, &packet_buffer_data[u4Pos], (uint32)sizeof(uint16));
+        std::memcpy(&packet_version, &packet_buffer_data[u4Pos], (uint32)sizeof(uint16));
         u4Pos += sizeof(uint16);
         std::memcpy(&command_id, &packet_buffer_data[u4Pos], (uint32)sizeof(uint16));
         u4Pos += sizeof(uint16);
         std::memcpy(&packet_body_length, &packet_buffer_data[u4Pos], (uint32)sizeof(uint32));
         u4Pos += sizeof(uint32);
-        //std::memcpy(&packet_session, &packet_buffer_data[u4Pos], (uint32)(sizeof(char) * 32));
+        std::memcpy(&packet_session, &packet_buffer_data[u4Pos], (uint32)(sizeof(char) * 32));
         u4Pos += sizeof(char) * 32;
 
         //判断包体长度是否大于指定的长度
