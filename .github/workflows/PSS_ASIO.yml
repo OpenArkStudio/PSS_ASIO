@@ -65,6 +65,5 @@ jobs:
       run: | 
         git config user.name github-actions
         git config user.email github-actions@github.com
-        git add gtest_output.html
         git commit -m "update gtest_output"
         git push

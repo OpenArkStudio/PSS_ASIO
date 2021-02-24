@@ -6,6 +6,8 @@ void CBaseCommand::Init(ISessionService* session_service)
 
     if (TEST_FRAME_WORK_FLAG == 1)
     {
+        session_service_->create_frame_work_thread(plugin_test_logic_thread_id);
+
         CMessage_Packet send_message;
         send_message.command_id_ = COMMAND_TEST_FRAME;
         send_message.buffer_ = "freeeyes";

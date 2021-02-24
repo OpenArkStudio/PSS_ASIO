@@ -109,6 +109,9 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
 
     plugin_work_thread_buffer_list_.clear();
 
+    //等待10毫秒，让所有线程创建完毕
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
     //加载插件投递事件
     for (auto plugin_events : plugin_work_thread_buffer_message_list_)
     {
