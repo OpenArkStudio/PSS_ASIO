@@ -1,1 +1,1 @@
-python -m google_test.py Test_Pss_Asio.xml
+python google_test.py Test_Pss_Asio.xml

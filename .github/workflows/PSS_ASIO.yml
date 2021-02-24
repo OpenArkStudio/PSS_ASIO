@@ -56,7 +56,7 @@ jobs:
       working-directory: ${{github.workspace}}/tests
       shell: bash 
       run: |
-        python -m google_test.py Test_Pss_Asio.xml
+        python google_test.py Test_Pss_Asio.xml
         ls -l
 
     - name: git add test html report
