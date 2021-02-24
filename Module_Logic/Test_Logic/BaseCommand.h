@@ -10,6 +10,9 @@
 #define MESSAGE_FUNCTION(x,y,z,h,i) case x: { y(z,h,i); break; }
 #define MESSAGE_FUNCTION_END }
 
+//0是不测试框架其他接口功能，1是测试。
+const uint8 TEST_FRAME_WORK_FLAG = 0;
+
 //定义处理插件的command_id
 const uint16 COMMAND_TEST_SYNC = 0x2101;
 const uint16 COMMAND_TEST_ASYN = 0x2102;

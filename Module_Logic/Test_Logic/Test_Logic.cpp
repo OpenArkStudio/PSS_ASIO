@@ -52,6 +52,12 @@ int load_module(IFrame_Object* frame_object, string module_param)
 
     base_command->Init(session_service);
 
+    if (TEST_FRAME_WORK_FLAG == 1)
+    {
+        base_command->logic_connect_tcp();
+        base_command->logic_connect_udp();
+    }
+
     PSS_LOGGER_DEBUG("[load_module]({0})finish.", module_param);
 
     return 0;

@@ -4,10 +4,13 @@ void CBaseCommand::Init(ISessionService* session_service)
 {
     session_service_ = session_service;
 
-	CMessage_Packet send_message;
-	send_message.command_id_ = COMMAND_TEST_FRAME;
-	send_message.buffer_ = "freeeyes";
-	session_service_->send_frame_message(plugin_test_logic_thread_id, "time loop", send_message, std::chrono::seconds(5));
+    if (TEST_FRAME_WORK_FLAG == 1)
+    {
+        CMessage_Packet send_message;
+        send_message.command_id_ = COMMAND_TEST_FRAME;
+        send_message.buffer_ = "freeeyes";
+        session_service_->send_frame_message(plugin_test_logic_thread_id, "time loop", send_message, std::chrono::seconds(5));
+    }
 
     PSS_LOGGER_DEBUG("[load_module]({0})io thread count.", session_service_->get_io_work_thread_count());
 }
@@ -38,7 +41,7 @@ void CBaseCommand::logic_connect_udp()
     io_info.recv_size = 1024;
     io_info.server_ip = "127.0.0.1";
     io_info.server_port = 10005;
-    io_info.server_id = 1001;
+    io_info.server_id = 1002;
     io_info.packet_parse_id = 1;
 
     session_service_->connect_io_server(io_info, io_type);
@@ -69,11 +72,22 @@ void CBaseCommand::logic_connect(const CMessage_Source& source, const CMessage_P
         PSS_LOGGER_DEBUG("[logic_connect]connand={}, server_id={}", source.connect_id_, source.connect_mark_id_);
 
         //测试关闭链接
-        //session_service->close_io_session(source.connect_id_);
+        //session_service_->close_io_session(source.connect_id_);
     }
     else if (source.type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_UDP)
     {
         PSS_LOGGER_DEBUG("[logic_connect]connand={}, CONNECT_IO_SERVER_UDP", source.connect_id_);
+        PSS_LOGGER_DEBUG("[logic_connect]connand={}, server_id={}", source.connect_id_, source.connect_mark_id_);
+
+        /*测试发送UDP消息*/
+        if (TEST_FRAME_WORK_FLAG == 1)
+        {
+            CMessage_Packet send_asyn_packet;
+            send_asyn_packet.command_id_ = 0x1002;
+            send_asyn_packet.buffer_ = "111111";
+
+            session_service_->send_io_message(source.connect_id_, send_asyn_packet);
+        }
     }
 }
 
@@ -86,9 +100,6 @@ void CBaseCommand::logic_test_sync(const CMessage_Source& source, const CMessage
 {
     //处理发送数据(同步)
     send_packet.buffer_.append(recv_packet.buffer_.c_str(), recv_packet.buffer_.size());
-
-    //测试服务器间链接
-    //logic_connect_tcp();
 }
 
 void CBaseCommand::logic_test_asyn(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
@@ -105,10 +116,11 @@ void CBaseCommand::logic_test_frame(const CMessage_Source& source, const CMessag
     //处理插件处理任务
     PSS_LOGGER_DEBUG("[logic_test_frame] tag_name={0},data={1}.", source.remote_ip_.m_strClientIP, recv_packet.buffer_);
 
-    /*
-    CMessage_Packet send_message;
-    send_message.command_id_ = COMMAND_TEST_FRAME;
-    send_message.buffer_ = "freeeyes";
-    session_service_->send_frame_message(plugin_test_logic_thread_id, "time loop", send_message, std::chrono::seconds(5));
-    */
+    if (TEST_FRAME_WORK_FLAG == 1)
+    {
+        CMessage_Packet send_message;
+        send_message.command_id_ = COMMAND_TEST_FRAME;
+        send_message.buffer_ = "freeeyes";
+        session_service_->send_frame_message(plugin_test_logic_thread_id, "time loop", send_message, std::chrono::seconds(5));
+    }
 }
