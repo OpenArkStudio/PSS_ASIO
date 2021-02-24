@@ -89,7 +89,7 @@ endif()
 if(UNIX)
 	find_package(GTEST)
 	if (!GTEST_FOUND)
-    message(FATAL_ERROR "googletest library is needed but can't be found")
+		message(FATAL_ERROR "googletest library is needed but can't be found")
 	endif ()
 	
 	link_directories(${GTEST_LIBRARY})

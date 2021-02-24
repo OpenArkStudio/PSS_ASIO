@@ -24,3 +24,6 @@ This is a plug-in IO interface management system, you can complete the separatio
 - you can used VS2019 to compile under windows.
 
 - you can use cmake to compile under linux.
+
+## test report
+[test report](https://github.com/ArkNX/PSS_ASIO/tree/master/tests/gtest_output.html)   
