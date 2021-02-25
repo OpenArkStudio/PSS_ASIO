@@ -118,7 +118,7 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
         send_frame_message(plugin_events.tag_thread_id_,
             plugin_events.message_tag_,
             plugin_events.send_packet_,
-            plugin_events.delay_seconds_);
+            plugin_events.delay_timer_);
 
     }
     plugin_work_thread_buffer_message_list_.clear();
@@ -354,6 +354,29 @@ bool CWorkThreadLogic::create_frame_work_thread(uint32 thread_id)
     return true;
 }
 
+bool CWorkThreadLogic::delete_frame_message_timer(int timer_id)
+{
+    std::lock_guard <std::recursive_mutex> lock(plugin_timer_mutex_);
+
+    auto f = plgin_timer_list_.find(timer_id);
+    if (f != plgin_timer_list_.end())
+    {
+        auto timer = f->second;
+        auto timer_ptr = timer.lock();
+        if (nullptr != timer_ptr)
+        {
+            timer_ptr->cancel();
+        }
+
+        plgin_timer_list_.erase(f);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 uint16 CWorkThreadLogic::get_io_work_thread_count()
 {
     return thread_count_;
@@ -439,7 +462,7 @@ void CWorkThreadLogic::run_check_task(uint32 timeout_seconds)
     PSS_LOGGER_DEBUG("[CWorkThreadLogic::run_check_task]check is ok.");
 }
 
-bool CWorkThreadLogic::send_frame_message(uint16 tag_thread_id, std::string message_tag, CMessage_Packet send_packet, std::chrono::seconds delay_seconds)
+bool CWorkThreadLogic::send_frame_message(uint16 tag_thread_id, std::string message_tag, CMessage_Packet send_packet, CFrame_Message_Delay delay_timer)
 {
     if (false == module_init_finish_)
     {
@@ -447,7 +470,7 @@ bool CWorkThreadLogic::send_frame_message(uint16 tag_thread_id, std::string mess
         plugin_message.tag_thread_id_ = tag_thread_id;
         plugin_message.message_tag_ = message_tag;
         plugin_message.send_packet_ = send_packet;
-        plugin_message.delay_seconds_ = delay_seconds;
+        plugin_message.delay_timer_ = delay_timer;
         plugin_work_thread_buffer_message_list_.emplace_back(plugin_message);
         return true;
     }
@@ -460,7 +483,7 @@ bool CWorkThreadLogic::send_frame_message(uint16 tag_thread_id, std::string mess
 
     auto plugin_thread = f->second;
 
-    if (delay_seconds == std::chrono::seconds(0))
+    if (delay_timer.delay_seconds_ == std::chrono::seconds(0))
     {
         //不需要延时，立刻投递
         do_plugin_thread_module_logic(plugin_thread, message_tag, send_packet);
@@ -468,11 +491,23 @@ bool CWorkThreadLogic::send_frame_message(uint16 tag_thread_id, std::string mess
     else
     {
         //需要延时，延时后投递
-        App_TimerManager::instance()->GetTimerPtr()->addTimer(delay_seconds, [this, plugin_thread, message_tag, send_packet]()
+        auto timer_ptr = App_TimerManager::instance()->GetTimerPtr()->addTimer(delay_timer.delay_seconds_, [this, plugin_thread, message_tag, send_packet, delay_timer]()
             {
+                //对定时器列表操作加锁
+                {
+                    std::lock_guard <std::recursive_mutex> lock(plugin_timer_mutex_);
+                    plgin_timer_list_.erase(delay_timer.timer_id_);
+                }
+
                 //延时到期，进行投递
                 do_plugin_thread_module_logic(plugin_thread, message_tag, send_packet);
             });
+
+        //添加映射关系
+        {
+            std::lock_guard <std::recursive_mutex> lock(plugin_timer_mutex_);
+            plgin_timer_list_[delay_timer.timer_id_] = timer_ptr;
+        }
     }
 
     return true;

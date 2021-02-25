@@ -43,17 +43,22 @@ bool CSessionService::delete_session_io_mapping(_ClientIPInfo from_io, EM_CONNEC
         from_io_type);
 }
 
-bool CSessionService::send_frame_message(uint16 tag_thread_id, std::string message_tag, CMessage_Packet send_packet, std::chrono::seconds delay_seconds)
+bool CSessionService::send_frame_message(uint16 tag_thread_id, std::string message_tag, CMessage_Packet send_packet, CFrame_Message_Delay delay_timer)
 {
     return App_WorkThreadLogic::instance()->send_frame_message(tag_thread_id,
         message_tag,
         send_packet,
-        delay_seconds);
+        delay_timer);
 }
 
 bool CSessionService::create_frame_work_thread(uint32 thread_id)
 {
     return App_WorkThreadLogic::instance()->create_frame_work_thread(thread_id);
+}
+
+bool CSessionService::delete_frame_message_timer(int timer_id)
+{
+    return App_WorkThreadLogic::instance()->delete_frame_message_timer(timer_id);
 }
 
 uint16 CSessionService::get_io_work_thread_count()

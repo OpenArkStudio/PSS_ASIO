@@ -25,7 +25,7 @@ public:
     uint16 tag_thread_id_ = 0;
     std::string message_tag_ = "";
     CMessage_Packet send_packet_;
-    std::chrono::seconds delay_seconds_ = std::chrono::seconds(0);
+    CFrame_Message_Delay delay_timer_;
 };
 
 class CModuleLogic
@@ -91,11 +91,13 @@ public:
 
     void run_check_task(uint32 timeout_seconds);
 
-    bool send_frame_message(uint16 tag_thread_id, std::string message_tag, CMessage_Packet send_packet, std::chrono::seconds delay_seconds);
+    bool send_frame_message(uint16 tag_thread_id, std::string message_tag, CMessage_Packet send_packet, CFrame_Message_Delay delay_timer);
 
     void do_plugin_thread_module_logic(shared_ptr<CModuleLogic> module_logic, std::string message_tag, CMessage_Packet recv_packet);
 
     bool create_frame_work_thread(uint32 thread_id);
+
+    bool delete_frame_message_timer(int timer_id);
 
     uint16 get_io_work_thread_count();
 
@@ -103,6 +105,7 @@ public:
 
 private:
     using hashmappluginworkthread = unordered_map<uint32, shared_ptr<CModuleLogic>>;
+    using hashmaplogictimer = unordered_map<int, brynet::Timer::WeakPtr>;
     vector<shared_ptr<CModuleLogic>> thread_module_list_;
     CLoadModule load_module_;
     uint16      thread_count_ = 0;
@@ -112,6 +115,8 @@ private:
     vector<uint32> plugin_work_thread_buffer_list_;
     vector<CDelayPluginMessage> plugin_work_thread_buffer_message_list_;
     hashmappluginworkthread plugin_work_thread_list_;
+    hashmaplogictimer plgin_timer_list_;
+    std::recursive_mutex plugin_timer_mutex_;
 };
 
 using App_WorkThreadLogic = PSS_singleton<CWorkThreadLogic>;

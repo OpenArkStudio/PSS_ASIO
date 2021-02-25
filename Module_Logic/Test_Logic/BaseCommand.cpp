@@ -9,9 +9,14 @@ void CBaseCommand::Init(ISessionService* session_service)
         session_service_->create_frame_work_thread(plugin_test_logic_thread_id);
 
         CMessage_Packet send_message;
+        CFrame_Message_Delay delay_timer;
+
+        delay_timer.delay_seconds_ = std::chrono::seconds(5);
+        delay_timer.timer_id_ = 1001;  //这个ID必须是全局唯一的
+
         send_message.command_id_ = COMMAND_TEST_FRAME;
         send_message.buffer_ = "freeeyes";
-        session_service_->send_frame_message(plugin_test_logic_thread_id, "time loop", send_message, std::chrono::seconds(5));
+        session_service_->send_frame_message(plugin_test_logic_thread_id, "time loop", send_message, delay_timer);
     }
 
     PSS_LOGGER_DEBUG("[load_module]({0})io thread count.", session_service_->get_io_work_thread_count());
@@ -121,8 +126,17 @@ void CBaseCommand::logic_test_frame(const CMessage_Source& source, const CMessag
     if (TEST_FRAME_WORK_FLAG == 1)
     {
         CMessage_Packet send_message;
+        CFrame_Message_Delay delay_timer;
+
+        delay_timer.delay_seconds_ = std::chrono::seconds(5);
+        delay_timer.timer_id_ = 1001;  //这个ID必须是全局唯一的
+
         send_message.command_id_ = COMMAND_TEST_FRAME;
         send_message.buffer_ = "freeeyes";
-        session_service_->send_frame_message(plugin_test_logic_thread_id, "time loop", send_message, std::chrono::seconds(5));
+        session_service_->send_frame_message(plugin_test_logic_thread_id, "time loop", send_message, delay_timer);
+
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+
+        session_service_->delete_frame_message_timer(1001);
     }
 }

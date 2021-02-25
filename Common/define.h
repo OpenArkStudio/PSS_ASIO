@@ -72,11 +72,20 @@ public:
     _ClientIPInfo remote_ip_;
 };
 
+//逻辑数据包结构
 class CMessage_Packet
 {
 public:
     string buffer_;
     uint16 command_id_;
+};
+
+//插件内调用延迟消息数据体
+class CFrame_Message_Delay
+{
+public:
+    std::chrono::seconds delay_seconds_ = std::chrono::seconds(0); //延迟的秒数
+    int timer_id_ = 0;  //定时器的id(这个必须唯一，否则会添加定时器失败)
 };
 
 //服务器间链接结构
