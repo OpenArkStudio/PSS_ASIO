@@ -63,8 +63,11 @@ jobs:
       working-directory: ${{github.workspace}}/tests
       shell: bash 
       run: | 
+        git init
         git config user.name github-actions
         git config user.email github-actions@github.com
         git add -u gtest_output.html
         git commit -m "[ci update]google test report"
-        git push
+    - name: Push changes
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
