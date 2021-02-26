@@ -202,12 +202,12 @@ namespace brynet {
             {
                 //当前没有定时器，等待唤醒
                 cv.wait_for(lck, std::chrono::seconds(timer_default_wait));
-                std::cout << "wake up" << std::endl;
+                // std::cout << "wake up" << std::endl;
             }
 
             if (!timer_run_)
             {
-                std::cout << "end up" << std::endl;
+                //std::cout << "end up" << std::endl;
                 return ENUM_WHILE_STATE::WHILE_STATE_BREAK;
             }
 
@@ -277,7 +277,7 @@ namespace brynet {
                 }
             }
 
-            std::cout << "[TimerMgr::schedule]Time manager is end.\n" << std::endl;
+            //std::cout << "[TimerMgr::schedule]Time manager is end.\n" << std::endl;
         }
 
         bool isEmpty()
