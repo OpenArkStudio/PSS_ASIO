@@ -33,7 +33,7 @@ source_group("UdpSession" FILES ${UDPSESSION_FILES})
 file(GLOB TTYSESSION_FILES TTySession/*.h TTySession/*.cpp)
 source_group("TTySession" FILES ${TTYSESSION_FILES})
 
-file(GLOB MAIN_FILES ${PROJECT_SOURCE_DIR}/PSS_ASIO.cpp)
+file(GLOB_RECURSE MAIN_FILES ${PROJECT_SOURCE_DIR}/PSS_ASIO.cpp)
 source_group("Main" FILES ${MAIN_FILES})
 
 include_directories(
