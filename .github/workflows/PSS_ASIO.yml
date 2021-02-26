@@ -56,13 +56,12 @@ jobs:
       working-directory: ${{github.workspace}}/tests
       shell: bash 
       run: |
-        #python google_test.py Test_Pss_Asio.xml
-        #ls -l
-        date > gtest_output.html
+        python google_test.py Test_Pss_Asio.xml
+        #date > gtest_output.html
         git config --global user.name github-actions
         git config --global user.email github-actions@github.com
         git add -f gtest_output.html
-        git commit -m "[ci update]google test report"
+        git commit -m "make google test report"
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
