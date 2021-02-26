@@ -69,5 +69,7 @@ jobs:
         git add -u gtest_output.html
         git commit -m "[ci update]google test report"
     - name: Push changes
+      uses: ad-m/github-push-action@master
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}
