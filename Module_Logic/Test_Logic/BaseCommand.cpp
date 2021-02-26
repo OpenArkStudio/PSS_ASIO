@@ -140,3 +140,17 @@ void CBaseCommand::logic_test_frame(const CMessage_Source& source, const CMessag
         session_service_->delete_frame_message_timer(1001);
     }
 }
+
+void CBaseCommand::logic_test_connect_error(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
+{
+    PSS_LOGGER_DEBUG("[CBaseCommand::logic_test_connect_error]{0}:{1}", 
+        source.remote_ip_.m_strClientIP,
+        source.remote_ip_.m_u2Port);
+}
+
+void CBaseCommand::logic_test_listen_error(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
+{
+    PSS_LOGGER_DEBUG("[CBaseCommand::logic_test_listen_error]{0}:{1}",
+        source.local_ip_.m_strClientIP,
+        source.local_ip_.m_u2Port);
+}

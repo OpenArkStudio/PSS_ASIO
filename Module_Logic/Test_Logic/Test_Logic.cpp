@@ -44,6 +44,8 @@ int load_module(IFrame_Object* frame_object, string module_param)
     //注册插件
     frame_object->Regedit_command(LOGIC_COMMAND_CONNECT);
     frame_object->Regedit_command(LOGIC_COMMAND_DISCONNECT);
+    frame_object->Regedit_command(LOGIC_CONNECT_SERVER_ERROR);
+    frame_object->Regedit_command(LOGIC_LISTEN_SERVER_ERROR);
     frame_object->Regedit_command(COMMAND_TEST_SYNC);
     frame_object->Regedit_command(COMMAND_TEST_ASYN);
     frame_object->Regedit_command(COMMAND_TEST_FRAME);
@@ -80,6 +82,8 @@ int do_module_message(const CMessage_Source& source, const CMessage_Packet& recv
     MESSAGE_FUNCTION_BEGIN(recv_packet.command_id_);
     MESSAGE_FUNCTION(LOGIC_COMMAND_CONNECT, base_command->logic_connect, source, recv_packet, send_packet);
     MESSAGE_FUNCTION(LOGIC_COMMAND_DISCONNECT, base_command->logic_disconnect, source, recv_packet, send_packet);
+    MESSAGE_FUNCTION(LOGIC_CONNECT_SERVER_ERROR, base_command->logic_test_connect_error, source, recv_packet, send_packet);
+    MESSAGE_FUNCTION(LOGIC_LISTEN_SERVER_ERROR, base_command->logic_test_listen_error, source, recv_packet, send_packet);
     MESSAGE_FUNCTION(COMMAND_TEST_SYNC, base_command->logic_test_sync, source, recv_packet, send_packet);
     MESSAGE_FUNCTION(COMMAND_TEST_ASYN, base_command->logic_test_asyn, source, recv_packet, send_packet);
     MESSAGE_FUNCTION(COMMAND_TEST_FRAME, base_command->logic_test_frame, source, recv_packet, send_packet);

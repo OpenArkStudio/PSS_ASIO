@@ -166,7 +166,7 @@ void CWorkThreadLogic::add_frame_events(uint16 command_id, uint32 mark_id, std::
 
         recv_packet.command_id_ = command_id;
 
-        if (recv_packet.command_id_ == LOGIC_CINNECT_SERVER_ERROR)
+        if (recv_packet.command_id_ == LOGIC_CONNECT_SERVER_ERROR)
         {
             source.connect_id_ = 0;
             source.work_thread_id_ = module_logic->get_work_thread_id();

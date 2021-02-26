@@ -141,6 +141,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Common\BuffPacket.cpp" />
     <ClCompile Include="Common\CommunicationService.cpp" />
     <ClCompile Include="Common\ConnectCounter.cpp" />
     <ClCompile Include="Common\serverconfig.cpp" />
@@ -161,6 +162,7 @@
     <ClCompile Include="UdpSession\UdpServer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Common\BuffPacket.h" />
     <ClInclude Include="..\Common\define.h" />
     <ClInclude Include="..\Common\IFrameObject.h" />
     <ClInclude Include="..\Common\ISessionService.h" />

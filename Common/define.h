@@ -109,7 +109,7 @@ public:
 //链接消息命令
 const uint16 LOGIC_COMMAND_CONNECT = 0x0001;     //链接建立事件
 const uint16 LOGIC_COMMAND_DISCONNECT = 0x0002;   //链接断开事件
-const uint16 LOGIC_CINNECT_SERVER_ERROR = 0x0003;  //链接服务器不成功事件
+const uint16 LOGIC_CONNECT_SERVER_ERROR = 0x0003;  //链接服务器不成功事件
 const uint16 LOGIC_LISTEN_SERVER_ERROR = 0x0004;  //创建监听事件
 const uint16 LOGIC_MAX_FRAME_COMMAND = 0x0010;   //内部事件ID上限 
 

@@ -29,6 +29,8 @@ public:
 	void logic_test_sync(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet);
 	void logic_test_asyn(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet);
 	void logic_test_frame(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet);
+	void logic_test_connect_error(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet);
+	void logic_test_listen_error(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet);
 
 	ISessionService* session_service_ = nullptr;
 };
