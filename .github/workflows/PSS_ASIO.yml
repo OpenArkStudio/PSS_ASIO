@@ -65,7 +65,7 @@ jobs:
       run: | 
         git config --global user.name github-actions
         git config --global user.email github-actions@github.com
-        git add -u gtest_output.html
+        git add -f gtest_output.html
         git commit -m "[ci update]google test report"
     - name: Push changes
       uses: ad-m/github-push-action@master
