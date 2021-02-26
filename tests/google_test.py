@@ -36,11 +36,13 @@ def process_xml(xml):
     root = tree.getroot()
     overviewName = root.attrib['name']
     overviewTests = int(root.attrib['tests'])
+    overviewTeststime = root.attrib['timestamp']
     overviewFailed = int(root.attrib['failures'])
     overviewDisabled = int(root.attrib['disabled'])
     data = {
         'name': overviewName,
         'tests': overviewTests,
+        'timestamp' : overviewTeststime,
         'failures': overviewFailed,
 		'disabled': overviewDisabled,
         'testsuites': []

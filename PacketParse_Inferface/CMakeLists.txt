@@ -14,7 +14,7 @@ else()
 	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${BIN_OUTPUT_DIR}")
 endif()
 
-file(GLOB_RECURSE MAIN_FILES ${PROJECT_SOURCE_DIR}/*.cpp)
+file(GLOB MAIN_FILES ${PROJECT_SOURCE_DIR}/*.cpp)
 source_group("main_file" FILES ${MAIN_FILES})
 
 include_directories(

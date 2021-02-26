@@ -12,28 +12,28 @@ else()
 	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${BIN_OUTPUT_DIR}")
 endif()
 	
-file(GLOB_RECURSE PROC_COMMON ${PROJECT_SOURCE_DIR}/COMMON/*.h ${PROJECT_SOURCE_DIR}/COMMON/*.hpp)
+file(GLOB PROC_COMMON ${PROJECT_SOURCE_DIR}/COMMON/*.h ${PROJECT_SOURCE_DIR}/COMMON/*.hpp)
 source_group("proc_common" FILES ${PROC_COMMON})
 
-file(GLOB_RECURSE THIRD_INCLUDE ${PROJECT_SOURCE_DIR}/third_Include/*.h ${PROJECT_SOURCE_DIR}/third_Include/*.hpp)
+file(GLOB THIRD_INCLUDE ${PROJECT_SOURCE_DIR}/third_Include/*.h ${PROJECT_SOURCE_DIR}/third_Include/*.hpp)
 source_group("third_Include" FILES ${THIRD_INCLUDE})
 
-file(GLOB_RECURSE COMMON_FILES Common/*.h Common/*.cpp)
+file(GLOB COMMON_FILES Common/*.h Common/*.cpp)
 source_group("Common" FILES ${COMMON_FILES})
 
-file(GLOB_RECURSE MESSAGE_FILES Message/*.h Message/*.cpp)
+file(GLOB MESSAGE_FILES Message/*.h Message/*.cpp)
 source_group("Message" FILES ${MESSAGE_FILES})
 
-file(GLOB_RECURSE TCPSESSION_FILES TcpSession/*.h TcpSession/*.cpp)
+file(GLOB TCPSESSION_FILES TcpSession/*.h TcpSession/*.cpp)
 source_group("TcpSession" FILES ${TCPSESSION_FILES})
 
-file(GLOB_RECURSE UDPSESSION_FILES UdpSession/*.h UdpSession/*.cpp)
+file(GLOB UDPSESSION_FILES UdpSession/*.h UdpSession/*.cpp)
 source_group("UdpSession" FILES ${UDPSESSION_FILES})
 
-file(GLOB_RECURSE TTYSESSION_FILES TTySession/*.h TTySession/*.cpp)
+file(GLOB TTYSESSION_FILES TTySession/*.h TTySession/*.cpp)
 source_group("TTySession" FILES ${TTYSESSION_FILES})
 
-file(GLOB_RECURSE MAIN_FILES ${PROJECT_SOURCE_DIR}/PSS_ASIO.cpp)
+file(GLOB MAIN_FILES ${PROJECT_SOURCE_DIR}/PSS_ASIO.cpp)
 source_group("Main" FILES ${MAIN_FILES})
 
 include_directories(

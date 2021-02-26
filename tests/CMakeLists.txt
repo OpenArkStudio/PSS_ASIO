@@ -18,25 +18,25 @@ else()
 	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${BIN_OUTPUT_DIR}")
 endif()
 
-file(GLOB_RECURSE PROC_COMMON ../Common/*.h ../Common/*.hpp)
+file(GLOB PROC_COMMON ../Common/*.h ../Common/*.hpp)
 source_group("proc_common" FILES ${PROC_COMMON})
 
-file(GLOB_RECURSE THIRD_INCLUDE ../third_Include/*.h ../third_Include/*.hpp)
+file(GLOB THIRD_INCLUDE ../third_Include/*.h ../third_Include/*.hpp)
 source_group("third_Include" FILES ${THIRD_INCLUDE})
 	
-file(GLOB_RECURSE COMMON_FILES ../PSS_ASIO/Common/*.h ../PSS_ASIO/Common/*.cpp)
+file(GLOB COMMON_FILES ../PSS_ASIO/Common/*.h ../PSS_ASIO/Common/*.cpp)
 source_group("Common" FILES ${COMMON_FILES})
 
-file(GLOB_RECURSE MESSAGE_FILES ../PSS_ASIO/Message/*.h ../PSS_ASIO/Message/*.cpp)
+file(GLOB MESSAGE_FILES ../PSS_ASIO/Message/*.h ../PSS_ASIO/Message/*.cpp)
 source_group("Message" FILES ${MESSAGE_FILES})	
 
-file(GLOB_RECURSE TCPSESSION_FILES ../PSS_ASIO/TcpSession/*.h ../PSS_ASIO/TcpSession/*.cpp)
+file(GLOB TCPSESSION_FILES ../PSS_ASIO/TcpSession/*.h ../PSS_ASIO/TcpSession/*.cpp)
 source_group("TcpSession" FILES ${TCPSESSION_FILES})
 
-file(GLOB_RECURSE UDPSESSION_FILES ../PSS_ASIO/UdpSession/*.h ../PSS_ASIO/UdpSession/*.cpp)
+file(GLOB UDPSESSION_FILES ../PSS_ASIO/UdpSession/*.h ../PSS_ASIO/UdpSession/*.cpp)
 source_group("UdpSession" FILES ${UDPSESSION_FILES})
 
-file(GLOB_RECURSE TTYSESSION_FILES ../PSS_ASIO/TTySession/*.h ../PSS_ASIO/TTySession/*.cpp)
+file(GLOB TTYSESSION_FILES ../PSS_ASIO/TTySession/*.h ../PSS_ASIO/TTySession/*.cpp)
 source_group("TTySession" FILES ${TTYSESSION_FILES})
 	
 file(GLOB MAIN_FILES ${PROJECT_SOURCE_DIR}/*.cpp)
