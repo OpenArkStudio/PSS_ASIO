@@ -23,6 +23,14 @@ bool CTcpClientSession::start(const CConnect_IO_Info& io_info)
     {
         //连接建立失败
         PSS_LOGGER_DEBUG("[CTcpClientSession::start]error({})", connect_error.message());
+
+        //发送消息给逻辑块
+        App_WorkThreadLogic::instance()->add_frame_events(LOGIC_CINNECT_SERVER_ERROR,
+            server_id_,
+            remote_ip_.m_strClientIP,
+            remote_ip_.m_u2Port,
+            io_type_);
+
         return false;
     }
     else

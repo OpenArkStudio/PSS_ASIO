@@ -122,6 +122,14 @@ bool CTTyServer::add_serial_port(asio::io_context* io_context, std::string tty_n
     if (ec)
     {
         PSS_LOGGER_DEBUG("[CServerService::add_serial_port]connect error={}.", ec.message());
+
+        //发送消息给逻辑块
+        App_WorkThreadLogic::instance()->add_frame_events(LOGIC_LISTEN_SERVER_ERROR,
+            server_id_,
+            local_ip_.m_strClientIP,
+            local_ip_.m_u2Port,
+            io_type_);
+
         return false;
     }
 

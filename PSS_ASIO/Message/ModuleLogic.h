@@ -69,6 +69,8 @@ public:
 
     void close();
 
+    void add_frame_events(uint16 command_id, uint32 mark_id, std::string remote_ip, uint16 remote_port, EM_CONNECT_IO_TYPE io_type);
+
     void add_thread_session(uint32 connect_id, shared_ptr<ISession> session, _ClientIPInfo& local_info, const _ClientIPInfo& romote_info);
 
     void delete_thread_session(uint32 connect_id, _ClientIPInfo from_io, shared_ptr<ISession> session);

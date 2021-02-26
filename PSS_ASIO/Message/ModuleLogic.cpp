@@ -154,6 +154,40 @@ void CWorkThreadLogic::close()
     load_module_.Close();
 }
 
+void CWorkThreadLogic::add_frame_events(uint16 command_id, uint32 mark_id, std::string remote_ip, uint16 remote_port, EM_CONNECT_IO_TYPE io_type)
+{
+    //添加框架通知事件
+    auto module_logic = thread_module_list_[0];
+
+    App_tms::instance()->AddMessage(0, [command_id, mark_id, remote_ip, remote_port, io_type, module_logic]() {
+        CMessage_Source source;
+        CMessage_Packet recv_packet;
+        CMessage_Packet send_packet;
+
+        recv_packet.command_id_ = command_id;
+
+        if (recv_packet.command_id_ == LOGIC_CINNECT_SERVER_ERROR)
+        {
+            source.connect_id_ = 0;
+            source.work_thread_id_ = module_logic->get_work_thread_id();
+            source.connect_mark_id_ = mark_id;
+            source.remote_ip_.m_strClientIP = remote_ip;
+            source.remote_ip_.m_u2Port = remote_port;
+        }
+        else if (recv_packet.command_id_ == LOGIC_LISTEN_SERVER_ERROR)
+        {
+            source.connect_id_ = 0;
+            source.work_thread_id_ = module_logic->get_work_thread_id();
+            source.connect_mark_id_ = mark_id;
+            source.local_ip_.m_strClientIP = remote_ip;
+            source.local_ip_.m_u2Port = remote_port;
+        }
+        source.type_ = io_type;
+
+        module_logic->do_thread_module_logic(source, recv_packet, send_packet);
+        });
+}
+
 void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession> session, _ClientIPInfo& local_info, const _ClientIPInfo& romote_info)
 {
     //session 建立连接

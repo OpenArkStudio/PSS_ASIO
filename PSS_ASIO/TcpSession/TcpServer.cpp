@@ -27,8 +27,18 @@ void CTcpServer::do_accept()
             }
             else
             {
+                //发送监听失败消息
+                App_WorkThreadLogic::instance()->add_frame_events(LOGIC_LISTEN_SERVER_ERROR,
+                    0,
+                    acceptor_.local_endpoint().address().to_string(),
+                    acceptor_.local_endpoint().port(),
+                    EM_CONNECT_IO_TYPE::CONNECT_IO_TCP);
+
                 //监听失败，查看错误信息
-                std::cout << ec.message() << std::endl;
+                PSS_LOGGER_INFO("[CTcpServer::do_accept]({0}{1})accept error:{2}", 
+                    acceptor_.local_endpoint().address().to_string(),
+                    acceptor_.local_endpoint().port(),
+                    ec.message());
             }
 
             do_accept();
