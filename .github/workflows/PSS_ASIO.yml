@@ -52,17 +52,12 @@ jobs:
         cmake .
         cmake --build . --config debug
         ./test_pss_asio
-    - name: make report
+    - name: make report && push
       working-directory: ${{github.workspace}}/tests
       shell: bash 
       run: |
         python google_test.py Test_Pss_Asio.xml
         ls -l
-
-    - name: git add test html report
-      working-directory: ${{github.workspace}}/tests
-      shell: bash 
-      run: | 
         git config --global user.name github-actions
         git config --global user.email github-actions@github.com
         git add -f gtest_output.html
