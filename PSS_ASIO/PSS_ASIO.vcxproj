@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -141,7 +141,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Common\BuffPacket.cpp" />
     <ClCompile Include="Common\CommunicationService.cpp" />
     <ClCompile Include="Common\ConnectCounter.cpp" />
     <ClCompile Include="Common\serverconfig.cpp" />
@@ -162,7 +161,7 @@
     <ClCompile Include="UdpSession\UdpServer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Common\BuffPacket.h" />
+    <ClInclude Include="..\Common\BuffPacket.hpp" />
     <ClInclude Include="..\Common\define.h" />
     <ClInclude Include="..\Common\IFrameObject.h" />
     <ClInclude Include="..\Common\ISessionService.h" />
