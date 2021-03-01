@@ -4,11 +4,19 @@
 #include <iostream>
 #include <gtest/gtest.h>
 
+#include "test_buffpacket.h"
 #include "test_Iotoio.h"
 
 TEST(run_test_iotoio, test_iotoio)
 {
     EXPECT_EQ(run_test_iotoio(), 0);
+}
+
+TEST(run_test_buffpacket, test_buffpacket)
+{
+    EXPECT_EQ(test_buffpacket_number_data(), 0);
+    EXPECT_EQ(test_buffpacket_string_data(), 0);
+    EXPECT_EQ(test_offset_number_data(), 0);
 }
 
 int main(int argc, char* argv[])

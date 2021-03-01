@@ -144,10 +144,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\PSS_ASIO\Message\IotoIo.cpp" />
+    <ClCompile Include="test_buffpacket.cpp" />
     <ClCompile Include="test_Iotoio.cpp" />
     <ClCompile Include="test_pss_asio.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="test_buffpacket.h" />
     <ClInclude Include="test_Iotoio.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
