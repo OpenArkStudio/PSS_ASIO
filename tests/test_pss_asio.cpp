@@ -12,10 +12,18 @@ TEST(run_test_iotoio, test_iotoio)
     EXPECT_EQ(run_test_iotoio(), 0);
 }
 
-TEST(run_test_buffpacket, test_buffpacket)
+TEST(run_test_buffpacket, test_buffpacket_number)
 {
     EXPECT_EQ(test_buffpacket_number_data(), 0);
+}
+
+TEST(run_test_buffpacket, test_buffpacket_string)
+{
     EXPECT_EQ(test_buffpacket_string_data(), 0);
+}
+
+TEST(run_test_buffpacket, test_buffpacket_offset)
+{
     EXPECT_EQ(test_offset_number_data(), 0);
 }
 
