@@ -1,6 +1,32 @@
 #pragma once
 
 #include "define.h"
+#if PSS_PLATFORM == PLATFORM_WIN
+#include<WinSock2.h>
+#pragma comment(lib, "wsock32.lib")
+#else
+#include <arpa/inet.h>
+#endif
+
+inline uint64 htonll_uint64(uint64 val)
+{
+    return (((uint64)htonl((int)((val << 32) >> 32))) << 32) | (unsigned int)htonl((int)(val >> 32));
+}
+
+inline int64 htonll_int64(int64 val)
+{
+    return (((int64)htonl((int)((val << 32) >> 32))) << 32) | (unsigned int)htonl((int)(val >> 32));
+}
+
+inline uint64 ntohll_uint64(uint64 val)
+{
+    return (((uint64)ntohl((int)((val << 32) >> 32))) << 32) | (unsigned int)ntohl((int)(val >> 32));
+}
+
+inline int64 ntohll_int64(int64 val)
+{
+    return (((int64)ntohl((int)((val << 32) >> 32))) << 32) | (unsigned int)ntohl((int)(val >> 32));
+}
 
 class CBuffPacket
 {
@@ -24,9 +50,14 @@ public:
 
         if (write_ptr_ - read_ptr_ >= (uint32)sizeof(u2Data))
         {
-            //把网络字节序，转换为主机字节序
             std::memcpy(&u2Data, ReadPtr(), (uint32)sizeof(uint16));
             read_ptr_ += (uint32)sizeof(u2Data);
+        }
+
+        if (true == is_net_sort_)
+        {
+            //转化为本地字节序
+            u2Data = ntohs(u2Data);
         }
 
         return *this;
@@ -43,6 +74,12 @@ public:
             read_ptr_ += (uint32)sizeof(u4Data);
         }
 
+        if (true == is_net_sort_)
+        {
+            //转化为本地字节序
+            u4Data = ntohl(u4Data);
+        }
+
         return *this;
     };
 
@@ -55,6 +92,12 @@ public:
             //把网络字节序，转换为主机字节序
             std::memcpy(&u8Data, ReadPtr(), (uint32)sizeof(u8Data));
             read_ptr_ += (uint32)sizeof(u8Data);
+        }
+
+        if (true == is_net_sort_)
+        {
+            //转化为本地字节序
+            u8Data = ntohll_uint64(u8Data);
         }
 
         return *this;
@@ -84,6 +127,12 @@ public:
             read_ptr_ += (uint32)sizeof(n2Data);
         }
 
+        if (true == is_net_sort_)
+        {
+            //转化为本地字节序
+            n2Data = ntohs(n2Data);
+        }
+
         return *this;
     };
 
@@ -98,6 +147,13 @@ public:
             read_ptr_ += (uint32)sizeof(n4Data);
         }
 
+        if (true == is_net_sort_)
+        {
+            //转化为本地字节序
+            n4Data = ntohl(n4Data);
+        }
+
+
         return *this;
     };
 
@@ -110,6 +166,12 @@ public:
             //把网络字节序，转换为主机字节序
             std::memcpy(&n8Data, ReadPtr(), (uint32)sizeof(int64));
             read_ptr_ += (uint32)sizeof(n8Data);
+        }
+
+        if (true == is_net_sort_)
+        {
+            //转化为本地字节序
+            n8Data = ntohll_int64(n8Data);
         }
 
         return *this;
@@ -146,7 +208,7 @@ public:
     CBuffPacket& operator >> (std::string& str)
     {
         uint32 u4Len = 0;
-        (*this) >> (u4Len);
+        (*this) >> u4Len;
 
         if (u4Len && write_ptr_ - read_ptr_ >= u4Len)
         {
@@ -167,6 +229,12 @@ public:
 
     CBuffPacket& operator << (uint16 u2Data)
     {
+        if (true == is_net_sort_)
+        {
+            //主机序列转化为网序
+            u2Data = htons(u2Data);
+        }
+
         buffer_.append((char*)&u2Data, sizeof(u2Data));
         write_ptr_ += sizeof(u2Data);
         return *this;
@@ -174,6 +242,12 @@ public:
 
     CBuffPacket& operator << (uint32 u4Data)
     {
+        if (true == is_net_sort_)
+        {
+            //主机序列转化为网序
+            u4Data = htonl(u4Data);
+        }
+
         buffer_.append((char*)&u4Data, sizeof(u4Data));
         write_ptr_ += sizeof(u4Data);
         return *this;
@@ -181,6 +255,12 @@ public:
 
     CBuffPacket& operator << (uint64 u8Data)
     {
+        if (true == is_net_sort_)
+        {
+            //主机序列转化为网序
+            u8Data = htonll_uint64(u8Data);
+        }
+
         buffer_.append((char*)&u8Data, sizeof(u8Data));
         write_ptr_ += sizeof(u8Data);
         return *this;
@@ -195,6 +275,12 @@ public:
 
     CBuffPacket& operator << (int16 n2Data)
     {
+        if (true == is_net_sort_)
+        {
+            //主机序列转化为网序
+            n2Data = htons(n2Data);
+        }
+
         buffer_.append((char*)&n2Data, sizeof(n2Data));
         write_ptr_ += sizeof(n2Data);
         return *this;
@@ -202,6 +288,12 @@ public:
 
     CBuffPacket& operator << (int32 n4Data)
     {
+        if (true == is_net_sort_)
+        {
+            //主机序列转化为网序
+            n4Data = htonl(n4Data);
+        }
+
         buffer_.append((char*)&n4Data, sizeof(n4Data));
         write_ptr_ += sizeof(n4Data);
         return *this;
@@ -209,6 +301,12 @@ public:
 
     CBuffPacket& operator << (int64 n8Data)
     {
+        if (true == is_net_sort_)
+        {
+            //主机序列转化为网序
+            n8Data = ntohll_int64(n8Data);
+        }
+
         buffer_.append((char*)&n8Data, sizeof(n8Data));
         write_ptr_ += sizeof(n8Data);
         return *this;
@@ -230,7 +328,7 @@ public:
 
     CBuffPacket& operator << (std::string& str)
     {
-        *this << str.length();
+        *this << (uint32)str.length();
 
         buffer_.append(str.c_str(), str.length());
         write_ptr_ += sizeof(str.length());
@@ -285,10 +383,16 @@ public:
         buffer_.append(data, size);
     };
 
+    void set_net_sort(bool net_sort)
+    {
+        is_net_sort_ = net_sort;
+    }
+
 private:
     std::string buffer_;
     uint32 read_ptr_ = 0;
     uint32 write_ptr_ = 0;
+    bool is_net_sort_ = false;
 };
 
 

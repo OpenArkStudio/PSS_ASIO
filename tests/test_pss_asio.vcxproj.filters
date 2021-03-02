@@ -24,11 +24,11 @@
     <ClCompile Include="test_Iotoio.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\PSS_ASIO\Message\IotoIo.cpp">
-      <Filter>project</Filter>
-    </ClCompile>
     <ClCompile Include="test_buffpacket.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PSS_ASIO\Message\IotoIo.cpp">
+      <Filter>project</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -37,6 +37,9 @@
     </ClInclude>
     <ClInclude Include="test_buffpacket.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\BuffPacket.hpp">
+      <Filter>project</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -128,7 +128,7 @@ int test_buffpacket_string_data()
 
 int test_offset_number_data()
 {
-    //²âÊÔÊı×ÖÓÃÀı
+    //²âÊÔÆ«ÒÆÓÃÀı
     int ret = 0;
     auto buff_packet = std::make_shared<CBuffPacket>();
 
@@ -161,6 +161,58 @@ int test_offset_number_data()
     if (u8_data_tag != u8_data)
     {
         std::cout << "[test_offset_number_data]u8_data_tag error." << std::endl;
+        ret = 1;
+    }
+
+    return ret;
+}
+
+int test_net_order_data()
+{
+    //²âÊÔÍøÂç×Ö½ÚĞòµÄ×ª»»
+    int ret = 0;
+    auto buff_packet = std::make_shared<CBuffPacket>();
+    buff_packet->set_net_sort(true);
+
+    //²åÈëÁ÷
+    uint8 u8_data = 1;
+    uint16 u16_data = 2;
+    uint32 u32_data = 3;
+    uint64 u64_data = 4;
+
+    (*buff_packet) << u8_data;
+    (*buff_packet) << u16_data;
+    (*buff_packet) << u32_data;
+    (*buff_packet) << u64_data;
+
+    uint8 u8_data_tag = 0;
+    uint16 u16_data_tag = 0;
+    uint32 u32_data_tag = 0;
+    uint64 u64_data_tag = 0;
+
+    //ºË¶Ô²âÊÔ½á¹û
+    (*buff_packet) >> u8_data_tag;
+    if (u8_data_tag != u8_data)
+    {
+        std::cout << "[test_buffpacket_number_data]u8_data_tag error." << std::endl;
+        ret = 1;
+    }
+    (*buff_packet) >> u16_data_tag;
+    if (u16_data_tag != u16_data)
+    {
+        std::cout << "[test_buffpacket_number_data]u16_data_tag error." << std::endl;
+        ret = 1;
+    }
+    (*buff_packet) >> u32_data_tag;
+    if (u32_data_tag != u32_data)
+    {
+        std::cout << "[test_buffpacket_number_data]u32_data_tag error." << std::endl;
+        ret = 1;
+    }
+    (*buff_packet) >> u64_data_tag;
+    if (u64_data_tag != u64_data)
+    {
+        std::cout << "[test_buffpacket_number_data]u64_data_tag error." << std::endl;
         ret = 1;
     }
 

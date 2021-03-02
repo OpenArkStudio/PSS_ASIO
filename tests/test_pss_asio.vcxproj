@@ -149,6 +149,7 @@
     <ClCompile Include="test_pss_asio.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Common\BuffPacket.hpp" />
     <ClInclude Include="test_buffpacket.h" />
     <ClInclude Include="test_Iotoio.h" />
   </ItemGroup>
