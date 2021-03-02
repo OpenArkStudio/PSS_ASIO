@@ -49,6 +49,8 @@ public:
 
     int get_work_thread_timeout();
 
+    void check_session_io_timeout(uint32 connect_timeout);
+
 private:
     CSessionInterface sessions_interface_;
     CModuleInterface modules_interface_;
@@ -63,7 +65,7 @@ class CWorkThreadLogic
 public:
     CWorkThreadLogic() = default;
 
-    void init_work_thread_logic(int thread_count, uint16 timeout_seconds, config_logic_list& logic_list, ISessionService* session_service);
+    void init_work_thread_logic(int thread_count, uint16 timeout_seconds, uint32 connect_timeout, config_logic_list& logic_list, ISessionService* session_service);
 
     void init_communication_service(ICommunicationInterface* communicate_service);
 
@@ -119,6 +121,7 @@ private:
     hashmappluginworkthread plugin_work_thread_list_;
     hashmaplogictimer plgin_timer_list_;
     std::recursive_mutex plugin_timer_mutex_;
+    uint32 connect_timeout_ = 0;
 };
 
 using App_WorkThreadLogic = PSS_singleton<CWorkThreadLogic>;

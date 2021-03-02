@@ -63,3 +63,29 @@ void CSessionInterface::close()
 {
     sessions_list_.clear();
 }
+
+void CSessionInterface::check_session_io_timeout(uint32 connect_timeout, vector<CSessionIO_Cancel>& session_list)
+{
+    auto check_connect_time_ = std::chrono::steady_clock::now();
+
+    for (auto& session_io : sessions_list_)
+    {
+        //目前只检查tcp
+        if (session_io.second.session_->get_io_type() == EM_CONNECT_IO_TYPE::CONNECT_IO_TCP)
+        {
+            std::chrono::duration<double, std::ratio<1, 1>> elapsed = check_connect_time_ - session_io.second.session_->get_recv_time();
+            if (elapsed.count() >= connect_timeout)
+            {
+                PSS_LOGGER_INFO("[CSessionInterface::check_session_io_timeout]elapsed={0}.", elapsed.count());
+                
+                CSessionIO_Cancel session_cancel;
+                session_cancel.session_id_ = session_io.first;
+                session_cancel.session_ = session_io.second.session_;
+                
+                //添加删除列表
+                session_list.emplace_back(session_cancel);
+            }
+        }
+    }
+
+}

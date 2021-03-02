@@ -18,6 +18,8 @@ void CTTyServer::start(asio::io_context* io_context, std::string tty_name, uint1
         return;
     };
 
+    recv_data_time_ = std::chrono::steady_clock::now();
+
     server_id_ = server_id;
     tty_name_ = tty_name;
 
@@ -79,6 +81,8 @@ void CTTyServer::do_receive()
                 }
                 else
                 {
+                    recv_data_time_ = std::chrono::steady_clock::now();
+
                     //添加到数据队列处理
                     App_WorkThreadLogic::instance()->do_thread_module_logic(connect_id, message_list, self);
                 }
@@ -229,5 +233,10 @@ uint32 CTTyServer::get_mark_id(uint32 connect_id)
 {
     PSS_UNUSED_ARG(connect_id);
     return server_id_;
+}
+
+std::chrono::steady_clock::time_point& CTTyServer::get_recv_time()
+{
+    return recv_data_time_;
 }
 

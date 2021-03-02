@@ -26,6 +26,7 @@ void CUdpClientSession::start(const CConnect_IO_Info& io_type)
     else
     {
         connect_id_ = App_ConnectCounter::instance()->CreateCounter();
+        recv_data_time_ = std::chrono::steady_clock::now();
 
         packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(io_type.packet_parse_id);
 
@@ -107,6 +108,8 @@ void CUdpClientSession::do_receive()
                 }
                 else
                 {
+                    recv_data_time_ = std::chrono::steady_clock::now();
+
                     //添加到数据队列处理
                     App_WorkThreadLogic::instance()->do_thread_module_logic(connect_id_, message_list, self);
                 }
@@ -202,6 +205,11 @@ void CUdpClientSession::do_write_immediately(uint32 connect_id, const char* data
 EM_CONNECT_IO_TYPE CUdpClientSession::get_io_type()
 {
     return io_type_;
+}
+
+std::chrono::steady_clock::time_point& CUdpClientSession::get_recv_time()
+{
+    return recv_data_time_;
 }
 
 uint32 CUdpClientSession::get_mark_id(uint32 connect_id)

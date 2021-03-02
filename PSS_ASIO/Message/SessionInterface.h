@@ -15,6 +15,13 @@ public:
     shared_ptr<ISession> session_;
 };
 
+class CSessionIO_Cancel
+{
+public:
+    uint32 session_id_ = 0;
+    shared_ptr<ISession> session_;
+};
+
 class CSessionInterface
 {
 public:
@@ -31,6 +38,8 @@ public:
     void delete_session_interface(uint32 connect_id);
 
     void close();
+
+    void check_session_io_timeout(uint32 connect_timeout, vector<CSessionIO_Cancel>& session_list);
 
 private:
     using hashmapsessions = unordered_map<uint32, CSessionIOInfo>;

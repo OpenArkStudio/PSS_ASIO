@@ -81,6 +81,7 @@ bool CServerService::init_servce()
     //³õÊ¼»¯Ö´ÐÐ¿â
     App_WorkThreadLogic::instance()->init_work_thread_logic(server_config_.get_config_workthread().work_thread_count_,
         server_config_.get_config_workthread().work_timeout_seconds_,
+        server_config_.get_config_workthread().client_connect_timeout,
         server_config_.get_config_logic_list(),
         App_SessionService::instance());
 

@@ -2,7 +2,8 @@
   "work thread": {
     "work thread count": 3,
     "work time check": 60,
-    "server to server time check": 30
+    "server to server time check": 30,
+    "client connect timeout" : 60
   },
 
   "packet parse library": [

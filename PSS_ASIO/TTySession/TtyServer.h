@@ -33,6 +33,8 @@ public:
 
     uint32 get_mark_id(uint32 connect_id) final;
 
+    std::chrono::steady_clock::time_point& get_recv_time() final;
+
 private:
     void do_receive();
 
@@ -50,6 +52,7 @@ private:
 
     size_t recv_data_size_ = 0;
     size_t send_data_size_ = 0;
+    std::chrono::steady_clock::time_point recv_data_time_ = std::chrono::steady_clock::now();
 
     CSessionBuffer session_recv_buffer_;
     CSessionBuffer session_send_buffer_;

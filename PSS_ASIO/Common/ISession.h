@@ -18,4 +18,5 @@ public:
     virtual void add_send_finish_size(uint32 connect_id, size_t send_length) = 0;  //返回写入IO成功字节
     virtual EM_CONNECT_IO_TYPE get_io_type() = 0; //获得当前IO状态
     virtual uint32 get_mark_id(uint32 connect_id) = 0; //获得当前链接被标记的ID
+    virtual std::chrono::steady_clock::time_point& get_recv_time() = 0;
 };

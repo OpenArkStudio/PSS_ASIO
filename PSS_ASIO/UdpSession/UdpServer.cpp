@@ -50,6 +50,7 @@ void CUdpServer::do_receive()
                 }
                 else
                 {
+                    recv_data_time_ = std::chrono::steady_clock::now();
                     //添加到数据队列处理
                     App_WorkThreadLogic::instance()->do_thread_module_logic(connect_id, message_list, self);
                 }
@@ -269,5 +270,10 @@ uint32 CUdpServer::get_mark_id(uint32 connect_id)
 {
     PSS_UNUSED_ARG(connect_id);
     return 0;
+}
+
+std::chrono::steady_clock::time_point& CUdpServer::get_recv_time()
+{
+    return recv_data_time_;
 }
 

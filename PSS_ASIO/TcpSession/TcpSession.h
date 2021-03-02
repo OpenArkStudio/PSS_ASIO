@@ -37,6 +37,8 @@ public:
 
     uint32 get_mark_id(uint32 connect_id) final;
 
+    std::chrono::steady_clock::time_point& get_recv_time() final;
+
     void do_read();
 
     void clear_write_buffer();
@@ -57,6 +59,7 @@ private:
 
     _ClientIPInfo remote_ip_;
     _ClientIPInfo local_ip_;
+    std::chrono::steady_clock::time_point recv_data_time_ = std::chrono::steady_clock::now();
 
     EM_CONNECT_IO_TYPE io_type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_TCP;
 };

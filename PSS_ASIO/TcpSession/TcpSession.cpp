@@ -13,6 +13,8 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size, uint32 send_siz
 
     session_recv_buffer_.Init(recv_size);
 
+    recv_data_time_ = std::chrono::steady_clock::now();
+
     //处理链接建立消息
     remote_ip_.m_strClientIP = socket_.remote_endpoint().address().to_string();
     remote_ip_.m_u2Port = socket_.remote_endpoint().port();
@@ -73,6 +75,9 @@ void CTcpSession::do_read()
                 }
                 else
                 {
+                    //更新接收数据时间
+                    recv_data_time_ = std::chrono::steady_clock::now();
+
                     //添加消息处理
                     App_WorkThreadLogic::instance()->do_thread_module_logic(connect_id_, message_list, self);
                 }
@@ -166,5 +171,10 @@ uint32 CTcpSession::get_mark_id(uint32 connect_id)
 {
     PSS_UNUSED_ARG(connect_id);
     return 0;
+}
+
+std::chrono::steady_clock::time_point& CTcpSession::get_recv_time()
+{
+    return recv_data_time_;
 }
 

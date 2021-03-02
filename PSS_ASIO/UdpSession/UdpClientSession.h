@@ -39,6 +39,8 @@ public:
 
     EM_CONNECT_IO_TYPE get_io_type() final;
 
+    std::chrono::steady_clock::time_point& get_recv_time() final;
+
     uint32 get_mark_id(uint32 connect_id);
 
 private:
@@ -54,6 +56,7 @@ private:
 
     size_t recv_data_size_ = 0;
     size_t send_data_size_ = 0;
+    std::chrono::steady_clock::time_point recv_data_time_ = std::chrono::steady_clock::now();
 
     EM_CONNECT_IO_TYPE io_type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_UDP;
 };

@@ -49,6 +49,8 @@ public:
 
     uint32 get_mark_id(uint32 connect_id) final;
 
+    std::chrono::steady_clock::time_point& get_recv_time() final;
+
 private:
     void do_receive();
 
@@ -72,6 +74,7 @@ private:
 
     uint32 max_recv_size_ = 0;
     uint32 max_send_size_ = 0;
+    std::chrono::steady_clock::time_point recv_data_time_ = std::chrono::steady_clock::now();
 
     CSessionBuffer session_recv_buffer_;
     shared_ptr<_Packet_Parse_Info> packet_parse_interface_ = nullptr;

@@ -55,10 +55,21 @@ int CModuleLogic::get_work_thread_timeout()
     }
 }
 
-void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_seconds, config_logic_list& logic_list, ISessionService* session_service)
+void CModuleLogic::check_session_io_timeout(uint32 connect_timeout)
+{
+    vector<CSessionIO_Cancel> session_list;
+    sessions_interface_.check_session_io_timeout(connect_timeout, session_list);
+    for (auto session_io : session_list)
+    {
+        session_io.session_->close(session_io.session_id_);
+    }
+}
+
+void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_seconds, uint32 connect_timeout, config_logic_list& logic_list, ISessionService* session_service)
 {
     //初始化线程数
     thread_count_ = thread_count;
+    connect_timeout_ = connect_timeout;
 
     App_tms::instance()->Init();
 
@@ -484,6 +495,7 @@ bool CWorkThreadLogic::delete_session_io_mapping(_ClientIPInfo from_io, EM_CONNE
 
 void CWorkThreadLogic::run_check_task(uint32 timeout_seconds)
 {
+    //检测所有工作线程状态
     for (auto module_logic : thread_module_list_)
     {
         auto work_thread_timeout = module_logic->get_work_thread_timeout();
@@ -492,6 +504,19 @@ void CWorkThreadLogic::run_check_task(uint32 timeout_seconds)
             PSS_LOGGER_ERROR("[CWorkThreadLogic::run_check_task]work thread{0} is block.", module_logic->get_work_thread_id());
         }
     }
+
+    //检测所有的tcp链接状态
+    if (0 < connect_timeout_)
+    {
+        uint32 connect_timeout = connect_timeout_;
+        for (auto module_logic : thread_module_list_)
+        {
+            App_tms::instance()->AddMessage(module_logic->get_work_thread_id(), [connect_timeout, module_logic]() {
+                module_logic->check_session_io_timeout(connect_timeout);
+                });
+        }
+    }
+
 
     PSS_LOGGER_DEBUG("[CWorkThreadLogic::run_check_task]check is ok.");
 }

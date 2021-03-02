@@ -37,6 +37,8 @@ bool CTcpClientSession::start(const CConnect_IO_Info& io_info)
     {
         connect_id_ = App_ConnectCounter::instance()->CreateCounter();
 
+        recv_data_time_ = std::chrono::steady_clock::now();
+
         packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(io_info.packet_parse_id);
 
         //处理链接建立消息
@@ -124,6 +126,8 @@ void CTcpClientSession::do_read()
                 }
                 else
                 {
+                    recv_data_time_ = std::chrono::steady_clock::now();
+
                     //添加消息处理
                     App_WorkThreadLogic::instance()->do_thread_module_logic(connect_id_, message_list, self);
                 }
@@ -207,6 +211,11 @@ uint32 CTcpClientSession::get_mark_id(uint32 connect_id)
 {
     PSS_UNUSED_ARG(connect_id);
     return server_id_;
+}
+
+std::chrono::steady_clock::time_point& CTcpClientSession::get_recv_time()
+{
+    return recv_data_time_;
 }
 
 void CTcpClientSession::clear_write_buffer()
