@@ -33,6 +33,7 @@ class CBuffPacket
 public:
     CBuffPacket(std::string& buffer) : buffer_(buffer)
     {
+        write_ptr_ = buffer.size();
     }
 
     CBuffPacket& operator >> (uint8& u1Data)
@@ -385,6 +386,7 @@ public:
     void write_data(const char* data, uint32 size)
     {
         buffer_.append(data, size);
+        write_ptr_ += size;
     };
 
     void read_data(char* data, uint32 size, uint32 length)
