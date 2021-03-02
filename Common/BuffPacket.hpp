@@ -31,6 +31,10 @@ inline int64 ntohll_int64(int64 val)
 class CBuffPacket
 {
 public:
+    CBuffPacket(std::string& buffer) : buffer_(buffer)
+    {
+    }
+
     CBuffPacket& operator >> (uint8& u1Data)
     {
         u1Data = 0;
@@ -378,9 +382,25 @@ public:
         return buffer_;
     };
 
-    void set_string(const char* data, uint32 size)
+    void write_data(const char* data, uint32 size)
     {
         buffer_.append(data, size);
+    };
+
+    void read_data(char* data, uint32 size, uint32 length)
+    {
+        if (size < length)
+        {
+            return;
+        }
+
+        if (length > write_ptr_ - read_ptr_)
+        {
+            length = write_ptr_ - read_ptr_;
+        }
+        
+        std::memcpy(data, ReadPtr(), length);
+        read_ptr_ += length;
     };
 
     void set_net_sort(bool net_sort)
@@ -388,8 +408,10 @@ public:
         is_net_sort_ = net_sort;
     }
 
+    
+
 private:
-    std::string buffer_;
+    std::string& buffer_;
     uint32 read_ptr_ = 0;
     uint32 write_ptr_ = 0;
     bool is_net_sort_ = false;
