@@ -5,7 +5,7 @@ int test_buffpacket_number_data()
     //²âÊÔÊı×ÖÓÃÀı
     int ret = 0;
     std::string buffer;
-    auto buff_packet = std::make_shared<CBuffPacket>(buffer);
+    auto buff_packet = std::make_shared<CBuffPacket>(&buffer);
 
     //²åÈëÁ÷
     uint8 u8_data = 1;
@@ -112,7 +112,7 @@ int test_buffpacket_string_data()
     //²âÊÔ×Ö·û´®ÓÃÀı
     int ret = 0;
     std::string buffer;
-    auto buff_packet = std::make_shared<CBuffPacket>(buffer);
+    auto buff_packet = std::make_shared<CBuffPacket>(&buffer);
 
     std::string string_data = "freeeyes";
     (*buff_packet) << string_data;
@@ -133,7 +133,7 @@ int test_offset_number_data()
     //²âÊÔÆ«ÒÆÓÃÀı
     int ret = 0;
     std::string buffer;
-    auto buff_packet = std::make_shared<CBuffPacket>(buffer);
+    auto buff_packet = std::make_shared<CBuffPacket>(&buffer);
 
     //²åÈëÁ÷
     uint8 u8_data = 1;
@@ -175,7 +175,7 @@ int test_net_order_data()
     //²âÊÔÍøÂç×Ö½ÚĞòµÄ×ª»»
     int ret = 0;
     std::string buffer;
-    auto buff_packet = std::make_shared<CBuffPacket>(buffer);
+    auto buff_packet = std::make_shared<CBuffPacket>(&buffer);
     buff_packet->set_net_sort(true);
 
     //²åÈëÁ÷

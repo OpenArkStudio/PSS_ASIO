@@ -31,9 +31,9 @@ inline int64 ntohll_int64(int64 val)
 class CBuffPacket
 {
 public:
-    CBuffPacket(std::string& buffer) : buffer_(buffer)
+    CBuffPacket(std::string* buffer) : buffer_(buffer)
     {
-        write_ptr_ = buffer.size();
+        write_ptr_ = (uint32)buffer->size();
     }
 
     CBuffPacket& operator >> (uint8& u1Data)
@@ -227,7 +227,7 @@ public:
 
     CBuffPacket& operator << (uint8 u1Data)
     {
-        buffer_.append((char*)&u1Data, sizeof(u1Data));
+        buffer_->append((char*)&u1Data, sizeof(u1Data));
         write_ptr_ += sizeof(u1Data);
         return *this;
     };
@@ -240,7 +240,7 @@ public:
             u2Data = htons(u2Data);
         }
 
-        buffer_.append((char*)&u2Data, sizeof(u2Data));
+        buffer_->append((char*)&u2Data, sizeof(u2Data));
         write_ptr_ += sizeof(u2Data);
         return *this;
     };
@@ -253,7 +253,7 @@ public:
             u4Data = htonl(u4Data);
         }
 
-        buffer_.append((char*)&u4Data, sizeof(u4Data));
+        buffer_->append((char*)&u4Data, sizeof(u4Data));
         write_ptr_ += sizeof(u4Data);
         return *this;
     };
@@ -266,14 +266,14 @@ public:
             u8Data = htonll_uint64(u8Data);
         }
 
-        buffer_.append((char*)&u8Data, sizeof(u8Data));
+        buffer_->append((char*)&u8Data, sizeof(u8Data));
         write_ptr_ += sizeof(u8Data);
         return *this;
     };
 
     CBuffPacket& operator << (int8 n1Data)
     {
-        buffer_.append((char*)&n1Data, sizeof(n1Data));
+        buffer_->append((char*)&n1Data, sizeof(n1Data));
         write_ptr_ += sizeof(n1Data);
         return *this;
     };
@@ -286,7 +286,7 @@ public:
             n2Data = htons(n2Data);
         }
 
-        buffer_.append((char*)&n2Data, sizeof(n2Data));
+        buffer_->append((char*)&n2Data, sizeof(n2Data));
         write_ptr_ += sizeof(n2Data);
         return *this;
     };
@@ -299,7 +299,7 @@ public:
             n4Data = htonl(n4Data);
         }
 
-        buffer_.append((char*)&n4Data, sizeof(n4Data));
+        buffer_->append((char*)&n4Data, sizeof(n4Data));
         write_ptr_ += sizeof(n4Data);
         return *this;
     };
@@ -312,21 +312,21 @@ public:
             n8Data = ntohll_int64(n8Data);
         }
 
-        buffer_.append((char*)&n8Data, sizeof(n8Data));
+        buffer_->append((char*)&n8Data, sizeof(n8Data));
         write_ptr_ += sizeof(n8Data);
         return *this;
     };
 
     CBuffPacket& operator << (float32 f4Data)
     {
-        buffer_.append((char*)&f4Data, sizeof(f4Data));
+        buffer_->append((char*)&f4Data, sizeof(f4Data));
         write_ptr_ += sizeof(f4Data);
         return *this;
     };
 
     CBuffPacket& operator << (float64 f8Data)
     {
-        buffer_.append((char*)&f8Data, sizeof(f8Data));
+        buffer_->append((char*)&f8Data, sizeof(f8Data));
         write_ptr_ += sizeof(f8Data);
         return *this;
     };
@@ -335,7 +335,7 @@ public:
     {
         *this << (uint32)str.length();
 
-        buffer_.append(str.c_str(), str.length());
+        buffer_->append(str.c_str(), str.length());
         write_ptr_ += sizeof(str.length());
         return *this;
     };
@@ -368,24 +368,24 @@ public:
 
     const char* ReadPtr()
     {
-        return buffer_.c_str() + read_ptr_;
+        return buffer_->c_str() + read_ptr_;
     };
 
     void clear()
     {
-        buffer_.clear();
+        buffer_->clear();
         read_ptr_ = 0;
         write_ptr_ = 0;
     };
 
-    std::string& get_buffer()
+    std::string* get_buffer()
     {
         return buffer_;
     };
 
     void write_data(const char* data, uint32 size)
     {
-        buffer_.append(data, size);
+        buffer_->append(data, size);
         write_ptr_ += size;
     };
 
@@ -413,7 +413,7 @@ public:
     
 
 private:
-    std::string& buffer_;
+    std::string* buffer_ = nullptr;
     uint32 read_ptr_ = 0;
     uint32 write_ptr_ = 0;
     bool is_net_sort_ = false;
