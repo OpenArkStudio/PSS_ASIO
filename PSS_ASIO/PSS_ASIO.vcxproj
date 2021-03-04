@@ -161,17 +161,18 @@
     <ClCompile Include="UdpSession\UdpServer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Common\BuffPacket.hpp" />
     <ClInclude Include="..\Common\define.h" />
     <ClInclude Include="..\Common\IFrameObject.h" />
     <ClInclude Include="..\Common\ISessionService.h" />
     <ClInclude Include="..\Common\LoadLibrary.hpp" />
+    <ClInclude Include="..\Common\ReadBuffer.hpp" />
     <ClInclude Include="..\Common\SessionBuffer.hpp" />
     <ClInclude Include="..\Common\singleton.h" />
     <ClInclude Include="..\Common\ThreadQueue.h" />
     <ClInclude Include="..\Common\TimerManager.hpp" />
     <ClInclude Include="..\Common\TimeStamp.hpp" />
     <ClInclude Include="..\Common\tms.hpp" />
+    <ClInclude Include="..\Common\WriteBuffer.hpp" />
     <ClInclude Include="Common\CommunicationService.h" />
     <ClInclude Include="Common\ConnectCounter.h" />
     <ClInclude Include="Common\CoreTimer.hpp" />

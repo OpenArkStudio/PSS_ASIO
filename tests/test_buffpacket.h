@@ -1,7 +1,8 @@
 #pragma once
 
 #include <iostream>
-#include "BuffPacket.hpp"
+#include "ReadBuffer.hpp"
+#include "WriteBuffer.hpp"
 
 int test_buffpacket_number_data();
 
