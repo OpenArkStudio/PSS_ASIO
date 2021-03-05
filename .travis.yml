@@ -17,9 +17,10 @@ install:
   script:
     - cd $TRAVIS_BUILD_DIR
     - pwd
-    - cmake -E make_directory $TRAVIS_BUILD_DIR/Build/Linux
-    - cd $TRAVIS_BUILD_DIR/Build/Linux
-    - cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
-    - cmake --build . --config $BUILD_TYPE
+    #make
+    #- cmake -E make_directory $TRAVIS_BUILD_DIR/Build/Linux
+    #- cd $TRAVIS_BUILD_DIR/Build/Linux
+    #- cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+    #- cmake --build . --config $BUILD_TYPE
 
      
