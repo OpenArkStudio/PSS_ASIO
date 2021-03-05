@@ -53,18 +53,18 @@ jobs:
         cmake --build . --config debug
         ./test_pss_asio
     
-    #- name: make report && push
-    #  working-directory: ${{github.workspace}}/tests
-    #  shell: bash 
-    #  run: |
-    #    rm -rf gtest_output.html
-    #    python google_test.py Test_Pss_Asio.xml
-    #    git config --global user.name github-actions
-    #    git config --global user.email github-actions@github.com
-    #    git add -f gtest_output.html
-    #    git commit -m "make google test report"
-    #- name: Push changes
-    #  uses: ad-m/github-push-action@master
-    #  with:
-    #    github_token: ${{ secrets.GITHUB_TOKEN }}
-    #    branch: ${{ github.ref }}
+    - name: make report && push
+      working-directory: ${{github.workspace}}/tests
+      shell: bash 
+      run: |
+        rm -rf gtest_output.html
+        python google_test.py Test_Pss_Asio.xml
+        git config --global user.name github-actions
+        git config --global user.email github-actions@github.com
+        git add -f gtest_output.html
+        git commit -m "make google test report"
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}
