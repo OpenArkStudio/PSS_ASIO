@@ -11,3 +11,5 @@ int test_buffpacket_string_data();
 int test_offset_number_data();
 
 int test_net_order_data();
+
+int test_string_read_write();

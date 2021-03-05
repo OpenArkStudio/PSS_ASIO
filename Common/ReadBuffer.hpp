@@ -229,7 +229,7 @@ public:
         read_ptr_ += length;
     };
 
-    void read_data_to_string(std::string data, int length = -1)
+    void read_data_to_string(std::string& data, int length = -1)
     {
         if (length == -1)
         {

@@ -231,3 +231,29 @@ int test_net_order_data()
     return ret;
 }
 
+int test_string_read_write()
+{
+    //²âÊÔ×Ö·û´®¸³ÖµºÍ¶ÁÈ¡
+    int ret = 0;
+    std::string buffer;
+
+    std::string test_write_buffer = "freeeyes";
+    auto write_buffer = std::make_shared<CWriteBuffer>(&buffer);
+
+    write_buffer->write_data_from_string(test_write_buffer);
+
+    auto read_buffer = std::make_shared<CReadBuffer>(&buffer);
+
+    std::string test_read_buffer = "";
+
+    read_buffer->read_data_to_string(test_read_buffer);
+
+    if (test_read_buffer != test_write_buffer)
+    {
+        std::cout << "[test_string_read_write]test_read_buffer error." << std::endl;
+        ret = 1;
+    }
+
+    return ret;
+}
+

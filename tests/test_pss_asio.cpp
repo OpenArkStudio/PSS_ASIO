@@ -32,6 +32,11 @@ TEST(run_test_buffpacket, test_buffpacket_net_order)
     EXPECT_EQ(test_net_order_data(), 0);
 }
 
+TEST(run_test_buffpacket, test_buffpacket_read_write)
+{
+    EXPECT_EQ(test_string_read_write(), 0);
+}
+
 
 int main(int argc, char* argv[])
 {
