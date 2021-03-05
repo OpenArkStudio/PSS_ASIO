@@ -1,0 +1,25 @@
+language: cpp
+sudo: required
+dist: trusty
+
+common_sources: &all_sources
+  - ubuntu-toolchain-r-test
+  
+matrix:
+  include:
+  - os: linux
+    addons:
+      apt:
+       sources: ['ubuntu-toolchain-r-test']
+       packages: ['g++-4.8']  
+
+install:  
+  script:
+    - cd $TRAVIS_BUILD_DIR
+    - pwd
+    - cmake -E make_directory $TRAVIS_BUILD_DIR/Build/Linux
+    - cd $TRAVIS_BUILD_DIR/Build/Linux
+    - cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+    - cmake --build . --config $BUILD_TYPE
+
+     
