@@ -22,9 +22,9 @@ before_script:
 script:
   - pwd
     #make
-    #- cmake -E make_directory $TRAVIS_BUILD_DIR/Build/Linux
-    #- cd $TRAVIS_BUILD_DIR/Build/Linux
-    #- cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
-    #- cmake --build . --config $BUILD_TYPE
+    - cmake -E make_directory $TRAVIS_BUILD_DIR/Build/Linux
+    - cd $TRAVIS_BUILD_DIR/Build/Linux
+    - cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+    - cmake --build . --config $BUILD_TYPE
 
      
