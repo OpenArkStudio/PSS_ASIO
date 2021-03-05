@@ -14,8 +14,13 @@ matrix:
        packages: ['g++-4.8']  
 
 install:  
-  script:
-    - pwd
+before_script:
+  - eval "${MATRIX_EVAL}"
+  - env
+  - export CC_FOR_BUILD=$CC
+  - export CXX_FOR_BUILD=$CXX
+script:
+  - pwd
     #make
     #- cmake -E make_directory $TRAVIS_BUILD_DIR/Build/Linux
     #- cd $TRAVIS_BUILD_DIR/Build/Linux
