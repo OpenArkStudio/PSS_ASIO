@@ -15,7 +15,6 @@ matrix:
 
 install:  
   script:
-    - cd $TRAVIS_BUILD_DIR
     - pwd
     #make
     #- cmake -E make_directory $TRAVIS_BUILD_DIR/Build/Linux
