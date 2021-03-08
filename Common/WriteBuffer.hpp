@@ -1,19 +1,14 @@
 #include "define.h"
-#if PSS_PLATFORM == PLATFORM_WIN
-#include<WinSock2.h>
-#pragma comment(lib, "wsock32.lib")
-#else
-#include <arpa/inet.h>
-#endif
+#include "asio/detail/socket_ops.hpp"
 
 inline uint64 htonll_uint64(uint64 val)
 {
-    return (((uint64)htonl((int)((val << 32) >> 32))) << 32) | (unsigned int)htonl((int)(val >> 32));
+    return (((uint64)asio::detail::socket_ops::host_to_network_long((int)((val << 32) >> 32))) << 32) | (unsigned int)asio::detail::socket_ops::host_to_network_long((int)(val >> 32));
 }
 
 inline int64 htonll_int64(int64 val)
 {
-    return (((int64)htonl((int)((val << 32) >> 32))) << 32) | (unsigned int)htonl((int)(val >> 32));
+    return (((int64)asio::detail::socket_ops::host_to_network_long((int)((val << 32) >> 32))) << 32) | (unsigned int)asio::detail::socket_ops::host_to_network_long((int)(val >> 32));
 }
 class CWriteBuffer
 {
@@ -35,7 +30,7 @@ public:
         if (true == is_net_sort_)
         {
             //主机序列转化为网序
-            u2Data = htons(u2Data);
+            u2Data = asio::detail::socket_ops::host_to_network_short(u2Data);
         }
 
         buffer_->append((char*)&u2Data, sizeof(u2Data));
@@ -48,7 +43,7 @@ public:
         if (true == is_net_sort_)
         {
             //主机序列转化为网序
-            u4Data = htonl(u4Data);
+            u4Data = asio::detail::socket_ops::host_to_network_long(u4Data);
         }
 
         buffer_->append((char*)&u4Data, sizeof(u4Data));
@@ -81,7 +76,7 @@ public:
         if (true == is_net_sort_)
         {
             //主机序列转化为网序
-            n2Data = htons(n2Data);
+            n2Data = asio::detail::socket_ops::host_to_network_short(n2Data);
         }
 
         buffer_->append((char*)&n2Data, sizeof(n2Data));
@@ -94,7 +89,7 @@ public:
         if (true == is_net_sort_)
         {
             //主机序列转化为网序
-            n4Data = htonl(n4Data);
+            n4Data = asio::detail::socket_ops::host_to_network_long(n4Data);
         }
 
         buffer_->append((char*)&n4Data, sizeof(n4Data));

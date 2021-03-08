@@ -1,19 +1,14 @@
 #include "define.h"
-#if PSS_PLATFORM == PLATFORM_WIN
-#include<WinSock2.h>
-#pragma comment(lib, "wsock32.lib")
-#else
-#include <arpa/inet.h>
-#endif
+#include "asio/detail/socket_ops.hpp"
 
 inline uint64 ntohll_uint64(uint64 val)
 {
-    return (((uint64)ntohl((int)((val << 32) >> 32))) << 32) | (unsigned int)ntohl((int)(val >> 32));
+    return (((uint64)asio::detail::socket_ops::network_to_host_long((int)((val << 32) >> 32))) << 32) | (unsigned int)asio::detail::socket_ops::network_to_host_long((int)(val >> 32));
 }
 
 inline int64 ntohll_int64(int64 val)
 {
-    return (((int64)ntohl((int)((val << 32) >> 32))) << 32) | (unsigned int)ntohl((int)(val >> 32));
+    return (((int64)asio::detail::socket_ops::network_to_host_long((int)((val << 32) >> 32))) << 32) | (unsigned int)ntohl((int)(val >> 32));
 }
 
 class CReadBuffer
@@ -50,7 +45,7 @@ public:
         if (true == is_net_sort_)
         {
             //转化为本地字节序
-            u2Data = ntohs(u2Data);
+            u2Data = asio::detail::socket_ops::network_to_host_short(u2Data);
         }
 
         return *this;
@@ -70,7 +65,7 @@ public:
         if (true == is_net_sort_)
         {
             //转化为本地字节序
-            u4Data = ntohl(u4Data);
+            u4Data = asio::detail::socket_ops::network_to_host_long(u4Data);
         }
 
         return *this;
@@ -123,7 +118,7 @@ public:
         if (true == is_net_sort_)
         {
             //转化为本地字节序
-            n2Data = ntohs(n2Data);
+            n2Data = asio::detail::socket_ops::network_to_host_short(n2Data);
         }
 
         return *this;
@@ -143,7 +138,7 @@ public:
         if (true == is_net_sort_)
         {
             //转化为本地字节序
-            n4Data = ntohl(n4Data);
+            n4Data = asio::detail::socket_ops::network_to_host_long(n4Data);
         }
 
 
