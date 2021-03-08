@@ -23,9 +23,9 @@ using namespace std;
 #endif
 
 //是否开启字节序检测
-#define BYTE_SORT_SWITCH_OFF 0;
-#define BYTE_SORT_SWITCH_ON 1;
-#define BYTE_SORT_SWITCH_STATE BYTE_SORT_SWITCH_OFF;
+#define BYTE_SORT_SWITCH_OFF 0
+#define BYTE_SORT_SWITCH_ON 1
+#define BYTE_SORT_SWITCH_STATE BYTE_SORT_SWITCH_OFF
 
 //基础类型定义
 using uint8 = uint8_t;
