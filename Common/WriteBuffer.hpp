@@ -1,15 +1,24 @@
 #include "define.h"
-#include "asio/detail/socket_ops.hpp"
+//#include "asio/detail/socket_ops.hpp"
 
 inline uint64 htonll_uint64(uint64 val)
 {
+#if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
     return (((uint64)asio::detail::socket_ops::host_to_network_long((int)((val << 32) >> 32))) << 32) | (unsigned int)asio::detail::socket_ops::host_to_network_long((int)(val >> 32));
+#else
+    return 0;
+#endif
 }
 
 inline int64 htonll_int64(int64 val)
 {
+#if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
     return (((int64)asio::detail::socket_ops::host_to_network_long((int)((val << 32) >> 32))) << 32) | (unsigned int)asio::detail::socket_ops::host_to_network_long((int)(val >> 32));
+#else
+    return 0;
+#endif
 }
+
 class CWriteBuffer
 {
 public:
@@ -27,11 +36,13 @@ public:
 
     CWriteBuffer& operator << (uint16 u2Data)
     {
+#if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
             //主机序列转化为网序
             u2Data = asio::detail::socket_ops::host_to_network_short(u2Data);
         }
+#endif
 
         buffer_->append((char*)&u2Data, sizeof(u2Data));
         write_ptr_ += sizeof(u2Data);
@@ -40,11 +51,13 @@ public:
 
     CWriteBuffer& operator << (uint32 u4Data)
     {
+#if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
             //主机序列转化为网序
             u4Data = asio::detail::socket_ops::host_to_network_long(u4Data);
         }
+#endif
 
         buffer_->append((char*)&u4Data, sizeof(u4Data));
         write_ptr_ += sizeof(u4Data);
@@ -53,11 +66,13 @@ public:
 
     CWriteBuffer& operator << (uint64 u8Data)
     {
+#if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
             //主机序列转化为网序
             u8Data = htonll_uint64(u8Data);
         }
+#endif
 
         buffer_->append((char*)&u8Data, sizeof(u8Data));
         write_ptr_ += sizeof(u8Data);
@@ -73,11 +88,13 @@ public:
 
     CWriteBuffer& operator << (int16 n2Data)
     {
+#if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
             //主机序列转化为网序
             n2Data = asio::detail::socket_ops::host_to_network_short(n2Data);
         }
+#endif
 
         buffer_->append((char*)&n2Data, sizeof(n2Data));
         write_ptr_ += sizeof(n2Data);
@@ -86,11 +103,13 @@ public:
 
     CWriteBuffer& operator << (int32 n4Data)
     {
+#if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
             //主机序列转化为网序
             n4Data = asio::detail::socket_ops::host_to_network_long(n4Data);
         }
+#endif
 
         buffer_->append((char*)&n4Data, sizeof(n4Data));
         write_ptr_ += sizeof(n4Data);
@@ -99,11 +118,13 @@ public:
 
     CWriteBuffer& operator << (int64 n8Data)
     {
+#if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
             //主机序列转化为网序
             n8Data = htonll_int64(n8Data);
         }
+#endif
 
         buffer_->append((char*)&n8Data, sizeof(n8Data));
         write_ptr_ += sizeof(n8Data);

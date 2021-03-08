@@ -1,14 +1,22 @@
 #include "define.h"
-#include "asio/detail/socket_ops.hpp"
+//#include "asio/detail/socket_ops.hpp"
 
 inline uint64 ntohll_uint64(uint64 val)
 {
+#if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
     return (((uint64)asio::detail::socket_ops::network_to_host_long((int)((val << 32) >> 32))) << 32) | (unsigned int)asio::detail::socket_ops::network_to_host_long((int)(val >> 32));
+#else
+    return 0;
+#endif
 }
 
 inline int64 ntohll_int64(int64 val)
 {
+#if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
     return (((int64)asio::detail::socket_ops::network_to_host_long((int)((val << 32) >> 32))) << 32) | (unsigned int)ntohl((int)(val >> 32));
+#else
+    return 0;
+#endif
 }
 
 class CReadBuffer
@@ -42,11 +50,13 @@ public:
             read_ptr_ += (uint32)sizeof(u2Data);
         }
 
+#if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
             //转化为本地字节序
             u2Data = asio::detail::socket_ops::network_to_host_short(u2Data);
         }
+#endif
 
         return *this;
     };
@@ -62,11 +72,13 @@ public:
             read_ptr_ += (uint32)sizeof(u4Data);
         }
 
+#if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
             //转化为本地字节序
             u4Data = asio::detail::socket_ops::network_to_host_long(u4Data);
         }
+#endif
 
         return *this;
     };
@@ -82,11 +94,13 @@ public:
             read_ptr_ += (uint32)sizeof(u8Data);
         }
 
+#if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
             //转化为本地字节序
             u8Data = ntohll_uint64(u8Data);
         }
+#endif
 
         return *this;
     };
@@ -115,11 +129,13 @@ public:
             read_ptr_ += (uint32)sizeof(n2Data);
         }
 
+#if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
             //转化为本地字节序
             n2Data = asio::detail::socket_ops::network_to_host_short(n2Data);
         }
+#endif
 
         return *this;
     };
@@ -135,12 +151,13 @@ public:
             read_ptr_ += (uint32)sizeof(n4Data);
         }
 
+#if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
             //转化为本地字节序
             n4Data = asio::detail::socket_ops::network_to_host_long(n4Data);
         }
-
+#endif
 
         return *this;
     };
@@ -156,11 +173,13 @@ public:
             read_ptr_ += (uint32)sizeof(n8Data);
         }
 
+#if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
             //转化为本地字节序
             n8Data = ntohll_int64(n8Data);
         }
+#endif
 
         return *this;
     };
