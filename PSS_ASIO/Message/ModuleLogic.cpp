@@ -328,7 +328,17 @@ int CWorkThreadLogic::do_thread_module_logic(const uint32 connect_id, vector<CMe
 
             for (auto recv_packet : message_list)
             {
-                module_logic->do_thread_module_logic(source, recv_packet, send_packet);
+                CMessage_Packet curr_send_packet;
+                module_logic->do_thread_module_logic(source, recv_packet, curr_send_packet);
+
+                if (curr_send_packet.buffer_.size() > 0)
+                {
+                    //在这里添加对curr_send_packet的格式化
+                    module_logic->get_session_interface(connect_id)->format_send_packet(source.connect_id_, curr_send_packet);
+
+                    //将格式化后的数据填充到send_packet
+                    send_packet.buffer_.append(curr_send_packet.buffer_.c_str(), curr_send_packet.buffer_.size());
+                }
             }
 
             if (send_packet.buffer_.size() > 0)
@@ -364,6 +374,8 @@ void CWorkThreadLogic::do_plugin_thread_module_logic(shared_ptr<CModuleLogic> mo
 
 bool CWorkThreadLogic::create_frame_work_thread(uint32 thread_id)
 {
+    std::lock_guard <std::recursive_mutex> lock(plugin_timer_mutex_);
+
     if (thread_id < thread_count_)
     {
         PSS_LOGGER_DEBUG("[CWorkThreadLogic::create_frame_work_thread]thread id must more than config thread count.");
@@ -397,6 +409,30 @@ bool CWorkThreadLogic::create_frame_work_thread(uint32 thread_id)
     }
 
     return true;
+}
+
+bool CWorkThreadLogic::close_frame_work_thread(uint32 thread_id)
+{
+    std::lock_guard <std::recursive_mutex> lock(plugin_timer_mutex_);
+
+    //不能结束工作线程
+    if (thread_id < thread_count_)
+    {
+        PSS_LOGGER_DEBUG("[CWorkThreadLogic::create_frame_work_thread]thread id must more than config thread count.");
+        return false;
+    }
+
+    //查找这个线程ID是否已经存在了
+    auto f = plugin_work_thread_list_.find(thread_id);
+    if (f != plugin_work_thread_list_.end())
+    {
+        //关闭线程
+        f->second->close();
+        plugin_work_thread_list_.erase(f);
+        return true;
+    }
+
+    return false;
 }
 
 bool CWorkThreadLogic::delete_frame_message_timer(int timer_id)
@@ -439,10 +475,14 @@ void CWorkThreadLogic::send_io_message(uint32 connect_id, CMessage_Packet send_p
     auto module_logic = thread_module_list_[curr_thread_index];
 
     //添加到数据队列处理
-    App_tms::instance()->AddMessage(curr_thread_index, [this, connect_id, send_packet, module_logic]() {
+    App_tms::instance()->AddMessage(curr_thread_index, [this, connect_id, &send_packet, module_logic]() {
         if (nullptr != module_logic->get_session_interface(connect_id))
         {
-            module_logic->get_session_interface(connect_id)->do_write_immediately(connect_id,
+            //这里调用格式化发送过程
+            auto session = module_logic->get_session_interface(connect_id);
+            session->format_send_packet(connect_id, send_packet);
+
+            session->do_write_immediately(connect_id,
                 send_packet.buffer_.c_str(),
                 send_packet.buffer_.size());
         }

@@ -101,6 +101,8 @@ public:
 
     bool create_frame_work_thread(uint32 thread_id);
 
+    bool close_frame_work_thread(uint32 thread_id);
+
     bool delete_frame_message_timer(int timer_id);
 
     uint16 get_io_work_thread_count();

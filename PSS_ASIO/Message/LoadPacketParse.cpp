@@ -26,10 +26,18 @@ bool CLoadPacketParse::LoadPacketInfo(uint32 u4PacketParseID, const std::string&
     }
 
     pPacketParseInfo->packet_from_recv_buffer_ptr_ = (packet_from_recv_buffer)CLoadLibrary::PSS_dlsym(pPacketParseInfo->m_hModule, "parse_packet_from_recv_buffer");
-
     if(nullptr == pPacketParseInfo->m_hModule || !pPacketParseInfo->packet_from_recv_buffer_ptr_)
     {
         PSS_LOGGER_DEBUG("[CLoadPacketParse::LoadPacketInfo] strModuleName = {0}, Function parse_packet_from_recv_buffer is error!", packet_parse_file);
+        CLoadLibrary::PSS_dlClose(pPacketParseInfo->m_hModule);
+        PSS_LOGGER_DEBUG("[CLoadPacketParse::LoadPacketInfo]PacketID={0}, ret={1}.", pPacketParseInfo->m_u4PacketParseID, nRet);
+        return false;
+    }
+
+    pPacketParseInfo->parse_format_send_buffer_ptr_ = (parse_format_send_buffer)CLoadLibrary::PSS_dlsym(pPacketParseInfo->m_hModule, "parse_packet_format_send_buffer");
+    if (nullptr == pPacketParseInfo->m_hModule || !pPacketParseInfo->parse_format_send_buffer_ptr_)
+    {
+        PSS_LOGGER_DEBUG("[CLoadPacketParse::LoadPacketInfo] strModuleName = {0}, Function parse_packet_format_send_buffer is error!", packet_parse_file);
         CLoadLibrary::PSS_dlClose(pPacketParseInfo->m_hModule);
         PSS_LOGGER_DEBUG("[CLoadPacketParse::LoadPacketInfo]PacketID={0}, ret={1}.", pPacketParseInfo->m_u4PacketParseID, nRet);
         return false;

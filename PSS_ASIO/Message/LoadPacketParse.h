@@ -6,9 +6,10 @@
 #include "LoadLibrary.hpp"
 #include "SessionBuffer.hpp"
 
-using packet_from_recv_buffer = bool(*)(uint32, CSessionBuffer* buffer, vector<CMessage_Packet>& message_list, EM_CONNECT_IO_TYPE emIOType);
-using packet_connect = bool(*)(uint32 u4ConnectID, const _ClientIPInfo& objClientIPInfo, const _ClientIPInfo& objLocalIPInfo, EM_CONNECT_IO_TYPE emIOType);
-using packet_disconnect = void(*)(uint32 u4ConnectID, EM_CONNECT_IO_TYPE emIOType);
+using packet_from_recv_buffer = bool(*)(uint32 connectid, CSessionBuffer* buffer, vector<CMessage_Packet>& message_list, EM_CONNECT_IO_TYPE emIOType);
+using parse_format_send_buffer = bool(*)(uint32 connectid, CMessage_Packet& message, EM_CONNECT_IO_TYPE emIOType);
+using packet_connect = bool(*)(uint32 connectid, const _ClientIPInfo& objClientIPInfo, const _ClientIPInfo& objLocalIPInfo, EM_CONNECT_IO_TYPE emIOType);
+using packet_disconnect = void(*)(uint32 connectid, EM_CONNECT_IO_TYPE emIOType);
 using packet_load = void(*)();
 using packet_close = void(*)();
 using packet_set_output = void(*)(shared_ptr<spdlog::logger>);
@@ -19,12 +20,13 @@ public:
     uint32              m_u4PacketParseID     = 0;       //当前packetParseID
     PSS_Time_Point      m_tvCreateTime        = CTimeStamp::Get_Time_Stamp();          //模块创建时间
     Pss_Library_Handler m_hModule             = nullptr;
-    packet_from_recv_buffer packet_from_recv_buffer_ptr_ = nullptr;
-    packet_connect packet_connect_ptr_                   = nullptr;
-    packet_disconnect packet_disconnect_ptr_             = nullptr;
-    packet_load packet_load_ptr_                         = nullptr;
-    packet_close packet_close_ptr_                       = nullptr;
-    packet_set_output packet_set_output_ptr_             = nullptr;
+    packet_from_recv_buffer packet_from_recv_buffer_ptr_   = nullptr;
+    parse_format_send_buffer parse_format_send_buffer_ptr_ = nullptr;
+    packet_connect packet_connect_ptr_                     = nullptr;
+    packet_disconnect packet_disconnect_ptr_               = nullptr;
+    packet_load packet_load_ptr_                           = nullptr;
+    packet_close packet_close_ptr_                         = nullptr;
+    packet_set_output packet_set_output_ptr_               = nullptr;
 
     _Packet_Parse_Info() = default;
 };

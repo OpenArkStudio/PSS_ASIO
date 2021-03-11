@@ -35,6 +35,8 @@ public:
 
     std::chrono::steady_clock::time_point& get_recv_time() final;
 
+    bool format_send_packet(uint32 connect_id, CMessage_Packet& message) final;
+
 private:
     void do_receive();
 

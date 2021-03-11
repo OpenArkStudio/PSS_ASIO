@@ -21,13 +21,14 @@
 using namespace std;
 
 DECLDIR bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, vector<CMessage_Packet>& message_list, EM_CONNECT_IO_TYPE emIOType);
+DECLDIR bool parse_packet_format_send_buffer(uint32 connect_id, CMessage_Packet& message, EM_CONNECT_IO_TYPE emIOType);
 DECLDIR bool connect(uint32 connect_id, const _ClientIPInfo& remote_ip, const _ClientIPInfo& local_ip, EM_CONNECT_IO_TYPE emIOType);
 DECLDIR void disConnect(uint32 connect_id, EM_CONNECT_IO_TYPE emIOType);
 DECLDIR void set_output(shared_ptr<spdlog::logger> logger);
 DECLDIR void packet_load();
 DECLDIR void packet_close();
 
-
+//处理接收数据解析
 bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, vector<CMessage_Packet>& message_list, EM_CONNECT_IO_TYPE emIOType)
 {
     uint32 packet_pos = 0;
@@ -109,6 +110,15 @@ bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, ve
         }
     }
 
+    return true;
+}
+
+//处理发送数据格式化
+bool parse_packet_format_send_buffer(uint32 connect_id, CMessage_Packet& message, EM_CONNECT_IO_TYPE emIOType)
+{
+    PSS_UNUSED_ARG(connect_id);
+    PSS_UNUSED_ARG(message);
+    PSS_UNUSED_ARG(emIOType);
     return true;
 }
 

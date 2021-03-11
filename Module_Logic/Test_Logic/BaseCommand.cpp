@@ -135,9 +135,12 @@ void CBaseCommand::logic_test_frame(const CMessage_Source& source, const CMessag
         send_message.buffer_ = "freeeyes";
         session_service_->send_frame_message(plugin_test_logic_thread_id, "time loop", send_message, delay_timer);
 
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-
-        session_service_->delete_frame_message_timer(1001);
+        //²âÊÔ¶¨Ê±Æ÷(É¾³ý)
+        if (TEST_FRAME_WORK_FLAG == 1)
+        {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            session_service_->delete_frame_message_timer(1001);
+        }
     }
 }
 

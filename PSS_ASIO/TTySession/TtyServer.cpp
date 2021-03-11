@@ -240,3 +240,8 @@ std::chrono::steady_clock::time_point& CTTyServer::get_recv_time()
     return recv_data_time_;
 }
 
+bool CTTyServer::format_send_packet(uint32 connect_id, CMessage_Packet& message)
+{
+    return packet_parse_interface_->parse_format_send_buffer_ptr_(connect_id, message, get_io_type());
+}
+
