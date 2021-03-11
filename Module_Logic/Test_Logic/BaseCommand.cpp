@@ -157,3 +157,8 @@ void CBaseCommand::logic_test_listen_error(const CMessage_Source& source, const 
         source.local_ip_.m_strClientIP,
         source.local_ip_.m_u2Port);
 }
+
+void CBaseCommand::logic_http_post(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
+{
+    PSS_LOGGER_DEBUG("[logic_http_post]post data={0}", recv_packet.buffer_);
+}

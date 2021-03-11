@@ -13,6 +13,7 @@ const uint8 TEST_FRAME_WORK_FLAG = 0;
 const uint16 COMMAND_TEST_SYNC = 0x2101;
 const uint16 COMMAND_TEST_ASYN = 0x2102;
 const uint16 COMMAND_TEST_FRAME = 0x3100;
+const uint16 COMMAND_TEST_HTTP_POST = 0x3001;
 
 const uint32 plugin_test_logic_thread_id = 1001;
 
@@ -31,6 +32,7 @@ public:
 	void logic_test_frame(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet);
 	void logic_test_connect_error(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet);
 	void logic_test_listen_error(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet);
+	void logic_http_post(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet);
 
 	ISessionService* session_service_ = nullptr;
 };
