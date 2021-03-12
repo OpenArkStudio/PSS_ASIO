@@ -161,4 +161,6 @@ void CBaseCommand::logic_test_listen_error(const CMessage_Source& source, const 
 void CBaseCommand::logic_http_post(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
 {
     PSS_LOGGER_DEBUG("[logic_http_post]post data={0}", recv_packet.buffer_);
+    //∑µªÿhttpœ˚œ¢
+    send_packet.buffer_ = recv_packet.buffer_;
 }

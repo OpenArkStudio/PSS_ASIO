@@ -205,4 +205,9 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties _1_1_4Build_4Windows_4server_3config_1json__JsonSchema="https://jenkins-x.io/schemas/jx-requirements.json" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

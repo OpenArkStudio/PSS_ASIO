@@ -43,12 +43,12 @@ int CHttpFormat::try_parse(std::string http_text)
     else if (nparsed != http_text_buffer_.http_request_text_.length())
     {
         http_text_buffer_.buffer_parse_pos_ = nparsed;
-        std::cout << "parser->error(read:" << http_text.length() << ", parse:" << nparsed << ")" << std::endl;
+        //std::cout << "parser->error(read:" << http_text.length() << ", parse:" << nparsed << ")" << std::endl;
         return -1;
     }
 
     //判断是否有post的消息内容
-    std::cout << "[CHttpFormat::try_parse]content_length_=" << http_text_buffer_.content_length_ << std::endl;
+    //std::cout << "[CHttpFormat::try_parse]content_length_=" << http_text_buffer_.content_length_ << std::endl;
     if (http_text_buffer_.content_length_ > 0)
     {
         //判断消息内容是否已经收全
