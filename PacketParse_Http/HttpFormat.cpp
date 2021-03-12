@@ -47,12 +47,18 @@ int CHttpFormat::try_parse(std::string http_text)
         return -1;
     }
 
+    if (is_websocket() == true)
+    {
+        //如果是websocket升级协议
+        return 0;
+    }
+
     //判断是否有post的消息内容
     //std::cout << "[CHttpFormat::try_parse]content_length_=" << http_text_buffer_.content_length_ << std::endl;
     if (http_text_buffer_.content_length_ > 0)
     {
         //判断消息内容是否已经收全
-        if (http_text_buffer_.http_post_text_.length() < http_text_buffer_.content_length_)
+        if ((int)http_text_buffer_.http_post_text_.length() < http_text_buffer_.content_length_)
         {
             //没有收全，需要继续接收
             return 1;
@@ -61,15 +67,6 @@ int CHttpFormat::try_parse(std::string http_text)
 
     http_text_buffer_.is_completed_ = true;
     return 0;
-}
-
-std::string CHttpFormat::get_respose_text(std::string data)
-{
-    std::stringstream ss_format;
-    std::string original_data = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length:";
-
-    ss_format << original_data << data.length() << "\r\n\r\n" << data;
-    return ss_format.str();
 }
 
 std::string CHttpFormat::get_post_text()
@@ -95,6 +92,42 @@ std::string CHttpFormat::get_post_error()
         
         http_error = ss_format.str();
         return http_error;
+    }
+}
+
+std::string CHttpFormat::get_websocket_client_key()
+{
+    return http_text_buffer_.websocket_key_;
+}
+
+std::string CHttpFormat::get_response_text(std::string data)
+{
+    std::stringstream ss_format;
+    std::string original_data = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin:*\r\nContent-Length:";
+
+    ss_format << original_data << data.length() << "\r\n\r\n" << data;
+    return ss_format.str();
+}
+
+std::string CHttpFormat::get_response_websocket_text(std::string data)
+{
+    std::stringstream ss_format;
+    std::string original_data = "HTTP/1.1 Switching Protocols\r\nConnection:Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Accept:";
+
+    ss_format << original_data << data.length() << "\r\n\r\n" << data;
+    return ss_format.str();
+}
+
+bool CHttpFormat::is_websocket()
+{
+    //判断是不是websocket协议升级
+    if (http_text_buffer_.upgrade_ == "websocket")
+    {
+        return true;
+    }
+    else
+    {
+        return false;
     }
 }
 
@@ -159,6 +192,20 @@ int CHttpFormat::sHeadValue(http_parser* hp, const char* at, size_t length)
         http_text_buffer->is_post_length_ = false;
     }
 
+    if (http_text_buffer->is_upgrade == true)
+    {
+        http_text_buffer->upgrade_.append(at, length);
+        transform(http_text_buffer->upgrade_.begin(), http_text_buffer->upgrade_.end(), http_text_buffer->upgrade_.begin(), ::tolower);
+        http_text_buffer->is_upgrade = false;
+    }
+
+    if (http_text_buffer->is_websocket_key_ == true)
+    {
+        http_text_buffer->websocket_key_.append(at, length);
+        transform(http_text_buffer->websocket_key_.begin(), http_text_buffer->websocket_key_.end(), http_text_buffer->websocket_key_.begin(), ::tolower);
+        http_text_buffer->is_websocket_key_ = false;
+    }
+
     return 0;
 }
 
@@ -172,6 +219,16 @@ int CHttpFormat::sHeadField(http_parser* hp, const char* at, size_t length)
     if (http_data == "content-length")
     {
         http_text_buffer->is_post_length_ = true;
+    }
+    
+    if (http_data == "upgrade")
+    {
+        http_text_buffer->is_upgrade = true;   //是协议升级
+    }
+
+    if (http_data == "sec-websocket-key")
+    {
+        http_text_buffer->is_websocket_key_ = true;
     }
 
     //std::cout << "[sHeadField]" << http_data << std::endl;
