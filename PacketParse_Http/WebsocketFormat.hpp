@@ -35,17 +35,7 @@ public:
         s1.GetHash(puDest);
 
         std::string base64Str = brynet::base::crypto::base64_encode((const unsigned char*)puDest, 20);
-
-        std::string response =
-            "HTTP/1.1 101 Switching Protocols\r\n"
-            "Upgrade: websocket\r\n"
-            "Connection: Upgrade\r\n"
-            "Sec-WebSocket-Accept: ";
-
-        response += base64Str;
-        response += "\r\n\r\n";
-
-        return response;
+        return base64Str;
     }
 
     static bool wsFrameBuild(const char* payload,

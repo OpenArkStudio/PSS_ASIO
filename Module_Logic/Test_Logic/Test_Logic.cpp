@@ -50,6 +50,8 @@ int load_module(IFrame_Object* frame_object, string module_param)
     frame_object->Regedit_command(COMMAND_TEST_ASYN);
     frame_object->Regedit_command(COMMAND_TEST_FRAME);
     frame_object->Regedit_command(COMMAND_TEST_HTTP_POST);
+    frame_object->Regedit_command(COMMAND_WEBSOCKET_SHARK_HAND);
+    frame_object->Regedit_command(COMMAND_WEBSOCKET_DATA);
 
     session_service = frame_object->get_session_service();
 
@@ -89,6 +91,8 @@ int do_module_message(const CMessage_Source& source, const CMessage_Packet& recv
     MESSAGE_FUNCTION(COMMAND_TEST_ASYN, base_command->logic_test_asyn, source, recv_packet, send_packet);
     MESSAGE_FUNCTION(COMMAND_TEST_FRAME, base_command->logic_test_frame, source, recv_packet, send_packet);
     MESSAGE_FUNCTION(COMMAND_TEST_HTTP_POST, base_command->logic_http_post, source, recv_packet, send_packet);
+    MESSAGE_FUNCTION(COMMAND_WEBSOCKET_SHARK_HAND, base_command->logic_http_websocket_shark_hand, source, recv_packet, send_packet);
+    MESSAGE_FUNCTION(COMMAND_WEBSOCKET_DATA, base_command->logic_http_websocket_data, source, recv_packet, send_packet);
     MESSAGE_FUNCTION_END;
 
     return 0;

@@ -164,3 +164,17 @@ void CBaseCommand::logic_http_post(const CMessage_Source& source, const CMessage
     //返回http消息
     send_packet.buffer_ = recv_packet.buffer_;
 }
+
+void CBaseCommand::logic_http_websocket_shark_hand(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
+{
+    PSS_LOGGER_DEBUG("[logic_http_websocket_shark_hand]server key={0}", recv_packet.buffer_);
+    //返回http消息
+    send_packet.buffer_ = recv_packet.buffer_;
+}
+
+void CBaseCommand::logic_http_websocket_data(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
+{
+    PSS_LOGGER_DEBUG("[logic_http_websocket_data]text data={0}", recv_packet.buffer_);
+    //返回websocket消息
+    //send_packet.buffer_ = recv_packet.buffer_;
+}

@@ -10,7 +10,7 @@
     {
       "packet parse id": 1,
       "packet parse path": "./",
-      "packet parse file": "PacketParse_Inferface.dll"
+      "packet parse file": "PacketParse_Http.dll"
     }
   ],
 

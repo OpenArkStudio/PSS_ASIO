@@ -37,12 +37,13 @@ int CHttpFormat::try_parse(std::string http_text)
         http_text_buffer_.http_request_text_.length());
     if (http_parser_.upgrade)
     {
+        //Ğ­ÒéÉı¼¶
         std::cout << "parser->upgrade" << std::endl;
-        return -1;
+        return 0;
     }
     else if (nparsed != http_text_buffer_.http_request_text_.length())
     {
-        http_text_buffer_.buffer_parse_pos_ = nparsed;
+        http_text_buffer_.buffer_parse_pos_ = (int)nparsed;
         //std::cout << "parser->error(read:" << http_text.length() << ", parse:" << nparsed << ")" << std::endl;
         return -1;
     }
@@ -112,9 +113,9 @@ std::string CHttpFormat::get_response_text(std::string data)
 std::string CHttpFormat::get_response_websocket_text(std::string data)
 {
     std::stringstream ss_format;
-    std::string original_data = "HTTP/1.1 Switching Protocols\r\nConnection:Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Accept:";
+    std::string original_data = "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ";
 
-    ss_format << original_data << data.length() << "\r\n\r\n" << data;
+    ss_format << original_data << data << "\r\n\r\n";
     return ss_format.str();
 }
 
@@ -202,7 +203,6 @@ int CHttpFormat::sHeadValue(http_parser* hp, const char* at, size_t length)
     if (http_text_buffer->is_websocket_key_ == true)
     {
         http_text_buffer->websocket_key_.append(at, length);
-        transform(http_text_buffer->websocket_key_.begin(), http_text_buffer->websocket_key_.end(), http_text_buffer->websocket_key_.begin(), ::tolower);
         http_text_buffer->is_websocket_key_ = false;
     }
 
