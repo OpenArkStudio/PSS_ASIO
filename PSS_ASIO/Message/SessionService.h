@@ -17,7 +17,7 @@ public:
     bool send_frame_message(uint16 tag_thread_id, std::string message_tag, CMessage_Packet send_packet, CFrame_Message_Delay delay_timer) final;
     bool create_frame_work_thread(uint32 thread_id) final;
     bool close_frame_work_thread(uint32 thread_id) final;
-    bool delete_frame_message_timer(int timer_id) final;
+    bool delete_frame_message_timer(uint64 timer_id) final;
     uint16 get_io_work_thread_count() final;
     uint16 get_plugin_work_thread_count() final;
 };

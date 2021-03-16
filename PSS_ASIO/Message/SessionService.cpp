@@ -61,7 +61,7 @@ bool CSessionService::close_frame_work_thread(uint32 thread_id)
     return App_WorkThreadLogic::instance()->close_frame_work_thread(thread_id);
 }
 
-bool CSessionService::delete_frame_message_timer(int timer_id)
+bool CSessionService::delete_frame_message_timer(uint64 timer_id)
 {
     return App_WorkThreadLogic::instance()->delete_frame_message_timer(timer_id);
 }

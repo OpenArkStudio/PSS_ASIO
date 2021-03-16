@@ -435,7 +435,7 @@ bool CWorkThreadLogic::close_frame_work_thread(uint32 thread_id)
     return false;
 }
 
-bool CWorkThreadLogic::delete_frame_message_timer(int timer_id)
+bool CWorkThreadLogic::delete_frame_message_timer(uint64 timer_id)
 {
     std::lock_guard <std::recursive_mutex> lock(plugin_timer_mutex_);
 
@@ -602,7 +602,8 @@ bool CWorkThreadLogic::send_frame_message(uint16 tag_thread_id, std::string mess
                 do_plugin_thread_module_logic(plugin_thread, message_tag, send_packet);
             });
 
-        //添加映射关系
+        //添加映射关系(只有在定时器ID > 0的时候才能删除)
+        if(delay_timer.timer_id_ > 0)
         {
             std::lock_guard <std::recursive_mutex> lock(plugin_timer_mutex_);
             plgin_timer_list_[delay_timer.timer_id_] = timer_ptr;

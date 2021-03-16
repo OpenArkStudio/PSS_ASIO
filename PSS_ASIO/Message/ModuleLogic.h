@@ -103,7 +103,7 @@ public:
 
     bool close_frame_work_thread(uint32 thread_id);
 
-    bool delete_frame_message_timer(int timer_id);
+    bool delete_frame_message_timer(uint64 timer_id);
 
     uint16 get_io_work_thread_count();
 
@@ -111,7 +111,7 @@ public:
 
 private:
     using hashmappluginworkthread = unordered_map<uint32, shared_ptr<CModuleLogic>>;
-    using hashmaplogictimer = unordered_map<int, brynet::Timer::WeakPtr>;
+    using hashmaplogictimer = unordered_map<uint64, brynet::Timer::WeakPtr>;
     vector<shared_ptr<CModuleLogic>> thread_module_list_;
     CLoadModule load_module_;
     uint16      thread_count_ = 0;

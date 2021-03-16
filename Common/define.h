@@ -90,7 +90,7 @@ class CFrame_Message_Delay
 {
 public:
     std::chrono::seconds delay_seconds_ = std::chrono::seconds(0); //延迟的秒数
-    int timer_id_ = 0;  //定时器的id(这个必须唯一，否则会添加定时器失败)
+    uint64 timer_id_ = 0;  //定时器的id(这个必须唯一，否则会添加定时器失败)
 };
 
 //服务器间链接结构
