@@ -75,7 +75,7 @@ bool dispose_websocket_data_message(CSessionBuffer* buffer, CProtocalInfo& proto
             frame_size,
             is_fin))
         {
-            // 如果没有解析出完整的ws frame则退出函数
+            // 如果没有解析出完整的ws frame 则退出函数
             return true;
         }
 
@@ -162,6 +162,19 @@ bool dispose_http_message(std::string http_request_text, CProtocalInfo& protocal
     return true;
 }
 
+//合并websocket发送帧
+bool do_websocket_send_frame(std::string send_data, std::string& send_frame)
+{
+    WebSocketFormat::wsFrameBuild(send_data.c_str(),
+        send_data.size(),
+        send_frame,
+        WebSocketFormat::WebSocketFrameType::TEXT_FRAME,
+        true,
+        false);
+
+    return true;
+}
+
 bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, vector<CMessage_Packet>& message_list, EM_CONNECT_IO_TYPE emIOType)
 {
     //寻找对应有没有存在的http解析类
@@ -208,6 +221,9 @@ bool parse_packet_format_send_buffer(uint32 connect_id, CMessage_Packet& message
         else
         {
             //格式化websocket帧数据
+            std::string frame_data;
+            do_websocket_send_frame(message.buffer_, frame_data);
+            message.buffer_ = frame_data;
         }
     }
 

@@ -176,5 +176,5 @@ void CBaseCommand::logic_http_websocket_data(const CMessage_Source& source, cons
 {
     PSS_LOGGER_DEBUG("[logic_http_websocket_data]text data={0}", recv_packet.buffer_);
     //∑µªÿwebsocketœ˚œ¢
-    //send_packet.buffer_ = recv_packet.buffer_;
+    send_packet.buffer_ = recv_packet.buffer_;
 }
