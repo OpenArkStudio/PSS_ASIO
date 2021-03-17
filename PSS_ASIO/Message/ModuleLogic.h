@@ -19,6 +19,7 @@ enum class ENUM_WORK_THREAD_STATE
     WORK_THREAD_END,
 };
 
+//以消息模式处理逻辑代码
 class CDelayPluginMessage
 {
 public:
@@ -26,6 +27,15 @@ public:
     std::string message_tag_ = "";
     CMessage_Packet send_packet_;
     CFrame_Message_Delay delay_timer_;
+};
+
+//以lambda模式处理代码
+class CDelayPluginFunc
+{
+public:
+    uint16 tag_thread_id_ = 0;
+    CFrame_Message_Delay delay_timer_;
+    task_function func_;
 };
 
 class CModuleLogic
@@ -97,6 +107,8 @@ public:
 
     bool send_frame_message(uint16 tag_thread_id, std::string message_tag, CMessage_Packet send_packet, CFrame_Message_Delay delay_timer);
 
+    bool run_work_thread_logic(uint16 tag_thread_id, CFrame_Message_Delay delay_timer, task_function func);
+
     void do_plugin_thread_module_logic(shared_ptr<CModuleLogic> module_logic, std::string message_tag, CMessage_Packet recv_packet);
 
     bool create_frame_work_thread(uint32 thread_id);
@@ -120,6 +132,7 @@ private:
     bool        module_init_finish_ = false;
     vector<uint32> plugin_work_thread_buffer_list_;
     vector<CDelayPluginMessage> plugin_work_thread_buffer_message_list_;
+    vector<CDelayPluginFunc> plugin_work_thread_buffer_Func_list_;
     hashmappluginworkthread plugin_work_thread_list_;
     hashmaplogictimer plgin_timer_list_;
     std::recursive_mutex plugin_timer_mutex_;

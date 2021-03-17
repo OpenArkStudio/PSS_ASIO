@@ -11,8 +11,6 @@
 
 using namespace std;
 
-using task_function = std::function<void()>;
-
 enum class EM_LOGIC_TYPE
 {
     LOGIC_TYPE_RUN = 0,

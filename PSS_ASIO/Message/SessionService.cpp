@@ -51,6 +51,11 @@ bool CSessionService::send_frame_message(uint16 tag_thread_id, std::string messa
         delay_timer);
 }
 
+bool CSessionService::run_work_thread_logic(uint16 tag_thread_id, CFrame_Message_Delay delay_timer, task_function func)
+{
+    return App_WorkThreadLogic::instance()->run_work_thread_logic(tag_thread_id, delay_timer, func);
+}
+
 bool CSessionService::create_frame_work_thread(uint32 thread_id)
 {
     return App_WorkThreadLogic::instance()->create_frame_work_thread(thread_id);

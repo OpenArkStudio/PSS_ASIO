@@ -17,6 +17,10 @@ void CBaseCommand::Init(ISessionService* session_service)
         send_message.command_id_ = COMMAND_TEST_FRAME;
         send_message.buffer_ = "freeeyes";
         session_service_->send_frame_message(plugin_test_logic_thread_id, "time loop", send_message, delay_timer);
+
+        session_service_->run_work_thread_logic(plugin_test_logic_thread_id, delay_timer, [this](){
+            PSS_LOGGER_DEBUG("[run_work_thread_logic]arrived.");
+            });
     }
 
     PSS_LOGGER_DEBUG("[load_module]({0})io thread count.", session_service_->get_io_work_thread_count());

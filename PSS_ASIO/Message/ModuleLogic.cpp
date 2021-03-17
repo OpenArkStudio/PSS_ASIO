@@ -134,6 +134,15 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
     }
     plugin_work_thread_buffer_message_list_.clear();
 
+    //加载插件逻辑
+    for (auto plugin_logic : plugin_work_thread_buffer_Func_list_)
+    {
+        run_work_thread_logic(plugin_logic.tag_thread_id_,
+            plugin_logic.delay_timer_,
+            plugin_logic.func_);
+    }
+    plugin_work_thread_buffer_Func_list_.clear();
+
     //定时检查任务，定时检查服务器状态
     App_TimerManager::instance()->GetTimerPtr()->addTimer_loop(chrono::seconds(0), chrono::seconds(timeout_seconds), [this, timeout_seconds]()
         {
@@ -610,6 +619,54 @@ bool CWorkThreadLogic::send_frame_message(uint16 tag_thread_id, std::string mess
         }
     }
 
+    return true;
+}
+
+bool CWorkThreadLogic::run_work_thread_logic(uint16 tag_thread_id, CFrame_Message_Delay delay_timer, task_function func)
+{
+    if (false == module_init_finish_)
+    {
+        CDelayPluginFunc plugin_func;
+        plugin_func.tag_thread_id_ = tag_thread_id;
+        plugin_func.func_          = func;
+        plugin_func.delay_timer_   = delay_timer;
+        plugin_work_thread_buffer_Func_list_.emplace_back(plugin_func);
+        return true;
+    }
+
+    auto f = plugin_work_thread_list_.find(tag_thread_id);
+    if (f == plugin_work_thread_list_.end())
+    {
+        return false;
+    }
+
+    if (delay_timer.delay_seconds_ == std::chrono::seconds(0))
+    {
+        //立刻执行线程函数
+        App_tms::instance()->AddMessage(tag_thread_id, func);
+    }
+    else
+    {
+        //需要延时，延时后投递
+        auto timer_ptr = App_TimerManager::instance()->GetTimerPtr()->addTimer(delay_timer.delay_seconds_, [this, tag_thread_id, delay_timer, func]()
+            {
+                //对定时器列表操作加锁
+                {
+                    std::lock_guard <std::recursive_mutex> lock(plugin_timer_mutex_);
+                    plgin_timer_list_.erase(delay_timer.timer_id_);
+                }
+
+                //延时到期，进行投递
+                App_tms::instance()->AddMessage(tag_thread_id, func);
+            });
+
+        //添加映射关系(只有在定时器ID > 0的时候才能删除)
+        if (delay_timer.timer_id_ > 0)
+        {
+            std::lock_guard <std::recursive_mutex> lock(plugin_timer_mutex_);
+            plgin_timer_list_[delay_timer.timer_id_] = timer_ptr;
+        }
+    }
     return true;
 }
 
