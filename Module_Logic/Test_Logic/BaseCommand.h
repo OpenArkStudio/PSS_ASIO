@@ -12,10 +12,10 @@ const uint8 TEST_FRAME_WORK_FLAG = 0;
 //定义处理插件的command_id
 const uint16 COMMAND_TEST_SYNC = 0x2101;
 const uint16 COMMAND_TEST_ASYN = 0x2102;
-const uint16 COMMAND_TEST_FRAME = 0x3100;
-const uint16 COMMAND_TEST_HTTP_POST = 0x3001;
-const uint16 COMMAND_WEBSOCKET_SHARK_HAND = 0x3002;
-const uint16 COMMAND_WEBSOCKET_DATA = 0x3003;
+const uint16 COMMAND_TEST_FRAME = 0x1100;
+const uint16 COMMAND_TEST_HTTP_POST = 0x1001;
+const uint16 COMMAND_WEBSOCKET_SHARK_HAND = 0x1002;
+const uint16 COMMAND_WEBSOCKET_DATA = 0x1003;
 
 const uint32 plugin_test_logic_thread_id = 1001;
 

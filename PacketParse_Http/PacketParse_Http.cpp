@@ -49,9 +49,9 @@ public:
 
 using map_http_parse = map<uint32, CProtocalInfo>;
 map_http_parse map_http_parse_;
-const uint16 http_post_command = 0x3001;
-const uint16 http_websocket_shark_hand = 0x3002;
-const uint16 websocket_data = 0x3003;
+const uint16 http_post_command = 0x1001;
+const uint16 http_websocket_shark_hand = 0x1002;
+const uint16 websocket_data = 0x1003;
 
 //处理websocket数据帧
 bool dispose_websocket_data_message(CSessionBuffer* buffer, CProtocalInfo& protocal_info, vector<CMessage_Packet>& message_list)
