@@ -15,6 +15,41 @@ BOOL WINAPI ConsoleHandlerRoutine(DWORD dwCtrlType)
 }
 #endif
 
+#if PSS_PLATFORM == PLATFORM_UNIX
+inline void Gdaemon()
+{
+    pid_t pid;
+
+    signal(SIGTTOU, SIG_IGN);
+    signal(SIGTTIN, SIG_IGN);
+    signal(SIGTSTP, SIG_IGN);
+
+    if (setpgrp() == -1)
+    {
+        perror("setpgrp failure");
+    }
+
+    signal(SIGHUP, SIG_IGN);
+
+    if ((pid = fork()) < 0)
+    {
+        perror("fork failure");
+        exit(1);
+    }
+    else if (pid > 0)
+    {
+        exit(0);
+    }
+
+    setsid();
+    umask(0);
+
+    signal(SIGCLD, SIG_IGN);
+    signal(SIGCHLD, SIG_IGN);
+    signal(SIGPIPE, SIG_IGN);
+}
+#endif
+
 bool CServerService::init_servce()
 {
     //指定当前目录，防止访问文件失败
@@ -28,6 +63,10 @@ bool CServerService::init_servce()
         pszEnd++;
         *pszEnd = 0;
     }
+#endif
+
+#if PSS_PLATFORM == PLATFORM_UNIX
+    Gdaemon();
 #endif
 
     //读取配置文件
