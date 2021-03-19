@@ -50,7 +50,7 @@ inline void Gdaemon()
 }
 #endif
 
-bool CServerService::init_servce()
+bool CServerService::init_servce(std::string pss_config_file_name)
 {
     //指定当前目录，防止访问文件失败
 #if PSS_PLATFORM == PLATFORM_WIN
@@ -70,7 +70,7 @@ bool CServerService::init_servce()
 #endif
 
     //读取配置文件
-    if (false == server_config_.read_server_config_file())
+    if (false == server_config_.read_server_config_file(pss_config_file_name))
     {
         return false;
     }
