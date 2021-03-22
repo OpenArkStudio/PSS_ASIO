@@ -20,6 +20,7 @@ script:
   - cmake --build . --config Debug
   - cd $TRAVIS_BUILD_DIR
   - pwd
+  - mkdir build
   - build-wrapper-linux-x86-64 --out-dir bw-output cmake --build build/
   - sonar-scanner
  
