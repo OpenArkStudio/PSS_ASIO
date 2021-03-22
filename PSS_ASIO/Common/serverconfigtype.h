@@ -10,6 +10,7 @@
 class CConfigWorkThread
 {
 public:
+    int linux_daemonize = 0;       //0是不守护，前台执行，1是守护，后台执行
     int work_thread_count_ = 1;
     int work_timeout_seconds_ = 60;
     int s2s_timeout_seconds_ = 60;

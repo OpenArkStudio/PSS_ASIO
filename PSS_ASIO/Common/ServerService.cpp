@@ -16,7 +16,7 @@ BOOL WINAPI ConsoleHandlerRoutine(DWORD dwCtrlType)
 #endif
 
 #if PSS_PLATFORM == PLATFORM_UNIX
-inline void Gdaemon()
+inline void daemonize()
 {
     pid_t pid;
 
@@ -65,15 +65,19 @@ bool CServerService::init_servce(std::string pss_config_file_name)
     }
 #endif
 
-#if PSS_PLATFORM == PLATFORM_UNIX
-    Gdaemon();
-#endif
-
     //读取配置文件
     if (false == server_config_.read_server_config_file(pss_config_file_name))
     {
         return false;
     }
+
+#if PSS_PLATFORM == PLATFORM_UNIX
+    if (server_config_.get_config_workthread().linux_daemonize != 0)
+    {
+        //Linux 开启守护
+        daemonize();
+    }
+#endif
 
     auto config_output = server_config_.get_config_console();
 
