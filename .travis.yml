@@ -21,7 +21,7 @@ script:
   - cd $TRAVIS_BUILD_DIR
   - pwd
   - mkdir build
-  - build-wrapper-linux-x86-64 --out-dir bw-output cmake --build build/
+  - build-wrapper-linux-x86-64 --out-dir bw-output cmake --build Build/Linux/
   - sonar-scanner
  
 cache:
