@@ -18,3 +18,11 @@ script:
   - cd $TRAVIS_BUILD_DIR/Build/Linux
   - cmake $TRAVIS_BUILD_DIR -DCMAKE_BUILD_TYPE=Debug
   - cmake --build . --config Debug
+  - sonar-scanner -X
+ 
+cache:
+  directories:
+    - $HOME/.sonar/cache
+    # This contains the CFamily cache. According to https://docs.travis-ci.com/user/caching/#pull-request-builds-and-caches,
+    # for a PR, it will use the cache of the target branch if the branch of the PR does not already have its cache.
+    - $HOME/.cfamily
