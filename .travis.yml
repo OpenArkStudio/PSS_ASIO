@@ -1,0 +1,20 @@
+sudo: false
+
+addons:
+  sonarcloud:
+    organization: "openark"
+    token:
+      secure: "mlJywfVtcADCCDqvHBpIyj8+YIMV9JONtgR+pRJokqeCA9MwreTv2u7dcwCaVfqfHttwWwq1Tv5smL/hkAN7fxbqUL0Ozodu9S+ybuYRDt2kynYivJn6CZwuRhKkubHu05+l/jlGBG6XDCQaSOzfQoWloLaI9hnvduiJ5boWtwo1KgNzHARQHF/Aqhr13Dvsum9B+e3aA4b5t37RZKsAc7k4gmgWmp+FpqHUby/c96WG37rFd7a9vi44LUKXcSXKT6uKDx6m3X8AM0YcqRPiCJFlTinln+DA+fqkxJBLuaQ+jCUh5/qlqGUA83BGm7XzxSqiPKWp6gsBysxyeuDHjtIJKrQR6REjjnJDtGH1ZNwldks1nkoZTuWg9rZcyZOm7FzBGD14tV2owDpsHRoX8aHlCKIYuHzShbVaYgFKvQ5SDOG3qqxspv3UdcUBM+4pKOA4vPYzCBurkIDdff5WWo7svNp2OWHYTMkq+YZeaH10ac2ymHwVbyrcJLeJUPSjxztJkV6c8s2bTM2ISxYoIGFow/Jqrl7oUZa49V9BshpVqBn1Fyp0oAA/eDmZCqq/jlvNROe06uNf81rPQMU+d7H4GxEJDy82HZ05Z1+9X95YvzdEf8EBc362QcVsSetlN5LB0mmMbI+p5LROaLW3SmvD4zHbsMxHMJzZo4aMpBs="
+
+before_script:
+  - eval "${MATRIX_EVAL}"
+  - env
+  - export CC_FOR_BUILD=$CC
+  - export CXX_FOR_BUILD=$CXX
+script:
+  - pwd
+  #make
+  - cmake -E make_directory $TRAVIS_BUILD_DIR/Build/Linux
+  - cd $TRAVIS_BUILD_DIR/Build/Linux
+  - cmake $TRAVIS_BUILD_DIR -DCMAKE_BUILD_TYPE=Debug
+  - cmake --build . --config Debug
