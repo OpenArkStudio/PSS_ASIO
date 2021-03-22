@@ -19,7 +19,8 @@ script:
   - cmake $TRAVIS_BUILD_DIR -DCMAKE_BUILD_TYPE=Debug
   - cmake --build . --config Debug
   - cd $TRAVIS_BUILD_DIR
-  - ls sonar-project.properties
+  - pwd
+  - build-wrapper-linux-x86-64 --out-dir bw-output cmake --build build/
   - sonar-scanner
  
 cache:
