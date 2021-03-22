@@ -17,7 +17,7 @@ script:
   - pwd
   - mkdir build
   - build-wrapper-linux-x86-64 --out-dir bw-output cmake --build Build/Linux/
-  - sonar-scanner
+  - sonar-scanner -X
  
 cache:
   directories:
