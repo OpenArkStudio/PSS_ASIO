@@ -1,4 +1,4 @@
-#ifndef _PSS_singleton_H_
+﻿#ifndef _PSS_singleton_H_
 #define _PSS_singleton_H_
 #include <new>
 #include <memory>

@@ -1,11 +1,11 @@
-#include "CommunicationService.h"
+ï»¿#include "CommunicationService.h"
 
 void CCommunicationService::init_communication_service(asio::io_context* io_service_context, uint16 timeout_seconds)
 {
-    //¶ÁÈ¡ÅäÖÃÎÄ¼ş£¬Á´½Ó·şÎñÆ÷
+    //è¯»å–é…ç½®æ–‡ä»¶ï¼Œé“¾æ¥æœåŠ¡å™¨
     io_service_context_ = io_service_context;
 
-    //¶¨Ê±¼ì²éÈÎÎñ£¬¼ì²é·şÎñÆ÷¼äÁ´½ÓµÄ×´Ì¬¡£
+    //å®šæ—¶æ£€æŸ¥ä»»åŠ¡ï¼Œæ£€æŸ¥æœåŠ¡å™¨é—´é“¾æ¥çš„çŠ¶æ€ã€‚
     App_TimerManager::instance()->GetTimerPtr()->addTimer_loop(chrono::seconds(0), chrono::seconds(timeout_seconds), [this]()
         {
             run_check_task();
@@ -35,12 +35,12 @@ void CCommunicationService::set_connect_id(uint32 server_id, uint32 connect_id)
         {
             f->second.session_ = nullptr;
 
-            //É¾³ıÓ³Éä¹ØÏµ
+            //åˆ é™¤æ˜ å°„å…³ç³»
             server_connect_id_list_.erase(connect_id);
         }
         else
         {
-            //Ìí¼ÓÓ³Éä¹ØÏµ
+            //æ·»åŠ æ˜ å°„å…³ç³»
             server_connect_id_list_[connect_id] = server_id;
         }
     }
@@ -52,13 +52,13 @@ void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
     
     if (false == communication_is_run_)
     {
-        //»¹ÔÚ³õÊ¼»¯ÖĞ£¬²»Æô¶¯Á´½Ó
+        //è¿˜åœ¨åˆå§‹åŒ–ä¸­ï¼Œä¸å¯åŠ¨é“¾æ¥
         return;
     }
 
     if (connect_info.io_type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_TCP)
     {
-        //IOÊÇTCP
+        //IOæ˜¯TCP
         auto tcp_client_session = make_shared<CTcpClientSession>(io_service_context_);
         if (true == tcp_client_session->start(connect_info.io_info_))
         {
@@ -67,14 +67,14 @@ void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
     }
     else if(connect_info.io_type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_UDP)
     {
-        //IOÊÇUDP
+        //IOæ˜¯UDP
         auto udp_client_session = make_shared<CUdpClientSession>(io_service_context_);
         udp_client_session->start(connect_info.io_info_);
         connect_info.session_ = udp_client_session;
     }
     else if (connect_info.io_type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_TTY)
     {
-        //IOÊÇTTY
+        //IOæ˜¯TTY
         auto tty_client_session = make_shared<CTTyServer>(
             connect_info.io_info_.packet_parse_id,
             connect_info.io_info_.recv_size,
@@ -90,7 +90,7 @@ void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
 
 void CCommunicationService::run_server_to_server()
 {
-    //¿ªÊ¼ÔËĞĞ
+    //å¼€å§‹è¿è¡Œ
     communication_is_run_ = true;
 
     run_check_task();
@@ -131,7 +131,7 @@ void CCommunicationService::run_check_task()
     {
         if (client_info.second.session_ == nullptr)
         {
-            //ÖØĞÂ½¨Á¢Á´½Ó
+            //é‡æ–°å»ºç«‹é“¾æ¥
             io_connect(client_info.second);
         }
     }

@@ -1,12 +1,12 @@
-#pragma once
+ï»¿#pragma once
 
-//´¦ÀíÏûÏ¢ºÍÍ¶µİµÄÀà
+//å¤„ç†æ¶ˆæ¯å’ŒæŠ•é€’çš„ç±»
 //add by freeeyes
 
 #include "define.h"
 #include "ISession.h"
 
-//¼ÇÂ¼Á´½ÓIPµØÖ·
+//è®°å½•é“¾æ¥IPåœ°å€
 class CSessionIOInfo
 {
 public:

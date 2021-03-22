@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <iostream>
 #include <string>
@@ -72,7 +72,7 @@ public:
 
 private:
     std::shared_ptr<char> buffer_;
-    size_t write_size_ = 0;               //Ğ´ÈëµÄµ±Ç°³¤¶È
-    size_t max_buff_size_ = 0;            //×î´ó»º´æ³¤¶È
+    size_t write_size_ = 0;               //å†™å…¥çš„å½“å‰é•¿åº¦
+    size_t max_buff_size_ = 0;            //æœ€å¤§ç¼“å­˜é•¿åº¦
 };
 

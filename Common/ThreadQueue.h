@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <iostream>
 #include <queue>
@@ -20,11 +20,11 @@ public:
     void Push(Type msg) {
         std::lock_guard <std::mutex> lock(_mutex);
         _queue.push(msg);
-        //µ±Ê¹ÓÃ×èÈûÄ£Ê½´ÓÏûÏ¢¶ÓÁĞÖĞ»ñÈ¡ÏûÏ¢Ê±£¬ÓÉconditionÔÚĞÂÏûÏ¢µ½´ïÊ±ÌáĞÑµÈ´ıÏß³Ì
+        //å½“ä½¿ç”¨é˜»å¡æ¨¡å¼ä»æ¶ˆæ¯é˜Ÿåˆ—ä¸­è·å–æ¶ˆæ¯æ—¶ï¼Œç”±conditionåœ¨æ–°æ¶ˆæ¯åˆ°è¾¾æ—¶æé†’ç­‰å¾…çº¿ç¨‹
         _condition.notify_one();
     }
 
-    //blocked¶¨Òå·ÃÎÊ·½Ê½ÊÇÍ¬²½×èÈû»òÕß·Ç×èÈûÄ£Ê½
+    //blockedå®šä¹‰è®¿é—®æ–¹å¼æ˜¯åŒæ­¥é˜»å¡æˆ–è€…éé˜»å¡æ¨¡å¼
     bool Pop(Type& msg, bool isBlocked = true) {
         if (isBlocked)
         {
@@ -34,7 +34,7 @@ public:
                 _condition.wait(lock);
 
             }
-            //×¢ÒâÕâÒ»¶Î±ØĞë·ÅÔÚifÓï¾äÖĞ£¬ÒòÎªlockµÄÉúÃüÓò½ö½öÔÚif´óÀ¨ºÅÄÚ
+            //æ³¨æ„è¿™ä¸€æ®µå¿…é¡»æ”¾åœ¨ifè¯­å¥ä¸­ï¼Œå› ä¸ºlockçš„ç”Ÿå‘½åŸŸä»…ä»…åœ¨ifå¤§æ‹¬å·å†…
             msg = std::move(_queue.front());
             _queue.pop();
             return true;
@@ -64,7 +64,7 @@ public:
         return _queue.empty();
     }
 private:
-    std::queue<Type> _queue;//´æ´¢ÏûÏ¢µÄ¶ÓÁĞ
-    mutable std::mutex _mutex;//Í¬²½Ëø
-    std::condition_variable _condition;//ÊµÏÖÍ¬²½Ê½»ñÈ¡ÏûÏ¢
+    std::queue<Type> _queue;//å­˜å‚¨æ¶ˆæ¯çš„é˜Ÿåˆ—
+    mutable std::mutex _mutex;//åŒæ­¥é”
+    std::condition_variable _condition;//å®ç°åŒæ­¥å¼è·å–æ¶ˆæ¯
 };

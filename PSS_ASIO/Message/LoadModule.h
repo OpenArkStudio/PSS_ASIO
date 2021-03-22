@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <string>
 #include <vector>
@@ -10,23 +10,23 @@
 #include "tms.hpp"
 #include "ISessionService.h"
 
-//¶¨Òå²å¼şº¯ÊıÖ¸ÕëÈë¿Ú
+//å®šä¹‰æ’ä»¶å‡½æ•°æŒ‡é’ˆå…¥å£
 using load_module_function_ptr = int(*)(IFrame_Object*, string module_param);
 using unload_module_function_ptr = void(*)(void);
 using do_message_function_ptr = int(*)(const CMessage_Source&, const CMessage_Packet&, CMessage_Packet&);
 using get_module_state_function_ptr = bool(*)(uint32&);
 using set_output_function_ptr = void(*)(shared_ptr<spdlog::logger>);
 
-//¶¨Òåmap°æ±¾µÄÊı¾İ½á¹¹
+//å®šä¹‰mapç‰ˆæœ¬çš„æ•°æ®ç»“æ„
 using command_to_module_function = unordered_map<uint16, do_message_function_ptr>;
 
 class _ModuleInfo
 {
 public:
-    string           module_file_name_;     //Ä£¿éÎÄ¼şÃû³Æ
-    string           module_file_path_;     //Ä£¿éÂ·¾¶
-    string           module_param_;         //Ä£¿éÆô¶¯²ÎÊı
-    PSS_Time_Point   load_module_time_ = CTimeStamp::Get_Time_Stamp(); //Ä£¿é´´½¨Ê±¼ä
+    string           module_file_name_;     //æ¨¡å—æ–‡ä»¶åç§°
+    string           module_file_path_;     //æ¨¡å—è·¯å¾„
+    string           module_param_;         //æ¨¡å—å¯åŠ¨å‚æ•°
+    PSS_Time_Point   load_module_time_ = CTimeStamp::Get_Time_Stamp(); //æ¨¡å—åˆ›å»ºæ—¶é—´
     Pss_Library_Handler hModule_                    = nullptr;
     load_module_function_ptr load_module_           = nullptr;
     unload_module_function_ptr unload_module_       = nullptr;
@@ -52,23 +52,23 @@ public:
     int  get_module_count() const;
     shared_ptr<_ModuleInfo> find_module_info(const char* pModuleName);
 
-    //²å¼ş½Ó¿ÚÌá¹©Ïà¹Ø¹¦ÄÜ
+    //æ’ä»¶æ¥å£æä¾›ç›¸å…³åŠŸèƒ½
     bool get_module_exist(const char* pModuleName);
     string get_module_param(const char* pModuleName);
     string get_module_file_path(const char* pModuleName);
     void get_all_module_name(vector<string>& vecModeInfo);
 
-    //²å¼şÃüÁî´¦ÀíÍ¬²½Ïà¹Ø¹¦ÄÜ
+    //æ’ä»¶å‘½ä»¤å¤„ç†åŒæ­¥ç›¸å…³åŠŸèƒ½
     command_to_module_function& get_module_function_list();
 
 private:
-    bool load_module_info(shared_ptr<_ModuleInfo> module_info);    //¿ªÊ¼¼ÓÔØÄ£¿éµÄ½Ó¿ÚºÍÊı¾İ
+    bool load_module_info(shared_ptr<_ModuleInfo> module_info);    //å¼€å§‹åŠ è½½æ¨¡å—çš„æ¥å£å’Œæ•°æ®
 
     void delete_module_name_list(const string& module_name);
 
     using hashmapModuleList = unordered_map<string, shared_ptr<_ModuleInfo>>;
     hashmapModuleList                  module_list_;
-    vector<string>                     module_name_list_;               //µ±Ç°²å¼şÃû³ÆÁĞ±í
+    vector<string>                     module_name_list_;               //å½“å‰æ’ä»¶åç§°åˆ—è¡¨
 
     command_to_module_function command_to_module_function_;
     ISessionService* session_service_;

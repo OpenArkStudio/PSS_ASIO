@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <iostream>
 #include "define.h"
@@ -25,7 +25,7 @@ public:
 
     void close(uint32 connect_id) final;
 
-    void set_write_buffer(uint32 connect_id, const char* data, size_t length) final; //Ð´ÈëÐ©»º³å
+    void set_write_buffer(uint32 connect_id, const char* data, size_t length) final; //å†™å…¥äº›ç¼“å†²
     
     void do_write_immediately(uint32 connect_id, const char* data, size_t length) final;
 

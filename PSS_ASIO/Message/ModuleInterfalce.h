@@ -1,6 +1,6 @@
-#pragma once
+ï»¿#pragma once
 
-//´¦ÀíÏûÏ¢ºÍÍ¶µİµÄÀà
+//å¤„ç†æ¶ˆæ¯å’ŒæŠ•é€’çš„ç±»
 
 #include "define.h"
 #include "ISession.h"

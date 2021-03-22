@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "define.h"
 
@@ -12,7 +12,7 @@
 #define RTLD_NOW 2
 #endif
 
-//ÊµÏÖ²»Í¬OSµÄ¶¯Ì¬¿â¼ÓÔØ
+//å®ç°ä¸åŒOSçš„åŠ¨æ€åº“åŠ è½½
 //add by freeeyes
 
 #if PSS_PLATFORM == PLATFORM_WIN
@@ -29,7 +29,7 @@ public:
 #if PSS_PLATFORM == PLATFORM_WIN
         PSS_UNUSED_ARG(nMode);
 
-        //Unicode×Ö·û¼¯×ª»»
+        //Unicodeå­—ç¬¦é›†è½¬æ¢
         WCHAR wszFilePath[512] = {'\0'};
         memset(wszFilePath, 0, sizeof(wszFilePath));
         MultiByteToWideChar(CP_ACP, 0, pFilePath, (int)strlen(pFilePath) + 1, wszFilePath,

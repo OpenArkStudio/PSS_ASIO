@@ -1,9 +1,9 @@
-#pragma once
+ï»¿#pragma once
 
 #include "define.h"
 #include "ISessionService.h"
 
-//²å¼şÄÚĞèÒª¿ò¼ÜĞèÒªÊ¹ÓÃµÄ¶ÔÏó
+//æ’ä»¶å†…éœ€è¦æ¡†æ¶éœ€è¦ä½¿ç”¨çš„å¯¹è±¡
 
 class IFrame_Object
 {

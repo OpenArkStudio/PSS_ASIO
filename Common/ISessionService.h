@@ -1,8 +1,8 @@
-#pragma once
+ï»¿#pragma once
 
 #include "define.h"
 
-//±©Â¶¸ø²å¼şµ÷ÓÃµÄ½Ó¿Ú
+//æš´éœ²ç»™æ’ä»¶è°ƒç”¨çš„æ¥å£
 //add by freeeyes
 
 class ISessionService

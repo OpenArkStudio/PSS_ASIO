@@ -1,21 +1,21 @@
-#ifndef _PSS_CCONNECT_COUNTER_H
+ï»¿#ifndef _PSS_CCONNECT_COUNTER_H
 #define _PSS_CCONNECT_COUNTER_H
 
 #include "define.h"
 #include "singleton.h"
 
-//È«¾Ö¼ÆÊıÆ÷
-//ÓÃÓÚËùÓĞ²»Í¬ÀàĞÍµÄConnectµÄidÉú³É£¬±£Ö¤Î¨Ò»¡£
+//å…¨å±€è®¡æ•°å™¨
+//ç”¨äºæ‰€æœ‰ä¸åŒç±»å‹çš„Connectçš„idç”Ÿæˆï¼Œä¿è¯å”¯ä¸€ã€‚
 //add by freeeyes
 
 class CConnectCounter
 {
 public:
-	uint32 CreateCounter();  //µÃµ½Î¨Ò»µÄĞÂID
+	uint32 CreateCounter();  //å¾—åˆ°å”¯ä¸€çš„æ–°ID
 	
 private:
 	uint32 count_index       = 1;
-	mutable std::mutex _mutex;//Í¬²½Ëø
+	mutable std::mutex _mutex;//åŒæ­¥é”
 };
 
 using App_ConnectCounter = PSS_singleton<CConnectCounter>;

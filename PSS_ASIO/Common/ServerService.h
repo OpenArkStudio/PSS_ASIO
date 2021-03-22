@@ -1,6 +1,6 @@
-#pragma once
+ï»¿#pragma once
 
-//·şÎñÖ÷Èë¿Ú
+//æœåŠ¡ä¸»å…¥å£
 //add by freeeyes
 
 #include "TcpServer.h"

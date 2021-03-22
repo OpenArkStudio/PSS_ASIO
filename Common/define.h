@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <math.h>
 #include <type_traits>
@@ -9,7 +9,7 @@
 
 using namespace std;
 
-//×Ô¶¯ÅĞ¶¨²Ù×÷ÏµÍ³
+//è‡ªåŠ¨åˆ¤å®šæ“ä½œç³»ç»Ÿ
 #define PLATFORM_WIN     0
 #define PLATFORM_UNIX    1
 #define PLATFORM_APPLE   2
@@ -22,12 +22,12 @@ using namespace std;
 #  define PSS_PLATFORM PLATFORM_UNIX
 #endif
 
-//ÊÇ·ñ¿ªÆô×Ö½ÚĞò¼ì²â
+//æ˜¯å¦å¼€å¯å­—èŠ‚åºæ£€æµ‹
 #define BYTE_SORT_SWITCH_OFF 0
 #define BYTE_SORT_SWITCH_ON 1
 #define BYTE_SORT_SWITCH_STATE BYTE_SORT_SWITCH_OFF
 
-//»ù´¡ÀàĞÍ¶¨Òå
+//åŸºç¡€ç±»å‹å®šä¹‰
 using uint8 = uint8_t;
 using uint16 = uint16_t;
 using uint32 = uint32_t;
@@ -45,39 +45,39 @@ enum class ENUM_WHILE_STATE
     WHILE_STATE_BREAK,
 };
 
-//Á¬½ÓµÄĞÔÖÊÀàĞÍ
+//è¿æ¥çš„æ€§è´¨ç±»å‹
 enum class EM_CONNECT_IO_TYPE
 {
-    CONNECT_IO_TCP = 0,      //IOÊÇTCP
-    CONNECT_IO_UDP,          //IOÊÇUDP
-    CONNECT_IO_TTY,          //IOÊÇTTY
-    CONNECT_IO_SERVER_TCP,   //IOÊÇ·şÎñÆÚ¼äÁ¬½ÓTCP
-    CONNECT_IO_SERVER_UDP,   //IOÊÇ·şÎñÆÚ¼äÁ¬½ÓUDP
-    CONNECT_IO_FRAME,        //À´×Ô²å¼ş¼äµÄ»Øµ÷
-    COMMAND_UPDATE,          //À´×Ô²å¼ş¸üĞÂ  
-    WORKTHREAD_CLOSE         //¹Ø±Õµ±Ç°¹¤×÷Ïß³Ì
+    CONNECT_IO_TCP = 0,      //IOæ˜¯TCP
+    CONNECT_IO_UDP,          //IOæ˜¯UDP
+    CONNECT_IO_TTY,          //IOæ˜¯TTY
+    CONNECT_IO_SERVER_TCP,   //IOæ˜¯æœåŠ¡æœŸé—´è¿æ¥TCP
+    CONNECT_IO_SERVER_UDP,   //IOæ˜¯æœåŠ¡æœŸé—´è¿æ¥UDP
+    CONNECT_IO_FRAME,        //æ¥è‡ªæ’ä»¶é—´çš„å›è°ƒ
+    COMMAND_UPDATE,          //æ¥è‡ªæ’ä»¶æ›´æ–°  
+    WORKTHREAD_CLOSE         //å…³é—­å½“å‰å·¥ä½œçº¿ç¨‹
 };
 
-//¿Í»§¶ËIPĞÅÏ¢
+//å®¢æˆ·ç«¯IPä¿¡æ¯
 class _ClientIPInfo
 {
 public:
-    string  m_strClientIP = "unset ip";      //¿Í»§¶ËµÄIPµØÖ·
-    uint16 m_u2Port = 0;        //¿Í»§¶ËµÄ¶Ë¿Ú
+    string  m_strClientIP = "unset ip";      //å®¢æˆ·ç«¯çš„IPåœ°å€
+    uint16 m_u2Port = 0;        //å®¢æˆ·ç«¯çš„ç«¯å£
 };
 
 class CMessage_Source
 {
 public:
-    uint16 work_thread_id_ = 0;     //µ±Ç°¹¤×÷Ïß³ÌID
-    uint32 connect_id_ = 0;         //µ±Ç°Á´½ÓID
-    uint32 connect_mark_id_ = 0;    //µ±Ç°±ê¼ÇID£¬ÓÃÓÚ·şÎñÆ÷¼äÁ´½ÓµÄID
+    uint16 work_thread_id_ = 0;     //å½“å‰å·¥ä½œçº¿ç¨‹ID
+    uint32 connect_id_ = 0;         //å½“å‰é“¾æ¥ID
+    uint32 connect_mark_id_ = 0;    //å½“å‰æ ‡è®°IDï¼Œç”¨äºæœåŠ¡å™¨é—´é“¾æ¥çš„ID
     EM_CONNECT_IO_TYPE type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_TCP;
     _ClientIPInfo local_ip_;
     _ClientIPInfo remote_ip_;
 };
 
-//Âß¼­Êı¾İ°ü½á¹¹
+//é€»è¾‘æ•°æ®åŒ…ç»“æ„
 class CMessage_Packet
 {
 public:
@@ -85,15 +85,15 @@ public:
     uint16 command_id_;
 };
 
-//²å¼şÄÚµ÷ÓÃÑÓ³ÙÏûÏ¢Êı¾İÌå
+//æ’ä»¶å†…è°ƒç”¨å»¶è¿Ÿæ¶ˆæ¯æ•°æ®ä½“
 class CFrame_Message_Delay
 {
 public:
-    std::chrono::seconds delay_seconds_ = std::chrono::seconds(0); //ÑÓ³ÙµÄÃëÊı
-    uint64 timer_id_ = 0;  //¶¨Ê±Æ÷µÄid(Õâ¸ö±ØĞëÎ¨Ò»£¬·ñÔò»áÌí¼Ó¶¨Ê±Æ÷Ê§°Ü)
+    std::chrono::seconds delay_seconds_ = std::chrono::seconds(0); //å»¶è¿Ÿçš„ç§’æ•°
+    uint64 timer_id_ = 0;  //å®šæ—¶å™¨çš„id(è¿™ä¸ªå¿…é¡»å”¯ä¸€ï¼Œå¦åˆ™ä¼šæ·»åŠ å®šæ—¶å™¨å¤±è´¥)
 };
 
-//·şÎñÆ÷¼äÁ´½Ó½á¹¹
+//æœåŠ¡å™¨é—´é“¾æ¥ç»“æ„
 class CConnect_IO_Info
 {
 public:
@@ -105,22 +105,22 @@ public:
     uint32 send_size = 1024;
 };
 
-//¶¨Òå²Ù×÷ºê
+//å®šä¹‰æ“ä½œå®
 #define PSS_LOGGER_DEBUG(...) SPDLOG_LOGGER_DEBUG(spdlog::default_logger(), __VA_ARGS__)
 #define PSS_LOGGER_INFO(...) SPDLOG_LOGGER_INFO(spdlog::default_logger(), __VA_ARGS__)
 #define PSS_LOGGER_WARN(...) SPDLOG_LOGGER_WARN(spdlog::default_logger(), __VA_ARGS__)
 #define PSS_LOGGER_ERROR(...) SPDLOG_LOGGER_ERROR(spdlog::default_logger(), __VA_ARGS__)
 
-//Á´½ÓÏûÏ¢ÃüÁî
-const uint16 LOGIC_COMMAND_CONNECT = 0x0001;     //Á´½Ó½¨Á¢ÊÂ¼ş
-const uint16 LOGIC_COMMAND_DISCONNECT = 0x0002;   //Á´½Ó¶Ï¿ªÊÂ¼ş
-const uint16 LOGIC_CONNECT_SERVER_ERROR = 0x0003;  //Á´½Ó·şÎñÆ÷²»³É¹¦ÊÂ¼ş
-const uint16 LOGIC_LISTEN_SERVER_ERROR = 0x0004;  //´´½¨¼àÌıÊÂ¼ş
-const uint16 LOGIC_MAX_FRAME_COMMAND = 0x0010;   //ÄÚ²¿ÊÂ¼şIDÉÏÏŞ 
+//é“¾æ¥æ¶ˆæ¯å‘½ä»¤
+const uint16 LOGIC_COMMAND_CONNECT = 0x0001;     //é“¾æ¥å»ºç«‹äº‹ä»¶
+const uint16 LOGIC_COMMAND_DISCONNECT = 0x0002;   //é“¾æ¥æ–­å¼€äº‹ä»¶
+const uint16 LOGIC_CONNECT_SERVER_ERROR = 0x0003;  //é“¾æ¥æœåŠ¡å™¨ä¸æˆåŠŸäº‹ä»¶
+const uint16 LOGIC_LISTEN_SERVER_ERROR = 0x0004;  //åˆ›å»ºç›‘å¬äº‹ä»¶
+const uint16 LOGIC_MAX_FRAME_COMMAND = 0x0010;   //å†…éƒ¨äº‹ä»¶IDä¸Šé™ 
 
 using task_function = std::function<void()>;
 
-//Ôİ²»Ê¹ÓÃµÄ²ÎÊı
+//æš‚ä¸ä½¿ç”¨çš„å‚æ•°
 template <typename T>
 void PSS_UNUSED_ARG(T&&)
 { }
@@ -142,7 +142,7 @@ inline std::chrono::seconds get_time_delay(std::string date)
 {
     std::chrono::seconds delete_seconds;
     std::tm tm_;
-    int year, month, day, hour, minute, second;// ¶¨ÒåÊ±¼äµÄ¸÷¸öintÁÙÊ±±äÁ¿¡£
+    int year, month, day, hour, minute, second;// å®šä¹‰æ—¶é—´çš„å„ä¸ªintä¸´æ—¶å˜é‡ã€‚
 #if PSS_PLATFORM != PLATFORM_WIN
     sscanf(date.c_str(), "%d-%d-%d %d:%d:%d", &year, &month, &day, &hour, &minute, &second);
 #else
@@ -155,7 +155,7 @@ inline std::chrono::seconds get_time_delay(std::string date)
     tm_.tm_hour = hour;
     tm_.tm_min = minute;
     tm_.tm_sec = second;
-    tm_.tm_isdst = 0;                          // ·ÇÏÄÁîÊ±¡£
+    tm_.tm_isdst = 0;                          // éå¤ä»¤æ—¶ã€‚
 
     auto tp_tag = std::chrono::system_clock::from_time_t(mktime(&tm_));
     auto tp_now = std::chrono::system_clock::now();

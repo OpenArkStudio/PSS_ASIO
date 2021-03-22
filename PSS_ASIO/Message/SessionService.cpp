@@ -1,4 +1,4 @@
-#include "SessionService.h"
+ï»¿#include "SessionService.h"
 
 void CSessionService::send_io_message(uint32 connect_id, CMessage_Packet send_packet)
 {
@@ -24,7 +24,7 @@ void CSessionService::close_io_session(uint32 connect_id)
         App_WorkThreadLogic::instance()->close_io_server(server_id);
     }
 
-    //¹Ø±ÕÁ´½Ó
+    //å…³é—­é“¾æŽ¥
     App_WorkThreadLogic::instance()->close_session_event(connect_id);
 
 }

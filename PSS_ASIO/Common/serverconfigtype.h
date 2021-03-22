@@ -1,16 +1,16 @@
-#pragma once
+ï»¿#pragma once
 
-//¶ÁÈ¡²ÎÊı±í¶¨Òå
+//è¯»å–å‚æ•°è¡¨å®šä¹‰
 //add freeeyes
 
 #include <string>
 #include <vector>
 
-//¶¨Òå²ÎÊıÀàĞÍ±í
+//å®šä¹‰å‚æ•°ç±»å‹è¡¨
 class CConfigWorkThread
 {
 public:
-    int linux_daemonize = 0;       //0ÊÇ²»ÊØ»¤£¬Ç°Ì¨Ö´ĞĞ£¬1ÊÇÊØ»¤£¬ºóÌ¨Ö´ĞĞ
+    int linux_daemonize = 0;       //0æ˜¯ä¸å®ˆæŠ¤ï¼Œå‰å°æ‰§è¡Œï¼Œ1æ˜¯å®ˆæŠ¤ï¼Œåå°æ‰§è¡Œ
     int work_thread_count_ = 1;
     int work_timeout_seconds_ = 60;
     int s2s_timeout_seconds_ = 60;

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "ICommunicationService.h"
 #include "TcpClientSession.h"
@@ -7,7 +7,7 @@
 #include "tms.hpp"
 #include "CoreTimer.hpp"
 
-//¹ÜÀí·şÎñÆ÷¼äÁ´½Ó£¬×Ô¶¯ÖØÁ¬µÄÀà
+//ç®¡ç†æœåŠ¡å™¨é—´é“¾æ¥ï¼Œè‡ªåŠ¨é‡è¿çš„ç±»
 //add by freeeyes
 
 class CCommunicationIOInfo

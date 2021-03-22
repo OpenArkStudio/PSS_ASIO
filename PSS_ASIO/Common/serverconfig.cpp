@@ -1,4 +1,4 @@
-#include "serverconfig.h"
+ï»¿#include "serverconfig.h"
 
 bool CServerConfig::read_server_config_file(std::string file_name)
 {
@@ -7,7 +7,7 @@ bool CServerConfig::read_server_config_file(std::string file_name)
         std::ifstream config_input(file_name);
         json json_config = json::parse(config_input);
 
-        //¶ÁÈ¡Ïà¹Ø²ÎÊı
+        //è¯»å–ç›¸å…³å‚æ•°
         auto config_work_thread = json_config["work thread"];
         config_work_thread_.work_thread_count_ = config_work_thread["work thread count"];
         config_work_thread_.work_timeout_seconds_ = config_work_thread["work time check"];

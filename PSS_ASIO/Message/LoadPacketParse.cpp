@@ -1,10 +1,10 @@
-#include "LoadPacketParse.h"
+ï»¿#include "LoadPacketParse.h"
 
 
 bool CLoadPacketParse::LoadPacketInfo(uint32 u4PacketParseID, const std::string& packet_parse_path, const std::string& packet_parse_file)
 {
     int nRet = 0;
-    //ÒşÊ½¼ÓÔØPacketParse½Ó¿Ú
+    //éšå¼åŠ è½½PacketParseæ¥å£
     auto pPacketParseInfo = std::make_shared<_Packet_Parse_Info>();
 
     if (nullptr == pPacketParseInfo)
@@ -93,13 +93,13 @@ bool CLoadPacketParse::LoadPacketInfo(uint32 u4PacketParseID, const std::string&
         return false;
     }
 
-    //Ìí¼Óµ½HashPoolÀïÃæ
+    //æ·»åŠ åˆ°HashPoolé‡Œé¢
     m_objPacketParseList[pPacketParseInfo->m_u4PacketParseID] = pPacketParseInfo;
 
-    //µ÷ÓÃÊä³öÉèÖÃ
+    //è°ƒç”¨è¾“å‡ºè®¾ç½®
     pPacketParseInfo->packet_set_output_ptr_(spdlog::default_logger());
 
-    //µ÷ÓÃ³õÊ¼»¯
+    //è°ƒç”¨åˆå§‹åŒ–
     pPacketParseInfo->packet_load_ptr_();
 
     return true;
@@ -111,7 +111,7 @@ shared_ptr<_Packet_Parse_Info> CLoadPacketParse::GetPacketParseInfo(uint32 u4Pac
 
     if(m_objPacketParseList.end() == f)
     {
-        //ÕâÀï´òÓ¡Êä³ö´íÎó
+        //è¿™é‡Œæ‰“å°è¾“å‡ºé”™è¯¯
         PSS_LOGGER_DEBUG("[CLoadPacketParse::GetPacketParseInfo]can't find u4PacketParseID({0}).", u4PacketParseID);
         return nullptr;
     }
@@ -124,9 +124,9 @@ shared_ptr<_Packet_Parse_Info> CLoadPacketParse::GetPacketParseInfo(uint32 u4Pac
 void CLoadPacketParse::Close()
 {
     PSS_LOGGER_DEBUG("[CLoadPacketParse::Close]Begin.");
-    //ÇåÀíËùÓĞÒÑ´æÔÚµÄÖ¸Õë
+    //æ¸…ç†æ‰€æœ‰å·²å­˜åœ¨çš„æŒ‡é’ˆ
     for_each(m_objPacketParseList.begin(), m_objPacketParseList.end(), [](const std::pair<uint32, shared_ptr<_Packet_Parse_Info>>& iter) {
-        //¹Ø±ÕÄ£¿é½Ó¿Ú
+        //å…³é—­æ¨¡å—æ¥å£
         iter.second->packet_close_ptr_();
         CLoadLibrary::PSS_dlClose(iter.second->m_hModule);
         });

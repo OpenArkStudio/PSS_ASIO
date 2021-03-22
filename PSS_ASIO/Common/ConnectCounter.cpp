@@ -1,4 +1,4 @@
-#include "ConnectCounter.h"
+﻿#include "ConnectCounter.h"
 
 uint32 CConnectCounter::CreateCounter()
 {

@@ -1,4 +1,4 @@
-#include "TcpSession.h"
+ï»¿#include "TcpSession.h"
 
 CTcpSession::CTcpSession(tcp::socket socket)
     : socket_(std::move(socket))
@@ -15,14 +15,14 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size, uint32 send_siz
 
     recv_data_time_ = std::chrono::steady_clock::now();
 
-    //´¦ÀíÁ´½Ó½¨Á¢ÏûÏ¢
+    //å¤„ç†é“¾æ¥å»ºç«‹æ¶ˆæ¯
     remote_ip_.m_strClientIP = socket_.remote_endpoint().address().to_string();
     remote_ip_.m_u2Port = socket_.remote_endpoint().port();
     local_ip_.m_strClientIP = socket_.local_endpoint().address().to_string();
     local_ip_.m_u2Port = socket_.local_endpoint().port();
     packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip_, local_ip_, io_type_);
 
-    //¼ÓÈësession Ó³Éä
+    //åŠ å…¥session æ˜ å°„
     App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip_, remote_ip_);
 
     do_read();
@@ -33,10 +33,10 @@ void CTcpSession::close(uint32 connect_id)
     auto self(shared_from_this());
     socket_.close();
 
-    //Êä³ö½ÓÊÕ·¢ËÍ×Ö½ÚÊı
+    //è¾“å‡ºæ¥æ”¶å‘é€å­—èŠ‚æ•°
     PSS_LOGGER_DEBUG("[CTcpSession::Close]recv:{0}, send:{1} io_send_count:{2}", recv_data_size_, send_data_size_, io_send_count_);
 
-    //¶Ï¿ªÁ¬½Ó
+    //æ–­å¼€è¿æ¥
     packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_);
 
     App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip_, self);
@@ -44,15 +44,15 @@ void CTcpSession::close(uint32 connect_id)
 
 void CTcpSession::do_read()
 {
-    //½ÓÊÕÊı¾İ
+    //æ¥æ”¶æ•°æ®
     auto self(shared_from_this());
 
     auto connect_id = connect_id_;
 
-    //Èç¹û»º³åÒÑÂú£¬¶Ï¿ªÁ¬½Ó£¬²»ÔÙ½ÓÊÜÊı¾İ¡£
+    //å¦‚æœç¼“å†²å·²æ»¡ï¼Œæ–­å¼€è¿æ¥ï¼Œä¸å†æ¥å—æ•°æ®ã€‚
     if (session_recv_buffer_.get_buffer_size() == 0)
     {
-        //Á´½Ó¶Ï¿ª(»º³å³ÅÂúÁË)
+        //é“¾æ¥æ–­å¼€(ç¼“å†²æ’‘æ»¡äº†)
         App_WorkThreadLogic::instance()->close_session_event(connect_id_);
     }
 
@@ -65,29 +65,29 @@ void CTcpSession::do_read()
                 session_recv_buffer_.set_write_data(length);
                 //PSS_LOGGER_DEBUG("[CTcpSession::do_write]recv length={}.", length);
                 
-                //´¦ÀíÊı¾İ²ğ°ü
+                //å¤„ç†æ•°æ®æ‹†åŒ…
                 vector<CMessage_Packet> message_list;
                 bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
                 if (!ret)   
                 {
-                    //Á´½Ó¶Ï¿ª(½âÎö°ü²»ÕıÈ·)
+                    //é“¾æ¥æ–­å¼€(è§£æåŒ…ä¸æ­£ç¡®)
                     App_WorkThreadLogic::instance()->close_session_event(connect_id_);
                 }
                 else
                 {
-                    //¸üĞÂ½ÓÊÕÊı¾İÊ±¼ä
+                    //æ›´æ–°æ¥æ”¶æ•°æ®æ—¶é—´
                     recv_data_time_ = std::chrono::steady_clock::now();
 
-                    //Ìí¼ÓÏûÏ¢´¦Àí
+                    //æ·»åŠ æ¶ˆæ¯å¤„ç†
                     App_WorkThreadLogic::instance()->do_thread_module_logic(connect_id_, message_list, self);
                 }
 
-                //¼ÌĞø¶ÁÊı¾İ
+                //ç»§ç»­è¯»æ•°æ®
                 self->do_read();
             }
             else
             {
-                //Á´½Ó¶Ï¿ª
+                //é“¾æ¥æ–­å¼€
                 App_WorkThreadLogic::instance()->close_session_event(connect_id_);
             }
         });
@@ -99,13 +99,13 @@ void CTcpSession::do_write(uint32 connect_id)
 
     if (is_send_finish == false || session_send_buffer_.size() == 0)
     {
-        //ÉÏ´Î·¢ËÍÃ»ÓĞÍê³É»òÕßÒÑ¾­·¢ËÍÍê³É
+        //ä¸Šæ¬¡å‘é€æ²¡æœ‰å®Œæˆæˆ–è€…å·²ç»å‘é€å®Œæˆ
         return;
     }
 
     is_send_finish = false;
 
-    //×é×°·¢ËÍÊı¾İ
+    //ç»„è£…å‘é€æ•°æ®
     auto send_buffer = make_shared<CSendBuffer>();
     send_buffer->data_ = session_send_buffer_;
     send_buffer->buffer_length_ = session_send_buffer_.size();
@@ -113,21 +113,21 @@ void CTcpSession::do_write(uint32 connect_id)
     //PSS_LOGGER_DEBUG("[CTcpSession::do_write]send_buffer->buffer_length_={}.", session_send_buffer_.size());
     clear_write_buffer();
 
-    //Òì²½·¢ËÍ
+    //å¼‚æ­¥å‘é€
     auto self(shared_from_this());
     asio::async_write(socket_, asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
         [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
         {
             if (ec)
             {
-                //ÔİÊ±²»´¦Àí
+                //æš‚æ—¶ä¸å¤„ç†
                 PSS_LOGGER_DEBUG("[CTcpSession::do_write]write error({0}).", ec.message());
             }
             else
             {
                 self->add_send_finish_size(connect_id, length);
                 
-                //¼ÌĞø·¢ËÍ
+                //ç»§ç»­å‘é€
                 self->do_write(connect_id);
             }
         });

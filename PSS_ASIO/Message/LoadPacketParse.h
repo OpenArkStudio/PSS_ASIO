@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "singleton.h"
 #include <unordered_map>
@@ -17,8 +17,8 @@ using packet_set_output = void(*)(shared_ptr<spdlog::logger>);
 class _Packet_Parse_Info
 {
 public:
-    uint32              m_u4PacketParseID     = 0;       //µ±Ç°packetParseID
-    PSS_Time_Point      m_tvCreateTime        = CTimeStamp::Get_Time_Stamp();          //Ä£¿é´´½¨Ê±¼ä
+    uint32              m_u4PacketParseID     = 0;       //å½“å‰packetParseID
+    PSS_Time_Point      m_tvCreateTime        = CTimeStamp::Get_Time_Stamp();          //æ¨¡å—åˆ›å»ºæ—¶é—´
     Pss_Library_Handler m_hModule             = nullptr;
     packet_from_recv_buffer packet_from_recv_buffer_ptr_   = nullptr;
     parse_format_send_buffer parse_format_send_buffer_ptr_ = nullptr;
@@ -44,7 +44,7 @@ public:
 
 private:
     using hashmapPacketParseModuleList = unordered_map<uint32, shared_ptr<_Packet_Parse_Info>>;
-    hashmapPacketParseModuleList        m_objPacketParseList;                  //HashÄÚ´æ³Ø
+    hashmapPacketParseModuleList        m_objPacketParseList;                  //Hashå†…å­˜æ± 
 };
 
 using App_PacketParseLoader = PSS_singleton<CLoadPacketParse>;

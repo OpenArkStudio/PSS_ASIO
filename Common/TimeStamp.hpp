@@ -1,7 +1,7 @@
-#ifndef _PSS_TIMERSTAMP_H
+ï»¿#ifndef _PSS_TIMERSTAMP_H
 #define _PSS_TIMERSTAMP_H
 
-//»ñµÃºÍ¼ÆËãÊ±¼ä´ÁÏà¹ØÀàĞÍ
+//è·å¾—å’Œè®¡ç®—æ—¶é—´æˆ³ç›¸å…³ç±»å‹
 //add by freeeyes
 
 #include "define.h"
@@ -13,13 +13,13 @@ class CTimeStamp
 public:
     CTimeStamp() = default;
 
-    //µÃµ½µ±Ç°Ê±¼ä´Á
+    //å¾—åˆ°å½“å‰æ—¶é—´æˆ³
     static PSS_Time_Point Get_Time_Stamp()
     {
         return std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     };   
 
-    //¸ù¾İÊ±¼ä´ÁµÃµ½µ±Ç°µÄÈÕÆÚÊ±¼ä
+    //æ ¹æ®æ—¶é—´æˆ³å¾—åˆ°å½“å‰çš„æ—¥æœŸæ—¶é—´
     static string Get_DateTime(const PSS_Time_Point& time_point)
     {
         auto tt = std::chrono::system_clock::to_time_t(time_point);
@@ -42,7 +42,7 @@ public:
         return strDate;
     };
 
-    //¸ù¾İÊ±¼ä´ÁµÃµ½µ±Ç°µÄÄê
+    //æ ¹æ®æ—¶é—´æˆ³å¾—åˆ°å½“å‰çš„å¹´
     static uint16 Get_Date_Year(const PSS_Time_Point& time_point)
     {
         auto tt = std::chrono::system_clock::to_time_t(time_point);
@@ -57,7 +57,7 @@ public:
         return now->tm_year + 1900;
     };
 
-    //¸ù¾İÊ±¼ä´ÁµÃµ½µ±Ç°µÄÔÂ
+    //æ ¹æ®æ—¶é—´æˆ³å¾—åˆ°å½“å‰çš„æœˆ
     static uint16 Get_Date_Month(const PSS_Time_Point& time_point)
     {
         auto tt = std::chrono::system_clock::to_time_t(time_point);
@@ -72,7 +72,7 @@ public:
         return now->tm_mon + 1;
     };
 
-    //¸ù¾İÊ±¼ä´ÁµÃµ½µ±Ç°µÄÈÕ
+    //æ ¹æ®æ—¶é—´æˆ³å¾—åˆ°å½“å‰çš„æ—¥
     static uint16 Get_Date_Day(const PSS_Time_Point& time_point)
     {
         auto tt = std::chrono::system_clock::to_time_t(time_point);
@@ -86,20 +86,20 @@ public:
         return now->tm_mday;
     };
 
-    //µÃµ½Á½¸öÊ±¼ä²î£¬µ¥Î»ÊÇºÁÃë
+    //å¾—åˆ°ä¸¤ä¸ªæ—¶é—´å·®ï¼Œå•ä½æ˜¯æ¯«ç§’
     static int64 Get_Time_Difference(const PSS_Time_Point& time_end, const PSS_Time_Point& time_begin)
     {
         return std::chrono::duration_cast<std::chrono::milliseconds>(time_end - time_begin).count();
     }; 
 
-    //Ôö¼ÓºÁÃëÊı
+    //å¢åŠ æ¯«ç§’æ•°
     static PSS_Time_Point Add_Time_Milliseconds(const PSS_Time_Point& time_now, const uint32& milliseconds)
     {
         auto tt_new_time = std::chrono::system_clock::time_point(time_now + std::chrono::milliseconds(milliseconds));
         return std::chrono::time_point_cast<std::chrono::milliseconds>(tt_new_time);
     };
 
-    //µÃµ½µ±Ç°Ê±¼äµÄ·ÖÖÓÊı
+    //å¾—åˆ°å½“å‰æ—¶é—´çš„åˆ†é’Ÿæ•°
     static uint8 Get_Time_of_Minute(const PSS_Time_Point& time_point)
     {
         auto tt = std::chrono::system_clock::to_time_t(time_point);
@@ -114,10 +114,10 @@ public:
         return now->tm_min;
     };
 
-    //µÃµ½µ±Ç°µÄÃëÖµ
+    //å¾—åˆ°å½“å‰çš„ç§’å€¼
     static uint64 Get_Time_use_second(const PSS_Time_Point& time_point)
     {
-        auto ms = time_point.time_since_epoch();  // ¼ÆËã¼ÍÔªÊ±¼ä
+        auto ms = time_point.time_since_epoch();  // è®¡ç®—çºªå…ƒæ—¶é—´
         return std::chrono::duration_cast<std::chrono::seconds>(ms).count();
     };
 };

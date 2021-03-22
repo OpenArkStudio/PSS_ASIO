@@ -1,6 +1,6 @@
-#pragma once
+ï»¿#pragma once
 
-//Ìá¹©·şÎñÆ÷µ½·şÎñÍ¸´«¹¦ÄÜ
+//æä¾›æœåŠ¡å™¨åˆ°æœåŠ¡é€ä¼ åŠŸèƒ½
 //add by freeeyes
 
 #include "define.h"

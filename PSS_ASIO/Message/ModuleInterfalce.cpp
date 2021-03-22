@@ -1,4 +1,4 @@
-#include "ModuleInterfalce.h"
+ï»¿#include "ModuleInterfalce.h"
 
 void CModuleInterface::copy_from_module_list(command_to_module_function command_to_module_function)
 {
@@ -11,7 +11,7 @@ int CModuleInterface::do_module_message(const CMessage_Source& source, const CMe
     auto f = command_to_module_function_.find(recv_packet.command_id_);
     if (f != command_to_module_function_.end())
     {
-        //Ö´ÐÐ²å¼þº¯Êý
+        //æ‰§è¡Œæ’ä»¶å‡½æ•°
         return f->second(source, recv_packet, send_packet);
     }
     else

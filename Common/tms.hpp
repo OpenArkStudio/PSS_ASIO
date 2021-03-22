@@ -1,6 +1,6 @@
-#pragma once
+ï»¿#pragma once
 
-//Ïß³Ì´¦Àí¶ÓÁĞ£¬´¦ÀíÏûÏ¢¶ÓÁĞºÍ¶¨Ê±ÏûÏ¢
+//çº¿ç¨‹å¤„ç†é˜Ÿåˆ—ï¼Œå¤„ç†æ¶ˆæ¯é˜Ÿåˆ—å’Œå®šæ—¶æ¶ˆæ¯
 //add by freeeyes
 #include "define.h"
 #include "ThreadQueue.h"
@@ -66,7 +66,7 @@ public:
 
             if (EM_LOGIC_TYPE::LOGIC_TYPE_RUN == msg->m_emType)
             {
-                //»ñµÃÁËÊı¾İ£¬½øĞĞ´¦Àí
+                //è·å¾—äº†æ•°æ®ï¼Œè¿›è¡Œå¤„ç†
                 msg->m_func();
             }
             else
@@ -91,17 +91,17 @@ class TMS
 public:
     TMS() = default;
 
-    //³õÊ¼»¯
+    //åˆå§‹åŒ–
     void Init()
     {
-        //´´½¨¶¨Ê±Æ÷Ïß³Ì
+        //åˆ›å»ºå®šæ—¶å™¨çº¿ç¨‹
         m_ttTimer = std::thread([this]()
             {
                 m_timerManager.schedule();
             });
     }
 
-    bool CreateLogic(uint32 u4LogicID) //´´½¨Ò»¸öÂß¼­Ïß³Ì
+    bool CreateLogic(uint32 u4LogicID) //åˆ›å»ºä¸€ä¸ªé€»è¾‘çº¿ç¨‹
     {
         auto f = m_mapLogicList.find(u4LogicID);
         if (f != m_mapLogicList.end())
@@ -110,7 +110,7 @@ public:
         }
         else
         {
-            //´´½¨Ïß³Ì
+            //åˆ›å»ºçº¿ç¨‹
             auto pLogicTask = std::make_shared<CLogicTasK>();
             pLogicTask->start(u4LogicID);
 
@@ -122,7 +122,7 @@ public:
         return true;
     };
 
-    bool CloseLogic(uint32 u4LogicID)  //¹Ø±ÕÒ»¸öÂß¼­Ïß³Ì
+    bool CloseLogic(uint32 u4LogicID)  //å…³é—­ä¸€ä¸ªé€»è¾‘çº¿ç¨‹
     {
         auto f = m_mapLogicList.find(u4LogicID);
         if (f != m_mapLogicList.end())
@@ -138,7 +138,7 @@ public:
         }
     }
 
-    //Ìí¼ÓÏûÏ¢(¼´Ê±)
+    //æ·»åŠ æ¶ˆæ¯(å³æ—¶)
     bool AddMessage(uint32 u4LogicID, task_function func)
     {
         auto f = m_mapLogicList.find(u4LogicID);
@@ -155,7 +155,7 @@ public:
         }
     };
 
-    //Ìí¼ÓÏûÏ¢(ÑÓÊ±)
+    //æ·»åŠ æ¶ˆæ¯(å»¶æ—¶)
     brynet::Timer::WeakPtr AddMessage(uint32 u4LogicID, std::chrono::milliseconds millisecond, task_function func)
     {
         brynet::Timer::WeakPtr timer;
@@ -176,7 +176,7 @@ public:
         return timer;
     }
 
-    //Ìí¼ÓÏûÏ¢(¶¨Ê±Æ÷)
+    //æ·»åŠ æ¶ˆæ¯(å®šæ—¶å™¨)
     brynet::Timer::WeakPtr AddMessage_loop(uint32 u4LogicID, std::chrono::seconds delayseconds, std::chrono::milliseconds millisecond, task_function func)
     {
         brynet::Timer::WeakPtr timer;
@@ -197,14 +197,14 @@ public:
         return timer;
     }
 
-    //¹Ø±ÕÏµÍ³
+    //å…³é—­ç³»ç»Ÿ
     void Close()
     {
         for_each(m_mapLogicList.begin(), m_mapLogicList.end(), [](const std::pair<uint32, shared_ptr<CLogicTasK>>& iter) {
             iter.second->Close();
             });
 
-        //¹Ø±Õ¶¨Ê±Æ÷
+        //å…³é—­å®šæ—¶å™¨
         m_timerManager.Close();
         m_ttTimer.join();
     }

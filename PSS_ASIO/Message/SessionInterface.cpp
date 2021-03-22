@@ -1,4 +1,4 @@
-#include "SessionInterface.h"
+ï»¿#include "SessionInterface.h"
 
 void CSessionInterface::add_session_interface(uint32 connect_id, shared_ptr<ISession> session, const _ClientIPInfo& local_info, const _ClientIPInfo& romote_info)
 {
@@ -70,7 +70,7 @@ void CSessionInterface::check_session_io_timeout(uint32 connect_timeout, vector<
 
     for (auto& session_io : sessions_list_)
     {
-        //Ä¿Ç°Ö»¼ì²étcp
+        //ç›®å‰åªæ£€æŸ¥tcp
         if (session_io.second.session_->get_io_type() == EM_CONNECT_IO_TYPE::CONNECT_IO_TCP)
         {
             std::chrono::duration<double, std::ratio<1, 1>> elapsed = check_connect_time_ - session_io.second.session_->get_recv_time();
@@ -82,7 +82,7 @@ void CSessionInterface::check_session_io_timeout(uint32 connect_timeout, vector<
                 session_cancel.session_id_ = session_io.first;
                 session_cancel.session_ = session_io.second.session_;
                 
-                //Ìí¼ÓÉ¾³ýÁÐ±í
+                //æ·»åŠ åˆ é™¤åˆ—è¡¨
                 session_list.emplace_back(session_cancel);
             }
         }

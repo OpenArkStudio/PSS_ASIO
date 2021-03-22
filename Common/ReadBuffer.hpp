@@ -1,4 +1,4 @@
-#include "define.h"
+ï»¿#include "define.h"
 //#include "asio/detail/socket_ops.hpp"
 
 inline uint64 ntohll_uint64(uint64 val)
@@ -53,7 +53,7 @@ public:
 #if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
-            //×ª»¯Îª±¾µØ×Ö½ÚĞò
+            //è½¬åŒ–ä¸ºæœ¬åœ°å­—èŠ‚åº
             u2Data = asio::detail::socket_ops::network_to_host_short(u2Data);
         }
 #endif
@@ -67,7 +67,7 @@ public:
 
         if (write_ptr_ - read_ptr_ >= (uint32)sizeof(u4Data))
         {
-            //°ÑÍøÂç×Ö½ÚĞò£¬×ª»»ÎªÖ÷»ú×Ö½ÚĞò
+            //æŠŠç½‘ç»œå­—èŠ‚åºï¼Œè½¬æ¢ä¸ºä¸»æœºå­—èŠ‚åº
             std::memcpy(&u4Data, read_ptr(), (uint32)sizeof(u4Data));
             read_ptr_ += (uint32)sizeof(u4Data);
         }
@@ -75,7 +75,7 @@ public:
 #if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
-            //×ª»¯Îª±¾µØ×Ö½ÚĞò
+            //è½¬åŒ–ä¸ºæœ¬åœ°å­—èŠ‚åº
             u4Data = asio::detail::socket_ops::network_to_host_long(u4Data);
         }
 #endif
@@ -89,7 +89,7 @@ public:
 
         if (write_ptr_ - read_ptr_ >= (uint32)sizeof(u8Data))
         {
-            //°ÑÍøÂç×Ö½ÚĞò£¬×ª»»ÎªÖ÷»ú×Ö½ÚĞò
+            //æŠŠç½‘ç»œå­—èŠ‚åºï¼Œè½¬æ¢ä¸ºä¸»æœºå­—èŠ‚åº
             std::memcpy(&u8Data, read_ptr(), (uint32)sizeof(u8Data));
             read_ptr_ += (uint32)sizeof(u8Data);
         }
@@ -97,7 +97,7 @@ public:
 #if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
-            //×ª»¯Îª±¾µØ×Ö½ÚĞò
+            //è½¬åŒ–ä¸ºæœ¬åœ°å­—èŠ‚åº
             u8Data = ntohll_uint64(u8Data);
         }
 #endif
@@ -124,7 +124,7 @@ public:
 
         if (write_ptr_ - read_ptr_ >= (int16)sizeof(n2Data))
         {
-            //°ÑÍøÂç×Ö½ÚĞò£¬×ª»»ÎªÖ÷»ú×Ö½ÚĞò
+            //æŠŠç½‘ç»œå­—èŠ‚åºï¼Œè½¬æ¢ä¸ºä¸»æœºå­—èŠ‚åº
             std::memcpy(&n2Data, read_ptr(), (uint32)sizeof(int16));
             read_ptr_ += (uint32)sizeof(n2Data);
         }
@@ -132,7 +132,7 @@ public:
 #if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
-            //×ª»¯Îª±¾µØ×Ö½ÚĞò
+            //è½¬åŒ–ä¸ºæœ¬åœ°å­—èŠ‚åº
             n2Data = asio::detail::socket_ops::network_to_host_short(n2Data);
         }
 #endif
@@ -146,7 +146,7 @@ public:
 
         if (write_ptr_ - read_ptr_ >= (int32)sizeof(n4Data))
         {
-            //°ÑÍøÂç×Ö½ÚĞò£¬×ª»»ÎªÖ÷»ú×Ö½ÚĞò
+            //æŠŠç½‘ç»œå­—èŠ‚åºï¼Œè½¬æ¢ä¸ºä¸»æœºå­—èŠ‚åº
             std::memcpy(&n4Data, read_ptr(), (uint32)sizeof(int32));
             read_ptr_ += (uint32)sizeof(n4Data);
         }
@@ -154,7 +154,7 @@ public:
 #if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
-            //×ª»¯Îª±¾µØ×Ö½ÚĞò
+            //è½¬åŒ–ä¸ºæœ¬åœ°å­—èŠ‚åº
             n4Data = asio::detail::socket_ops::network_to_host_long(n4Data);
         }
 #endif
@@ -168,7 +168,7 @@ public:
 
         if (write_ptr_ - read_ptr_ >= (int32)sizeof(int64))
         {
-            //°ÑÍøÂç×Ö½ÚĞò£¬×ª»»ÎªÖ÷»ú×Ö½ÚĞò
+            //æŠŠç½‘ç»œå­—èŠ‚åºï¼Œè½¬æ¢ä¸ºä¸»æœºå­—èŠ‚åº
             std::memcpy(&n8Data, read_ptr(), (uint32)sizeof(int64));
             read_ptr_ += (uint32)sizeof(n8Data);
         }
@@ -176,7 +176,7 @@ public:
 #if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
-            //×ª»¯Îª±¾µØ×Ö½ÚĞò
+            //è½¬åŒ–ä¸ºæœ¬åœ°å­—èŠ‚åº
             n8Data = ntohll_int64(n8Data);
         }
 #endif
@@ -190,7 +190,7 @@ public:
 
         if (write_ptr_ - read_ptr_ >= (int32)sizeof(f4Data))
         {
-            //°ÑÍøÂç×Ö½ÚĞò£¬×ª»»ÎªÖ÷»ú×Ö½ÚĞò
+            //æŠŠç½‘ç»œå­—èŠ‚åºï¼Œè½¬æ¢ä¸ºä¸»æœºå­—èŠ‚åº
             std::memcpy(&f4Data, read_ptr(), (uint32)sizeof(float32));
             read_ptr_ += (uint32)sizeof(f4Data);
         }
@@ -204,7 +204,7 @@ public:
 
         if (write_ptr_ - read_ptr_ >= (int32)sizeof(f8Data))
         {
-            //°ÑÍøÂç×Ö½ÚĞò£¬×ª»»ÎªÖ÷»ú×Ö½ÚĞò
+            //æŠŠç½‘ç»œå­—èŠ‚åºï¼Œè½¬æ¢ä¸ºä¸»æœºå­—èŠ‚åº
             std::memcpy(&f8Data, read_ptr(), (uint32)sizeof(float64));
             read_ptr_ += (uint32)sizeof(f8Data);
         }

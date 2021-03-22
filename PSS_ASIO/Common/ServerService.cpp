@@ -1,11 +1,11 @@
-#include "ServerService.h"
+ï»¿#include "ServerService.h"
 
 #if PSS_PLATFORM == PLATFORM_WIN
 BOOL WINAPI ConsoleHandlerRoutine(DWORD dwCtrlType)
 {
     if (dwCtrlType == CTRL_CLOSE_EVENT || dwCtrlType == CTRL_C_EVENT)
     {
-        //ÔÚÕâÀï´¦Àí´°¿Ú·şÎñÆ÷¹Ø±Õ»ØÊÕ×ÊÔ´
+        //åœ¨è¿™é‡Œå¤„ç†çª—å£æœåŠ¡å™¨å…³é—­å›æ”¶èµ„æº
         PSS_LOGGER_DEBUG("[ConsoleHandlerRoutine]server is close.");
         App_ServerService::instance()->stop_service();
         return TRUE;
@@ -52,7 +52,7 @@ inline void daemonize()
 
 bool CServerService::init_servce(std::string pss_config_file_name)
 {
-    //Ö¸¶¨µ±Ç°Ä¿Â¼£¬·ÀÖ¹·ÃÎÊÎÄ¼şÊ§°Ü
+    //æŒ‡å®šå½“å‰ç›®å½•ï¼Œé˜²æ­¢è®¿é—®æ–‡ä»¶å¤±è´¥
 #if PSS_PLATFORM == PLATFORM_WIN
     TCHAR szFileName[MAX_PATH] = { 0 };
     ::GetModuleFileName(0, szFileName, MAX_PATH);
@@ -65,7 +65,7 @@ bool CServerService::init_servce(std::string pss_config_file_name)
     }
 #endif
 
-    //¶ÁÈ¡ÅäÖÃÎÄ¼ş
+    //è¯»å–é…ç½®æ–‡ä»¶
     if (false == server_config_.read_server_config_file(pss_config_file_name))
     {
         return false;
@@ -74,21 +74,21 @@ bool CServerService::init_servce(std::string pss_config_file_name)
 #if PSS_PLATFORM == PLATFORM_UNIX
     if (server_config_.get_config_workthread().linux_daemonize != 0)
     {
-        //Linux ¿ªÆôÊØ»¤
+        //Linux å¼€å¯å®ˆæŠ¤
         daemonize();
     }
 #endif
 
     auto config_output = server_config_.get_config_console();
 
-    //³õÊ¼»¯Êä³ö
+    //åˆå§‹åŒ–è¾“å‡º
     Init_Console_Output(config_output.file_output_,
         config_output.file_count_,
         config_output.max_file_size_,
         config_output.file_name_,
         config_output.output_level_);
 
-    //³õÊ¼»¯PacketParse²å¼ş
+    //åˆå§‹åŒ–PacketParseæ’ä»¶
     for (auto packet_parse : server_config_.get_config_packet_list())
     {
         if (false == App_PacketParseLoader::instance()->LoadPacketInfo(packet_parse.packet_parse_id_, 
@@ -103,7 +103,7 @@ bool CServerService::init_servce(std::string pss_config_file_name)
     ::SetConsoleCtrlHandler(ConsoleHandlerRoutine, TRUE);
 #endif
 
-    //×¢²á¼à¿ØÖĞ¶ÏÊÂ¼ş(LINUX)
+    //æ³¨å†Œç›‘æ§ä¸­æ–­äº‹ä»¶(LINUX)
     asio::signal_set signals(io_context_, SIGINT, SIGTERM);
     signals.async_wait(
         [&](std::error_code ec, int)
@@ -112,23 +112,23 @@ bool CServerService::init_servce(std::string pss_config_file_name)
             io_context_.stop();
         });
     
-    //³õÊ¼»¯¿ò¼Ü¶¨Ê±Æ÷
+    //åˆå§‹åŒ–æ¡†æ¶å®šæ—¶å™¨
     App_TimerManager::instance()->Start();
 
-    //Æô¶¯·şÎñÆ÷¼äÁ´½Ó¿â
+    //å¯åŠ¨æœåŠ¡å™¨é—´é“¾æ¥åº“
     App_CommunicationService::instance()->init_communication_service(&io_context_,
         server_config_.get_config_workthread().s2s_timeout_seconds_);
 
     App_WorkThreadLogic::instance()->init_communication_service(App_CommunicationService::instance());
 
-    //³õÊ¼»¯Ö´ĞĞ¿â
+    //åˆå§‹åŒ–æ‰§è¡Œåº“
     App_WorkThreadLogic::instance()->init_work_thread_logic(server_config_.get_config_workthread().work_thread_count_,
         server_config_.get_config_workthread().work_timeout_seconds_,
         server_config_.get_config_workthread().client_connect_timeout,
         server_config_.get_config_logic_list(),
         App_SessionService::instance());
 
-    //¼ÓÔØTcp¼àÌı
+    //åŠ è½½Tcpç›‘å¬
     for(auto tcp_server : server_config_.get_config_tcp_list())
     {
         auto tcp_service = make_shared<CTcpServer>(io_context_, 
@@ -140,7 +140,7 @@ bool CServerService::init_servce(std::string pss_config_file_name)
         tcp_service_list_.emplace_back(tcp_service);
     }
 
-    //¼ÓÔØUDP¼àÌı
+    //åŠ è½½UDPç›‘å¬
     for (auto udp_server : server_config_.get_config_udp_list())
     {
         auto udp_service = make_shared<CUdpServer>(io_context_, 
@@ -152,7 +152,7 @@ bool CServerService::init_servce(std::string pss_config_file_name)
         udp_service_list_.emplace_back(udp_service);
     }
 
-    //¼ÓÔØtty¼àÌı
+    //åŠ è½½ttyç›‘å¬
     for (auto tty_server : server_config_.get_config_tty_list())
     {
         auto tty_service = make_shared<CTTyServer>(
@@ -167,7 +167,7 @@ bool CServerService::init_servce(std::string pss_config_file_name)
         tty_service_list_.emplace_back(tty_service);
     }
 
-    //´ò¿ª·şÎñÆ÷¼äÁ´½Ó
+    //æ‰“å¼€æœåŠ¡å™¨é—´é“¾æ¥
     App_CommunicationService::instance()->run_server_to_server();
 
     io_context_.run();
@@ -182,10 +182,10 @@ void CServerService::close_service()
 {
     PSS_LOGGER_DEBUG("[CServerService::close_service]begin.");
 
-    //¹Ø±Õ¿ò¼Ü¶¨Ê±Æ÷
+    //å…³é—­æ¡†æ¶å®šæ—¶å™¨
     App_TimerManager::instance()->Close();
 
-    //»ØÊÕÇåÀíÊı¾İ
+    //å›æ”¶æ¸…ç†æ•°æ®
     for (auto tcp_service : tcp_service_list_)
     {
         tcp_service->close();
@@ -199,6 +199,6 @@ void CServerService::close_service()
 
 void CServerService::stop_service()
 {
-    //Í£Ö¹£¬»ØÊÕÇåÀí
+    //åœæ­¢ï¼Œå›æ”¶æ¸…ç†
     io_context_.stop();
 }

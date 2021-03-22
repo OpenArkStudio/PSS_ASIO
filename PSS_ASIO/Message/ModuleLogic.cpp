@@ -1,4 +1,4 @@
-#include "ModuleLogic.h"
+ï»¿#include "ModuleLogic.h"
 
 void CModuleLogic::init_logic(command_to_module_function command_to_module_function, uint16 work_thread_id)
 {
@@ -67,7 +67,7 @@ void CModuleLogic::check_session_io_timeout(uint32 connect_timeout)
 
 void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_seconds, uint32 connect_timeout, config_logic_list& logic_list, ISessionService* session_service)
 {
-    //³õÊ¼»¯Ïß³ÌÊı
+    //åˆå§‹åŒ–çº¿ç¨‹æ•°
     thread_count_ = thread_count;
     connect_timeout_ = connect_timeout;
 
@@ -75,7 +75,7 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
 
     load_module_.set_session_service(session_service);
 
-    //³õÊ¼»¯²å¼ş¼ÓÔØ
+    //åˆå§‹åŒ–æ’ä»¶åŠ è½½
     for (auto logic_library : logic_list)
     {
         load_module_.load_plugin_module(logic_library.logic_path_, 
@@ -83,7 +83,7 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
             logic_library.logic_param_);
     }
 
-    //Ö´ĞĞÏß³Ì¶ÔÓ¦´´½¨
+    //æ‰§è¡Œçº¿ç¨‹å¯¹åº”åˆ›å»º
     for (int i = 0; i < thread_count; i++)
     {
         auto thread_logic = make_shared<CModuleLogic>();
@@ -92,16 +92,16 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
 
         thread_module_list_.emplace_back(thread_logic);
 
-        //³õÊ¼»¯Ïß³Ì
+        //åˆå§‹åŒ–çº¿ç¨‹
         App_tms::instance()->CreateLogic(i);
     }
 
     module_init_finish_ = true;
 
-    //´´½¨²å¼şÊ¹ÓÃµÄÏß³Ì
+    //åˆ›å»ºæ’ä»¶ä½¿ç”¨çš„çº¿ç¨‹
     for (auto thread_id : plugin_work_thread_buffer_list_)
     {
-        //²éÕÒÏß³ÌÊÇ·ñÒÑ¾­´æÔÚ
+        //æŸ¥æ‰¾çº¿ç¨‹æ˜¯å¦å·²ç»å­˜åœ¨
         auto f = plugin_work_thread_list_.find(thread_id);
         if (f != plugin_work_thread_list_.end())
         {
@@ -114,16 +114,16 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
 
         plugin_work_thread_list_[thread_id] = thread_logic;
 
-        //³õÊ¼»¯Ïß³Ì
+        //åˆå§‹åŒ–çº¿ç¨‹
         App_tms::instance()->CreateLogic(thread_id);
     }
 
     plugin_work_thread_buffer_list_.clear();
 
-    //µÈ´ı10ºÁÃë£¬ÈÃËùÓĞÏß³Ì´´½¨Íê±Ï
+    //ç­‰å¾…10æ¯«ç§’ï¼Œè®©æ‰€æœ‰çº¿ç¨‹åˆ›å»ºå®Œæ¯•
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    //¼ÓÔØ²å¼şÍ¶µİÊÂ¼ş
+    //åŠ è½½æ’ä»¶æŠ•é€’äº‹ä»¶
     for (auto plugin_events : plugin_work_thread_buffer_message_list_)
     {
         send_frame_message(plugin_events.tag_thread_id_,
@@ -134,7 +134,7 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
     }
     plugin_work_thread_buffer_message_list_.clear();
 
-    //¼ÓÔØ²å¼şÂß¼­
+    //åŠ è½½æ’ä»¶é€»è¾‘
     for (auto plugin_logic : plugin_work_thread_buffer_Func_list_)
     {
         run_work_thread_logic(plugin_logic.tag_thread_id_,
@@ -143,7 +143,7 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
     }
     plugin_work_thread_buffer_Func_list_.clear();
 
-    //¶¨Ê±¼ì²éÈÎÎñ£¬¶¨Ê±¼ì²é·şÎñÆ÷×´Ì¬
+    //å®šæ—¶æ£€æŸ¥ä»»åŠ¡ï¼Œå®šæ—¶æ£€æŸ¥æœåŠ¡å™¨çŠ¶æ€
     App_TimerManager::instance()->GetTimerPtr()->addTimer_loop(chrono::seconds(0), chrono::seconds(timeout_seconds), [this, timeout_seconds]()
         {
             run_check_task(timeout_seconds);
@@ -158,7 +158,7 @@ void CWorkThreadLogic::init_communication_service(ICommunicationInterface* commu
 
 void CWorkThreadLogic::close()
 {
-    //¹Ø±ÕÏß³Ì²Ù×÷
+    //å…³é—­çº¿ç¨‹æ“ä½œ
     App_tms::instance()->Close();
 
     communicate_service_->close();
@@ -170,13 +170,13 @@ void CWorkThreadLogic::close()
 
     thread_module_list_.clear();
 
-    //¹Ø±ÕÄ£°å²Ù×÷
+    //å…³é—­æ¨¡æ¿æ“ä½œ
     load_module_.Close();
 }
 
 void CWorkThreadLogic::add_frame_events(uint16 command_id, uint32 mark_id, std::string remote_ip, uint16 remote_port, EM_CONNECT_IO_TYPE io_type)
 {
-    //Ìí¼Ó¿ò¼ÜÍ¨ÖªÊÂ¼ş
+    //æ·»åŠ æ¡†æ¶é€šçŸ¥äº‹ä»¶
     auto module_logic = thread_module_list_[0];
 
     App_tms::instance()->AddMessage(0, [command_id, mark_id, remote_ip, remote_port, io_type, module_logic]() {
@@ -210,21 +210,21 @@ void CWorkThreadLogic::add_frame_events(uint16 command_id, uint32 mark_id, std::
 
 void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession> session, _ClientIPInfo& local_info, const _ClientIPInfo& romote_info)
 {
-    //session ½¨Á¢Á¬½Ó
+    //session å»ºç«‹è¿æ¥
     uint16 curr_thread_index = connect_id % thread_count_;
     auto module_logic = thread_module_list_[curr_thread_index];
 
     auto server_id = session->get_mark_id(connect_id);
     if (server_id > 0)
     {
-        //¹ØÁª·şÎñÆ÷¼äÁ´½Ó
+        //å…³è”æœåŠ¡å™¨é—´é“¾æ¥
         communicate_service_->set_connect_id(server_id, connect_id);
     }
 
-    //Ìí¼Óµã¶ÔµãÓ³Éä
+    //æ·»åŠ ç‚¹å¯¹ç‚¹æ˜ å°„
     io_to_io_.regedit_session_id(romote_info, session->get_io_type(), connect_id);
 
-    //Ïò²å¼ş¸æÖªÁ´½Ó½¨Á¢ÏûÏ¢
+    //å‘æ’ä»¶å‘ŠçŸ¥é“¾æ¥å»ºç«‹æ¶ˆæ¯
     App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, module_logic, local_info, romote_info]() {
         //PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
 
@@ -249,7 +249,7 @@ void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession
 
 void CWorkThreadLogic::delete_thread_session(uint32 connect_id, _ClientIPInfo from_io, shared_ptr<ISession> session)
 {
-    //session Á¬½Ó¶Ï¿ª
+    //session è¿æ¥æ–­å¼€
     uint16 curr_thread_index = connect_id % thread_count_;
     auto module_logic = thread_module_list_[curr_thread_index];
     module_logic->delete_session_interface(connect_id);
@@ -257,14 +257,14 @@ void CWorkThreadLogic::delete_thread_session(uint32 connect_id, _ClientIPInfo fr
     auto server_id = session->get_mark_id(connect_id);
     if (server_id > 0)
     {
-        //È¡Ïû·şÎñÆ÷¼äÁ´½Ó
+        //å–æ¶ˆæœåŠ¡å™¨é—´é“¾æ¥
         communicate_service_->set_connect_id(server_id, 0);
     }
 
-    //Çå³ıµã¶Ôµã×ª·¢ÏûÏ¢Ó³Éä
+    //æ¸…é™¤ç‚¹å¯¹ç‚¹è½¬å‘æ¶ˆæ¯æ˜ å°„
     io_to_io_.unregedit_session_id(from_io, session->get_io_type());
 
-    //Ïò²å¼ş¸æÖªÁ´½Ó½¨Á¢ÏûÏ¢
+    //å‘æ’ä»¶å‘ŠçŸ¥é“¾æ¥å»ºç«‹æ¶ˆæ¯
     App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, module_logic]() {
         //PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
         CMessage_Source source;
@@ -284,7 +284,7 @@ void CWorkThreadLogic::delete_thread_session(uint32 connect_id, _ClientIPInfo fr
 
 void CWorkThreadLogic::close_session_event(uint32 connect_id)
 {
-    //session ¹Ø±ÕÊÂ¼ş·Ö·¢
+    //session å…³é—­äº‹ä»¶åˆ†å‘
     uint16 curr_thread_index = connect_id % thread_count_;
     auto module_logic = thread_module_list_[curr_thread_index];
 
@@ -300,7 +300,7 @@ void CWorkThreadLogic::close_session_event(uint32 connect_id)
 
 int CWorkThreadLogic::do_thread_module_logic(const uint32 connect_id, vector<CMessage_Packet>& message_list, shared_ptr<ISession> session)
 {
-    //´¦ÀíÏß³ÌµÄÍ¶µİ
+    //å¤„ç†çº¿ç¨‹çš„æŠ•é€’
     uint16 curr_thread_index = connect_id % thread_count_;
     auto module_logic = thread_module_list_[curr_thread_index];
 
@@ -310,7 +310,7 @@ int CWorkThreadLogic::do_thread_module_logic(const uint32 connect_id, vector<CMe
         curr_thread_index = io_2_io_session_id % thread_count_;
         auto module_logic = thread_module_list_[io_2_io_session_id];
 
-        //´æÔÚµã¶ÔµãÍ¸´«£¬Ö±½ÓÍ¸´«Êı¾İ
+        //å­˜åœ¨ç‚¹å¯¹ç‚¹é€ä¼ ï¼Œç›´æ¥é€ä¼ æ•°æ®
         App_tms::instance()->AddMessage(curr_thread_index, [session, io_2_io_session_id, message_list, module_logic]() {
             for (auto recv_packet : message_list)
             {
@@ -324,7 +324,7 @@ int CWorkThreadLogic::do_thread_module_logic(const uint32 connect_id, vector<CMe
     }
     else
     {
-        //Ìí¼Óµ½Êı¾İ¶ÓÁĞ´¦Àí
+        //æ·»åŠ åˆ°æ•°æ®é˜Ÿåˆ—å¤„ç†
         App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, message_list, module_logic]() {
             //PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
             CMessage_Source source;
@@ -342,17 +342,17 @@ int CWorkThreadLogic::do_thread_module_logic(const uint32 connect_id, vector<CMe
 
                 if (curr_send_packet.buffer_.size() > 0)
                 {
-                    //ÔÚÕâÀïÌí¼Ó¶Ôcurr_send_packetµÄ¸ñÊ½»¯
+                    //åœ¨è¿™é‡Œæ·»åŠ å¯¹curr_send_packetçš„æ ¼å¼åŒ–
                     module_logic->get_session_interface(connect_id)->format_send_packet(source.connect_id_, curr_send_packet);
 
-                    //½«¸ñÊ½»¯ºóµÄÊı¾İÌî³äµ½send_packet
+                    //å°†æ ¼å¼åŒ–åçš„æ•°æ®å¡«å……åˆ°send_packet
                     send_packet.buffer_.append(curr_send_packet.buffer_.c_str(), curr_send_packet.buffer_.size());
                 }
             }
 
             if (send_packet.buffer_.size() > 0)
             {
-                //ÓĞĞèÒª·¢ËÍµÄÄÚÈİ
+                //æœ‰éœ€è¦å‘é€çš„å†…å®¹
                 session->set_write_buffer(connect_id, send_packet.buffer_.c_str(), send_packet.buffer_.size());
                 session->do_write(connect_id);
             }
@@ -364,7 +364,7 @@ int CWorkThreadLogic::do_thread_module_logic(const uint32 connect_id, vector<CMe
 
 void CWorkThreadLogic::do_plugin_thread_module_logic(shared_ptr<CModuleLogic> module_logic, std::string message_tag, CMessage_Packet recv_packet)
 {
-    //Ìí¼Óµ½Êı¾İ¶ÓÁĞ´¦Àí
+    //æ·»åŠ åˆ°æ•°æ®é˜Ÿåˆ—å¤„ç†
     App_tms::instance()->AddMessage(module_logic->get_work_thread_id(), [message_tag, recv_packet, module_logic]() {
         //PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
         CMessage_Source source;
@@ -376,7 +376,7 @@ void CWorkThreadLogic::do_plugin_thread_module_logic(shared_ptr<CModuleLogic> mo
 
         module_logic->do_thread_module_logic(source, recv_packet, send_packet);
 
-        //ÄÚ²¿Ä£¿é»Øµ÷²»ÔÚ´¦Àí send_packet ²¿·Ö¡£
+        //å†…éƒ¨æ¨¡å—å›è°ƒä¸åœ¨å¤„ç† send_packet éƒ¨åˆ†ã€‚
 
         });
 }
@@ -393,12 +393,12 @@ bool CWorkThreadLogic::create_frame_work_thread(uint32 thread_id)
 
     if (false == module_init_finish_)
     {
-        //Èç¹ûÄ£¿é»¹Ã»È«²¿Æô¶¯Íê±Ï£¬½«Õâ¸ö´´½¨Ïß³ÌµÄ¹ı³Ì£¬·ÅÈëvectorÀïÃæ£¬µÈÄ£¿éÈ«²¿¼ÓÔØÍê±Ï£¬Æô¶¯¡£
+        //å¦‚æœæ¨¡å—è¿˜æ²¡å…¨éƒ¨å¯åŠ¨å®Œæ¯•ï¼Œå°†è¿™ä¸ªåˆ›å»ºçº¿ç¨‹çš„è¿‡ç¨‹ï¼Œæ”¾å…¥vectoré‡Œé¢ï¼Œç­‰æ¨¡å—å…¨éƒ¨åŠ è½½å®Œæ¯•ï¼Œå¯åŠ¨ã€‚
         plugin_work_thread_buffer_list_.emplace_back(thread_id);
     }
     else
     {
-        //²éÕÒÕâ¸öÏß³ÌIDÊÇ·ñÒÑ¾­´æÔÚÁË
+        //æŸ¥æ‰¾è¿™ä¸ªçº¿ç¨‹IDæ˜¯å¦å·²ç»å­˜åœ¨äº†
         auto f = plugin_work_thread_list_.find(thread_id);
         if (f != plugin_work_thread_list_.end())
         {
@@ -406,14 +406,14 @@ bool CWorkThreadLogic::create_frame_work_thread(uint32 thread_id)
             return false;
         }
 
-        //´´½¨Ïß³Ì
+        //åˆ›å»ºçº¿ç¨‹
         auto thread_logic = make_shared<CModuleLogic>();
 
         thread_logic->init_logic(load_module_.get_module_function_list(), thread_id);
 
         plugin_work_thread_list_[thread_id] = thread_logic;
 
-        //³õÊ¼»¯Ïß³Ì
+        //åˆå§‹åŒ–çº¿ç¨‹
         App_tms::instance()->CreateLogic(thread_id);
     }
 
@@ -424,18 +424,18 @@ bool CWorkThreadLogic::close_frame_work_thread(uint32 thread_id)
 {
     std::lock_guard <std::recursive_mutex> lock(plugin_timer_mutex_);
 
-    //²»ÄÜ½áÊø¹¤×÷Ïß³Ì
+    //ä¸èƒ½ç»“æŸå·¥ä½œçº¿ç¨‹
     if (thread_id < thread_count_)
     {
         PSS_LOGGER_DEBUG("[CWorkThreadLogic::create_frame_work_thread]thread id must more than config thread count.");
         return false;
     }
 
-    //²éÕÒÕâ¸öÏß³ÌIDÊÇ·ñÒÑ¾­´æÔÚÁË
+    //æŸ¥æ‰¾è¿™ä¸ªçº¿ç¨‹IDæ˜¯å¦å·²ç»å­˜åœ¨äº†
     auto f = plugin_work_thread_list_.find(thread_id);
     if (f != plugin_work_thread_list_.end())
     {
-        //¹Ø±ÕÏß³Ì
+        //å…³é—­çº¿ç¨‹
         f->second->close();
         plugin_work_thread_list_.erase(f);
         return true;
@@ -479,15 +479,15 @@ uint16 CWorkThreadLogic::get_plugin_work_thread_count()
 
 void CWorkThreadLogic::send_io_message(uint32 connect_id, CMessage_Packet send_packet)
 {
-    //´¦ÀíÏß³ÌµÄÍ¶µİ
+    //å¤„ç†çº¿ç¨‹çš„æŠ•é€’
     uint16 curr_thread_index = connect_id % thread_count_;
     auto module_logic = thread_module_list_[curr_thread_index];
 
-    //Ìí¼Óµ½Êı¾İ¶ÓÁĞ´¦Àí
+    //æ·»åŠ åˆ°æ•°æ®é˜Ÿåˆ—å¤„ç†
     App_tms::instance()->AddMessage(curr_thread_index, [this, connect_id, &send_packet, module_logic]() {
         if (nullptr != module_logic->get_session_interface(connect_id))
         {
-            //ÕâÀïµ÷ÓÃ¸ñÊ½»¯·¢ËÍ¹ı³Ì
+            //è¿™é‡Œè°ƒç”¨æ ¼å¼åŒ–å‘é€è¿‡ç¨‹
             auto session = module_logic->get_session_interface(connect_id);
             session->format_send_packet(connect_id, send_packet);
 
@@ -497,11 +497,11 @@ void CWorkThreadLogic::send_io_message(uint32 connect_id, CMessage_Packet send_p
         }
         else
         {
-            //²éÕÒÊÇ²»ÊÇ·şÎñÆ÷¼äÁ´½Ó£¬Èç¹ûÊÇ£¬Ôòµ÷ÓÃÖØÁ¬¡£
+            //æŸ¥æ‰¾æ˜¯ä¸æ˜¯æœåŠ¡å™¨é—´é“¾æ¥ï¼Œå¦‚æœæ˜¯ï¼Œåˆ™è°ƒç”¨é‡è¿ã€‚
             auto server_id = communicate_service_->get_server_id(connect_id);
             if (server_id > 0)
             {
-                //ÖØÁ¬·şÎñÆ÷
+                //é‡è¿æœåŠ¡å™¨
                 communicate_service_->reset_connect(server_id);
             }
         }
@@ -510,7 +510,7 @@ void CWorkThreadLogic::send_io_message(uint32 connect_id, CMessage_Packet send_p
 
 bool CWorkThreadLogic::connect_io_server(const CConnect_IO_Info& io_info, EM_CONNECT_IO_TYPE io_type)
 {
-    //Ñ°ÕÒµ±Ç°server_idÊÇ·ñ´æÔÚ
+    //å¯»æ‰¾å½“å‰server_idæ˜¯å¦å­˜åœ¨
     if (true == communicate_service_->is_exist(io_info.server_id))
     {
         PSS_LOGGER_DEBUG("[CWorkThreadLogic::connect_io_server]server_id={0} is exist.");
@@ -544,7 +544,7 @@ bool CWorkThreadLogic::delete_session_io_mapping(_ClientIPInfo from_io, EM_CONNE
 
 void CWorkThreadLogic::run_check_task(uint32 timeout_seconds)
 {
-    //¼ì²âËùÓĞ¹¤×÷Ïß³Ì×´Ì¬
+    //æ£€æµ‹æ‰€æœ‰å·¥ä½œçº¿ç¨‹çŠ¶æ€
     for (auto module_logic : thread_module_list_)
     {
         auto work_thread_timeout = module_logic->get_work_thread_timeout();
@@ -554,7 +554,7 @@ void CWorkThreadLogic::run_check_task(uint32 timeout_seconds)
         }
     }
 
-    //¼ì²âËùÓĞµÄtcpÁ´½Ó×´Ì¬
+    //æ£€æµ‹æ‰€æœ‰çš„tcpé“¾æ¥çŠ¶æ€
     if (0 < connect_timeout_)
     {
         uint32 connect_timeout = connect_timeout_;
@@ -593,25 +593,25 @@ bool CWorkThreadLogic::send_frame_message(uint16 tag_thread_id, std::string mess
 
     if (delay_timer.delay_seconds_ == std::chrono::seconds(0))
     {
-        //²»ĞèÒªÑÓÊ±£¬Á¢¿ÌÍ¶µİ
+        //ä¸éœ€è¦å»¶æ—¶ï¼Œç«‹åˆ»æŠ•é€’
         do_plugin_thread_module_logic(plugin_thread, message_tag, send_packet);
     }
     else
     {
-        //ĞèÒªÑÓÊ±£¬ÑÓÊ±ºóÍ¶µİ
+        //éœ€è¦å»¶æ—¶ï¼Œå»¶æ—¶åæŠ•é€’
         auto timer_ptr = App_TimerManager::instance()->GetTimerPtr()->addTimer(delay_timer.delay_seconds_, [this, plugin_thread, message_tag, send_packet, delay_timer]()
             {
-                //¶Ô¶¨Ê±Æ÷ÁĞ±í²Ù×÷¼ÓËø
+                //å¯¹å®šæ—¶å™¨åˆ—è¡¨æ“ä½œåŠ é”
                 {
                     std::lock_guard <std::recursive_mutex> lock(plugin_timer_mutex_);
                     plgin_timer_list_.erase(delay_timer.timer_id_);
                 }
 
-                //ÑÓÊ±µ½ÆÚ£¬½øĞĞÍ¶µİ
+                //å»¶æ—¶åˆ°æœŸï¼Œè¿›è¡ŒæŠ•é€’
                 do_plugin_thread_module_logic(plugin_thread, message_tag, send_packet);
             });
 
-        //Ìí¼ÓÓ³Éä¹ØÏµ(Ö»ÓĞÔÚ¶¨Ê±Æ÷ID > 0µÄÊ±ºò²ÅÄÜÉ¾³ı)
+        //æ·»åŠ æ˜ å°„å…³ç³»(åªæœ‰åœ¨å®šæ—¶å™¨ID > 0çš„æ—¶å€™æ‰èƒ½åˆ é™¤)
         if(delay_timer.timer_id_ > 0)
         {
             std::lock_guard <std::recursive_mutex> lock(plugin_timer_mutex_);
@@ -642,25 +642,25 @@ bool CWorkThreadLogic::run_work_thread_logic(uint16 tag_thread_id, CFrame_Messag
 
     if (delay_timer.delay_seconds_ == std::chrono::seconds(0))
     {
-        //Á¢¿ÌÖ´ĞĞÏß³Ìº¯Êı
+        //ç«‹åˆ»æ‰§è¡Œçº¿ç¨‹å‡½æ•°
         App_tms::instance()->AddMessage(tag_thread_id, func);
     }
     else
     {
-        //ĞèÒªÑÓÊ±£¬ÑÓÊ±ºóÍ¶µİ
+        //éœ€è¦å»¶æ—¶ï¼Œå»¶æ—¶åæŠ•é€’
         auto timer_ptr = App_TimerManager::instance()->GetTimerPtr()->addTimer(delay_timer.delay_seconds_, [this, tag_thread_id, delay_timer, func]()
             {
-                //¶Ô¶¨Ê±Æ÷ÁĞ±í²Ù×÷¼ÓËø
+                //å¯¹å®šæ—¶å™¨åˆ—è¡¨æ“ä½œåŠ é”
                 {
                     std::lock_guard <std::recursive_mutex> lock(plugin_timer_mutex_);
                     plgin_timer_list_.erase(delay_timer.timer_id_);
                 }
 
-                //ÑÓÊ±µ½ÆÚ£¬½øĞĞÍ¶µİ
+                //å»¶æ—¶åˆ°æœŸï¼Œè¿›è¡ŒæŠ•é€’
                 App_tms::instance()->AddMessage(tag_thread_id, func);
             });
 
-        //Ìí¼ÓÓ³Éä¹ØÏµ(Ö»ÓĞÔÚ¶¨Ê±Æ÷ID > 0µÄÊ±ºò²ÅÄÜÉ¾³ı)
+        //æ·»åŠ æ˜ å°„å…³ç³»(åªæœ‰åœ¨å®šæ—¶å™¨ID > 0çš„æ—¶å€™æ‰èƒ½åˆ é™¤)
         if (delay_timer.timer_id_ > 0)
         {
             std::lock_guard <std::recursive_mutex> lock(plugin_timer_mutex_);

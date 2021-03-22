@@ -1,4 +1,4 @@
-#include "IotoIo.h"
+ï»¿#include "IotoIo.h"
 
 bool CIotoIo::add_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type, _ClientIPInfo to_io, EM_CONNECT_IO_TYPE to_io_type)
 {
@@ -7,13 +7,13 @@ bool CIotoIo::add_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE f
     {
         if (true == compare_connect_io(from_io, from_io_type, Connect_Info.from_io_, Connect_Info.from_io_type_))
         {
-            //µã¶ÔµãÁ´½ÓÒÑ´æÔÚ£¬²»ÄÜÌí¼Ó
+            //ç‚¹å¯¹ç‚¹é“¾æ¥å·²å­˜åœ¨ï¼Œä¸èƒ½æ·»åŠ 
             PSS_LOGGER_DEBUG("[CIotoIo::add_session_io_mapping]from_ioio={}:{} is exist.", from_io.m_strClientIP, from_io.m_u2Port);
             return false;
         }
     }
 
-    //Ìí¼ÓĞÂµÄÓ³Éä
+    //æ·»åŠ æ–°çš„æ˜ å°„
     CIo_Connect_Info connect_info;
     connect_info.from_io_ = from_io;
     connect_info.from_io_type_ = from_io_type;
@@ -22,13 +22,13 @@ bool CIotoIo::add_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE f
 
     io_2_io_list_.emplace_back(connect_info);
 
-    //²éÕÒµ±Ç°Á´½ÓÊÇ·ñ´æÔÚÁË
+    //æŸ¥æ‰¾å½“å‰é“¾æ¥æ˜¯å¦å­˜åœ¨äº†
     auto from_session_id = get_regedit_session_id(from_io, from_io_type);
     auto to_session_id = get_regedit_session_id(to_io, to_io_type);
 
     if (from_session_id > 0 && to_session_id > 0)
     {
-        //½¨Á¢Á¬½Ó¹ØÏµ
+        //å»ºç«‹è¿æ¥å…³ç³»
         CIo_Session_to_Session s_2_s;
         s_2_s.from_session_id_ = from_session_id;
         s_2_s.to_session_id_ = to_session_id;
@@ -40,7 +40,7 @@ bool CIotoIo::add_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE f
 
 bool CIotoIo::delete_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type)
 {
-    //É¾³ı¶ÔÓ¦µÄµã¶ÔµãÍ¸´«¹ØÏµ
+    //åˆ é™¤å¯¹åº”çš„ç‚¹å¯¹ç‚¹é€ä¼ å…³ç³»
     std::lock_guard <std::mutex> lock(mutex_);
     
     int connect_pos = 0;
@@ -50,7 +50,7 @@ bool CIotoIo::delete_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYP
     {
         if (true == compare_connect_io(from_io, from_io_type, io_connect.from_io_, io_connect.from_io_type_))
         {
-            //ÕÒµ½ÁË£¬É¾³ıÖ®
+            //æ‰¾åˆ°äº†ï¼Œåˆ é™¤ä¹‹
             session_id = io_connect.from_session_id_;
             io_2_io_list_.erase(io_2_io_list_.begin() + connect_pos);
             break;
@@ -58,7 +58,7 @@ bool CIotoIo::delete_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYP
 
         if (true == compare_connect_io(from_io, from_io_type, io_connect.to_io_, io_connect.to_io_type_))
         {
-            //ÕÒµ½ÁË£¬É¾³ıÖ®
+            //æ‰¾åˆ°äº†ï¼Œåˆ é™¤ä¹‹
             session_id = io_connect.to_session_id_;
             io_2_io_list_.erase(io_2_io_list_.begin() + connect_pos);
             break;
@@ -67,7 +67,7 @@ bool CIotoIo::delete_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYP
         connect_pos++;
     }
 
-    //Èç¹û·¢ÏÖ´æÔÚsession_id£¬Ôò½â³ı¹ØÁª
+    //å¦‚æœå‘ç°å­˜åœ¨session_idï¼Œåˆ™è§£é™¤å…³è”
     if (session_id > 0)
     {
         delete_session_list(session_id);
@@ -82,7 +82,7 @@ void CIotoIo::regedit_session_id(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE io_ty
     auto from_io_key = get_connect_list_key(from_io, io_type);
     connect_list_[from_io_key] = session_id;
 
-    //Ñ°ÕÒÁ´½ÓÊÇ·ñÒÑ¾­´æÔÚ
+    //å¯»æ‰¾é“¾æ¥æ˜¯å¦å·²ç»å­˜åœ¨
     for (auto& io_connect : io_2_io_list_)
     {
         if (true == compare_connect_io(io_connect.from_io_, io_connect.from_io_type_, from_io, io_type))
@@ -97,7 +97,7 @@ void CIotoIo::regedit_session_id(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE io_ty
 
         if (io_connect.from_session_id_ > 0 && io_connect.to_session_id_ > 0)
         {
-            //½¨Á¢Á¬½Ó¹ØÏµ
+            //å»ºç«‹è¿æ¥å…³ç³»
             CIo_Session_to_Session s_2_s;
             s_2_s.from_session_id_ = io_connect.from_session_id_;
             s_2_s.to_session_id_ = io_connect.to_session_id_;
@@ -110,17 +110,17 @@ void CIotoIo::regedit_session_id(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE io_ty
 void CIotoIo::unregedit_session_id(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE io_type)
 {
     std::lock_guard <std::mutex> lock(mutex_);
-    //Á´½ÓÊ§Ğ§
+    //é“¾æ¥å¤±æ•ˆ
     auto from_io_key = get_connect_list_key(from_io, io_type);
 
     auto f = connect_list_.find(from_io_key);
     if (f != connect_list_.end())
     {
-        //É¾³ıÁ´½ÓÏûÏ¢
+        //åˆ é™¤é“¾æ¥æ¶ˆæ¯
         auto session_id = f->second;
         connect_list_.erase(from_io_key);
 
-        //Ñ°ÕÒÅäÖÃÏûÏ¢
+        //å¯»æ‰¾é…ç½®æ¶ˆæ¯
         for (auto& connect_info : io_2_io_list_)
         {
             if (connect_info.from_session_id_ == session_id)
@@ -136,7 +136,7 @@ void CIotoIo::unregedit_session_id(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE io_
             }
         }
 
-        //ÇåÀíÁ´½ÓÊ§°ÜĞÅÏ¢
+        //æ¸…ç†é“¾æ¥å¤±è´¥ä¿¡æ¯
         delete_session_list(session_id);
     }
 
@@ -182,12 +182,12 @@ uint32 CIotoIo::get_regedit_session_id(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE
     auto f = connect_list_.find(from_io_key);
     if (f == connect_list_.end())
     {
-        //Ã»ÓĞÕÒµ½ÔÚÏßµÄ
+        //æ²¡æœ‰æ‰¾åˆ°åœ¨çº¿çš„
         return 0;
     }
     else
     {
-        //ÕÒµ½ÁËÔÚÏßµÄ
+        //æ‰¾åˆ°äº†åœ¨çº¿çš„
         return f->second;
     }
 

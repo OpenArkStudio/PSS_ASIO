@@ -1,9 +1,9 @@
-#pragma once
+ï»¿#pragma once
 
 #include "define.h"
 #include "asio.hpp"
 
-//·şÎñÆ÷¼äÁ´½Ó½Ó¿ÚĞéÀà
+//æœåŠ¡å™¨é—´é“¾æ¥æ¥å£è™šç±»
 //add by freeyes
 
 class ICommunicationInterface

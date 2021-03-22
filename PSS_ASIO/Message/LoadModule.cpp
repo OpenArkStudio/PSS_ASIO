@@ -1,5 +1,5 @@
-// ÕâÀïÊµÏÖÄ£¿é¼ÓÔØ
-// Ò»²½²½£¬±ã¿É¾ÛÉÙÎª¶à£¬±ãÄÜÊµÏÖÄ¿±ê¡£
+ï»¿// è¿™é‡Œå®ç°æ¨¡å—åŠ è½½
+// ä¸€æ­¥æ­¥ï¼Œä¾¿å¯èšå°‘ä¸ºå¤šï¼Œä¾¿èƒ½å®ç°ç›®æ ‡ã€‚
 // add by freeeyes
 // 2020-12-20
 
@@ -7,12 +7,12 @@
 
 void CLoadModule::Close()
 {
-    //¹Ø±Õµ±Ç°»îÔ¾Ä£¿é
+    //å…³é—­å½“å‰æ´»è·ƒæ¨¡å—
     for_each(module_list_.begin(), module_list_.end(), [](const std::pair<string, shared_ptr<_ModuleInfo>>& iter) {
-        //¹Ø±ÕÄ£¿é½Ó¿Ú
+        //å…³é—­æ¨¡å—æ¥å£
         iter.second->unload_module_();
 
-        //Çå³ıÄ£¿éÏà¹ØË÷ÒıºÍÊı¾İ
+        //æ¸…é™¤æ¨¡å—ç›¸å…³ç´¢å¼•å’Œæ•°æ®
         CLoadLibrary::PSS_dlClose(iter.second->hModule_);
         });
 
@@ -29,28 +29,28 @@ bool CLoadModule::load_plugin_module(const string& module_file_path, const strin
 {
     auto module_info = std::make_shared<_ModuleInfo>();
 
-    //¼ÇÂ¼Ä£¿é²ÎÊı
+    //è®°å½•æ¨¡å—å‚æ•°
     module_info->module_file_name_ = module_file_name;
     module_info->module_file_path_ = module_file_path;
     module_info->module_param_ = module_param;
 
-    //¿ªÊ¼×¢²áÄ£¿éº¯Êı
+    //å¼€å§‹æ³¨å†Œæ¨¡å—å‡½æ•°
     if (false == load_module_info(module_info))
     {
         return false;
     }
 
-    //²éÕÒ´ËÄ£¿éÊÇ·ñÒÑ¾­±»×¢²á£¬ÓĞÔò°ÑĞÅÏ¢ÀÏĞÅÏ¢ÇåÀí
+    //æŸ¥æ‰¾æ­¤æ¨¡å—æ˜¯å¦å·²ç»è¢«æ³¨å†Œï¼Œæœ‰åˆ™æŠŠä¿¡æ¯è€ä¿¡æ¯æ¸…ç†
     auto f = module_list_.find(module_info->module_file_name_);
 
     if (module_list_.end() != f)
     {
-        //Ğ¶ÔØ¾ÉµÄ²å¼ş
+        //å¸è½½æ—§çš„æ’ä»¶
         PSS_LOGGER_DEBUG("[CLoadModule::LoadMoudle] module_name = {0}, Execute Function LoadModuleData is error!", module_file_name);
         return false;
     }
 
-    //¿ªÊ¼µ÷ÓÃÄ£¿é³õÊ¼»¯¶¯×÷
+    //å¼€å§‹è°ƒç”¨æ¨¡å—åˆå§‹åŒ–åŠ¨ä½œ
     CFrame_Object module_frame_object;
     module_frame_object.session_service_ = session_service_;
     int nRet = module_info->load_module_((IFrame_Object* )&module_frame_object, module_info->module_param_);
@@ -61,13 +61,13 @@ bool CLoadModule::load_plugin_module(const string& module_file_path, const strin
         return false;
     }
 
-    //»ñµÃËùÓĞµÄ×¢²áÖ¸Áî(×¢²á)
+    //è·å¾—æ‰€æœ‰çš„æ³¨å†ŒæŒ‡ä»¤(æ³¨å†Œ)
     for (auto command_id : module_frame_object.module_command_list_)
     {
         command_to_module_function_[command_id] = module_info->do_message_;
     }
 
-    //½«×¢²á³É¹¦µÄÄ£¿é£¬¼ÓÈëµ½HashÊı×éÖĞ
+    //å°†æ³¨å†ŒæˆåŠŸçš„æ¨¡å—ï¼ŒåŠ å…¥åˆ°Hashæ•°ç»„ä¸­
     module_list_[module_file_name] = module_info;
     module_name_list_.emplace_back(module_file_name);
 
@@ -86,11 +86,11 @@ bool CLoadModule::unload_plugin_module(const string& module_file_name, bool is_d
     }
     else
     {
-        //Çå³ıºÍ´Ë¹ØÁªµÄËùÓĞ¶©ÔÄ
+        //æ¸…é™¤å’Œæ­¤å…³è”çš„æ‰€æœ‰è®¢é˜…
         auto module_info = f->second;
         module_info->unload_module_();
 
-        //Çå³ıÄ£¿éÏà¹ØË÷ÒıºÍÊı¾İ
+        //æ¸…é™¤æ¨¡å—ç›¸å…³ç´¢å¼•å’Œæ•°æ®
         CLoadLibrary::PSS_dlClose(module_info->hModule_);
 
         if (true == is_delete)
@@ -185,7 +185,7 @@ bool CLoadModule::load_module_info(shared_ptr<_ModuleInfo> module_info)
         return false;
     }
 
-    //ÉèÖÃÈÕÖ¾ÉúĞ§
+    //è®¾ç½®æ—¥å¿—ç”Ÿæ•ˆ
     module_info->set_output_(spdlog::default_logger());
 
     return true;
@@ -193,7 +193,7 @@ bool CLoadModule::load_module_info(shared_ptr<_ModuleInfo> module_info)
 
 void CLoadModule::delete_module_name_list(const string& module_name)
 {
-    //É¾³ıvectorÖĞµÄname
+    //åˆ é™¤vectorä¸­çš„name
     auto iter = std::remove(module_name_list_.begin(), module_name_list_.end(), module_name);
     module_name_list_.erase(iter, module_name_list_.end());
 }

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "SessionInterface.h"
 #include "ModuleInterfalce.h"
@@ -8,10 +8,10 @@
 #include "IotoIo.h"
 #include "CoreTimer.hpp"
 
-//¸ù¾İÏß³ÌµÄÂß¼­²å¼ş´¦ÀíÄ£¿é
+//æ ¹æ®çº¿ç¨‹çš„é€»è¾‘æ’ä»¶å¤„ç†æ¨¡å—
 //add by freeeyes
 
-//¹¤×÷Ïß³ÌµÄÖ´ĞĞ×´Ì¬
+//å·¥ä½œçº¿ç¨‹çš„æ‰§è¡ŒçŠ¶æ€
 enum class ENUM_WORK_THREAD_STATE
 {
     WORK_THREAD_INIT = 0,
@@ -19,7 +19,7 @@ enum class ENUM_WORK_THREAD_STATE
     WORK_THREAD_END,
 };
 
-//ÒÔÏûÏ¢Ä£Ê½´¦ÀíÂß¼­´úÂë
+//ä»¥æ¶ˆæ¯æ¨¡å¼å¤„ç†é€»è¾‘ä»£ç 
 class CDelayPluginMessage
 {
 public:
@@ -29,7 +29,7 @@ public:
     CFrame_Message_Delay delay_timer_;
 };
 
-//ÒÔlambdaÄ£Ê½´¦Àí´úÂë
+//ä»¥lambdaæ¨¡å¼å¤„ç†ä»£ç 
 class CDelayPluginFunc
 {
 public:

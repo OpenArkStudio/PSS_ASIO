@@ -1,8 +1,8 @@
-#pragma once
+ï»¿#pragma once
 
 #include "define.h"
 
-//ËùÓĞIO½Ó¿ÚµÄĞéÀà
+//æ‰€æœ‰IOæ¥å£çš„è™šç±»
 //add by freeeyes
 
 class ISession
@@ -11,13 +11,13 @@ public:
     ISession() = default;
     virtual ~ISession() = default;
 
-    virtual void set_write_buffer(uint32 connect_id, const char* data, size_t length) = 0; //Ğ´ÈëĞ©»º³å
-    virtual void do_write(uint32 connect_id) = 0;        //Ğ´ÈëIO
-    virtual void do_write_immediately(uint32 connect_id, const char* data, size_t length) = 0; //Á¢¿ÌĞ´ÈëIO¶Ë¿Ú
-    virtual void close(uint32 connect_id) = 0;        //¹Ø±ÕIO¶Ë¿Ú
-    virtual void add_send_finish_size(uint32 connect_id, size_t send_length) = 0;  //·µ»ØĞ´ÈëIO³É¹¦×Ö½Ú
-    virtual EM_CONNECT_IO_TYPE get_io_type() = 0; //»ñµÃµ±Ç°IO×´Ì¬
-    virtual uint32 get_mark_id(uint32 connect_id) = 0; //»ñµÃµ±Ç°Á´½Ó±»±ê¼ÇµÄID
-    virtual std::chrono::steady_clock::time_point& get_recv_time() = 0;   //µÃµ½½ÓÊÕÊı¾İÊ±¼ä
-    virtual bool format_send_packet(uint32 connect_id, CMessage_Packet& message) = 0;  //¸ñÊ½»¯·¢ËÍÊı¾İ
+    virtual void set_write_buffer(uint32 connect_id, const char* data, size_t length) = 0; //å†™å…¥äº›ç¼“å†²
+    virtual void do_write(uint32 connect_id) = 0;        //å†™å…¥IO
+    virtual void do_write_immediately(uint32 connect_id, const char* data, size_t length) = 0; //ç«‹åˆ»å†™å…¥IOç«¯å£
+    virtual void close(uint32 connect_id) = 0;        //å…³é—­IOç«¯å£
+    virtual void add_send_finish_size(uint32 connect_id, size_t send_length) = 0;  //è¿”å›å†™å…¥IOæˆåŠŸå­—èŠ‚
+    virtual EM_CONNECT_IO_TYPE get_io_type() = 0; //è·å¾—å½“å‰IOçŠ¶æ€
+    virtual uint32 get_mark_id(uint32 connect_id) = 0; //è·å¾—å½“å‰é“¾æ¥è¢«æ ‡è®°çš„ID
+    virtual std::chrono::steady_clock::time_point& get_recv_time() = 0;   //å¾—åˆ°æ¥æ”¶æ•°æ®æ—¶é—´
+    virtual bool format_send_packet(uint32 connect_id, CMessage_Packet& message) = 0;  //æ ¼å¼åŒ–å‘é€æ•°æ®
 };

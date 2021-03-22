@@ -1,6 +1,6 @@
-#pragma once
+ï»¿#pragma once
 
-//´«µİ¸ø²å¼şµÄµ÷ÓÃ½Ó¿Ú
+//ä¼ é€’ç»™æ’ä»¶çš„è°ƒç”¨æ¥å£
 //add by freeeyes
 
 #include "ISessionService.h"

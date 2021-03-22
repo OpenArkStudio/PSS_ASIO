@@ -1,8 +1,8 @@
-#include "TtyServer.h"
+ï»¿#include "TtyServer.h"
 
 CTTyServer::CTTyServer(uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size)
 {
-    //´¦ÀíÁ´½Ó½¨Á¢ÏûÏ¢
+    //å¤„ç†é“¾æ¥å»ºç«‹æ¶ˆæ¯
     session_recv_buffer_.Init(max_recv_size);
     session_send_buffer_.Init(max_send_size);
 
@@ -53,15 +53,15 @@ void CTTyServer::do_receive()
 
             if (!ec && length > 0)
             {
-                //´¦ÀíÊı¾İ°ü
+                //å¤„ç†æ•°æ®åŒ…
                 auto self(shared_from_this());
 
                 recv_data_size_ += length;
 
-                //Èç¹û»º³åÒÑÂú£¬¶Ï¿ªÁ¬½Ó£¬²»ÔÙ½ÓÊÜÊı¾İ¡£
+                //å¦‚æœç¼“å†²å·²æ»¡ï¼Œæ–­å¼€è¿æ¥ï¼Œä¸å†æ¥å—æ•°æ®ã€‚
                 if (session_recv_buffer_.get_buffer_size() == 0)
                 {
-                    //²»¶Ï¿ª(»º³å³ÅÂúÁË)
+                    //ä¸æ–­å¼€(ç¼“å†²æ’‘æ»¡äº†)
                     session_recv_buffer_.move(length);
                     App_WorkThreadLogic::instance()->close_session_event(connect_id);
                     do_receive();
@@ -69,12 +69,12 @@ void CTTyServer::do_receive()
 
                 session_recv_buffer_.set_write_data(length);
 
-                //´¦ÀíÊı¾İ²ğ°ü
+                //å¤„ç†æ•°æ®æ‹†åŒ…
                 vector<CMessage_Packet> message_list;
                 bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
                 if (!ret)
                 {
-                    //Á´½Ó¶Ï¿ª(½âÎö°ü²»ÕıÈ·)
+                    //é“¾æ¥æ–­å¼€(è§£æåŒ…ä¸æ­£ç¡®)
                     session_recv_buffer_.move(length);
                     App_WorkThreadLogic::instance()->close_session_event(connect_id);
                     do_receive();
@@ -83,7 +83,7 @@ void CTTyServer::do_receive()
                 {
                     recv_data_time_ = std::chrono::steady_clock::now();
 
-                    //Ìí¼Óµ½Êı¾İ¶ÓÁĞ´¦Àí
+                    //æ·»åŠ åˆ°æ•°æ®é˜Ÿåˆ—å¤„ç†
                     App_WorkThreadLogic::instance()->do_thread_module_logic(connect_id, message_list, self);
                 }
 
@@ -100,7 +100,7 @@ void CTTyServer::set_write_buffer(uint32 connect_id, const char* data, size_t le
 {
     if (session_send_buffer_.get_buffer_size() <= length)
     {
-        //·¢ËÍĞ©»º³åÒÑ¾­ÂúÁË
+        //å‘é€äº›ç¼“å†²å·²ç»æ»¡äº†
         PSS_LOGGER_DEBUG("[CTTyServer::set_write_buffer]connect_id={0} is full.", connect_id);
         return;
     }
@@ -127,7 +127,7 @@ bool CTTyServer::add_serial_port(asio::io_context* io_context, std::string tty_n
     {
         PSS_LOGGER_DEBUG("[CServerService::add_serial_port]connect error={}.", ec.message());
 
-        //·¢ËÍÏûÏ¢¸øÂß¼­¿é
+        //å‘é€æ¶ˆæ¯ç»™é€»è¾‘å—
         App_WorkThreadLogic::instance()->add_frame_events(LOGIC_LISTEN_SERVER_ERROR,
             server_id_,
             local_ip_.m_strClientIP,
@@ -150,7 +150,7 @@ void CTTyServer::do_write(uint32 connect_id)
 {
     PSS_UNUSED_ARG(connect_id);
 
-    //×é×°·¢ËÍÊı¾İ
+    //ç»„è£…å‘é€æ•°æ®
     auto send_buffer = make_shared<CSendBuffer>();
     send_buffer->data_.append(session_send_buffer_.read(), session_send_buffer_.get_write_size());
     send_buffer->buffer_length_ = session_send_buffer_.get_write_size();
@@ -158,14 +158,14 @@ void CTTyServer::do_write(uint32 connect_id)
     //PSS_LOGGER_DEBUG("[CTTyServer::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
     clear_write_buffer();
     
-    //Òì²½·¢ËÍ
+    //å¼‚æ­¥å‘é€
     auto self(shared_from_this());
     serial_port_param_->async_write_some(asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
         [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
         {
             if (ec)
             {
-                //ÔİÊ±²»´¦Àí
+                //æš‚æ—¶ä¸å¤„ç†
                 PSS_LOGGER_DEBUG("[CTTyServer::do_write]write error({0}).", ec.message());
             }
             else
@@ -181,21 +181,21 @@ void CTTyServer::do_write_immediately(uint32 connect_id, const char* data, size_
 {
     PSS_UNUSED_ARG(connect_id);
 
-    //×é×°·¢ËÍÊı¾İ
+    //ç»„è£…å‘é€æ•°æ®
     auto send_buffer = make_shared<CSendBuffer>();
     send_buffer->data_.append(data, length);
     send_buffer->buffer_length_ = length;
 
     //PSS_LOGGER_DEBUG("[CTTyServer::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
 
-    //Òì²½·¢ËÍ
+    //å¼‚æ­¥å‘é€
     auto self(shared_from_this());
     serial_port_param_->async_write_some(asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
         [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
         {
             if (ec)
             {
-                //ÔİÊ±²»´¦Àí
+                //æš‚æ—¶ä¸å¤„ç†
                 PSS_LOGGER_DEBUG("[CTTyServer::do_write]write error({0}).", ec.message());
             }
             else
@@ -209,7 +209,7 @@ void CTTyServer::do_write_immediately(uint32 connect_id, const char* data, size_
 
 void CTTyServer::add_send_finish_size(uint32 connect_id, size_t send_length)
 {
-    //Òì²½Ğ´·µ»Ø
+    //å¼‚æ­¥å†™è¿”å›
     send_data_size_ += send_length;
 }
 
@@ -225,7 +225,7 @@ void CTTyServer::close(uint32 connect_id)
     PSS_UNUSED_ARG(connect_id);
     packet_parse_interface_->packet_disconnect_ptr_(connect_id_, io_type_);
 
-    //É¾³ıÓ³Éä¹ØÏµ
+    //åˆ é™¤æ˜ å°„å…³ç³»
     App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip_, self);
 }
 

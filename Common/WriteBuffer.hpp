@@ -1,4 +1,4 @@
-#include "define.h"
+ï»¿#include "define.h"
 //#include "asio/detail/socket_ops.hpp"
 
 inline uint64 htonll_uint64(uint64 val)
@@ -39,7 +39,7 @@ public:
 #if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
-            //Ö÷»úĞòÁĞ×ª»¯ÎªÍøĞò
+            //ä¸»æœºåºåˆ—è½¬åŒ–ä¸ºç½‘åº
             u2Data = asio::detail::socket_ops::host_to_network_short(u2Data);
         }
 #endif
@@ -54,7 +54,7 @@ public:
 #if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
-            //Ö÷»úĞòÁĞ×ª»¯ÎªÍøĞò
+            //ä¸»æœºåºåˆ—è½¬åŒ–ä¸ºç½‘åº
             u4Data = asio::detail::socket_ops::host_to_network_long(u4Data);
         }
 #endif
@@ -69,7 +69,7 @@ public:
 #if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
-            //Ö÷»úĞòÁĞ×ª»¯ÎªÍøĞò
+            //ä¸»æœºåºåˆ—è½¬åŒ–ä¸ºç½‘åº
             u8Data = htonll_uint64(u8Data);
         }
 #endif
@@ -91,7 +91,7 @@ public:
 #if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
-            //Ö÷»úĞòÁĞ×ª»¯ÎªÍøĞò
+            //ä¸»æœºåºåˆ—è½¬åŒ–ä¸ºç½‘åº
             n2Data = asio::detail::socket_ops::host_to_network_short(n2Data);
         }
 #endif
@@ -106,7 +106,7 @@ public:
 #if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
-            //Ö÷»úĞòÁĞ×ª»¯ÎªÍøĞò
+            //ä¸»æœºåºåˆ—è½¬åŒ–ä¸ºç½‘åº
             n4Data = asio::detail::socket_ops::host_to_network_long(n4Data);
         }
 #endif
@@ -121,7 +121,7 @@ public:
 #if BYTE_SORT_SWITCH_STATE != BYTE_SORT_SWITCH_OFF
         if (true == is_net_sort_)
         {
-            //Ö÷»úĞòÁĞ×ª»¯ÎªÍøĞò
+            //ä¸»æœºåºåˆ—è½¬åŒ–ä¸ºç½‘åº
             n8Data = htonll_int64(n8Data);
         }
 #endif

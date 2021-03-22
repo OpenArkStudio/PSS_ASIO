@@ -1,4 +1,4 @@
-#include "UdpClientSession.h"
+ï»¿#include "UdpClientSession.h"
 
 CUdpClientSession::CUdpClientSession(asio::io_context* io_context)
     : socket_(*io_context)
@@ -12,7 +12,7 @@ void CUdpClientSession::start(const CConnect_IO_Info& io_type)
 
     server_id_ = io_type.server_id;
 
-    //½¨Á¢Á¬½Ó
+    //å»ºç«‹è¿æ¥
     udp::endpoint end_point(asio::ip::address::from_string(io_type.server_ip.c_str()), io_type.server_port);
     send_endpoint_ = end_point;
     asio::error_code connect_error;
@@ -20,7 +20,7 @@ void CUdpClientSession::start(const CConnect_IO_Info& io_type)
 
     if (connect_error)
     {
-        //Á¬½Ó½¨Á¢Ê§°Ü
+        //è¿æ¥å»ºç«‹å¤±è´¥
         PSS_LOGGER_DEBUG("[CUdpClientSession::start]error({})", connect_error.message());
     }
     else
@@ -30,7 +30,7 @@ void CUdpClientSession::start(const CConnect_IO_Info& io_type)
 
         packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(io_type.packet_parse_id);
 
-        //´¦ÀíÁ´½Ó½¨Á¢ÏûÏ¢
+        //å¤„ç†é“¾æ¥å»ºç«‹æ¶ˆæ¯
         _ClientIPInfo remote_ip;
         _ClientIPInfo local_ip;
         remote_ip.m_strClientIP = socket_.remote_endpoint().address().to_string();
@@ -43,7 +43,7 @@ void CUdpClientSession::start(const CConnect_IO_Info& io_type)
 
         packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip, local_ip, io_type_);
 
-        //Ìí¼ÓÓ³Éä¹ØÏµ
+        //æ·»åŠ æ˜ å°„å…³ç³»
         App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip, remote_ip);
 
         do_receive();
@@ -58,10 +58,10 @@ void CUdpClientSession::close(uint32 connect_id)
 
     packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_);
 
-    //Êä³ö½ÓÊÕ·¢ËÍ×Ö½ÚÊı
+    //è¾“å‡ºæ¥æ”¶å‘é€å­—èŠ‚æ•°
     PSS_LOGGER_DEBUG("[CUdpClientSession::Close]recv:{0}, send:{1}", recv_data_size_, send_data_size_);
 
-    //É¾³ıÓ³Éä¹ØÏµ
+    //åˆ é™¤æ˜ å°„å…³ç³»
     _ClientIPInfo remote_ip;
     remote_ip.m_strClientIP = send_endpoint_.address().to_string();
     remote_ip.m_u2Port = send_endpoint_.port();
@@ -72,13 +72,13 @@ void CUdpClientSession::close(uint32 connect_id)
 
 void CUdpClientSession::do_receive()
 {
-    //½ÓÊÕÊı¾İ
+    //æ¥æ”¶æ•°æ®
     auto self(shared_from_this());
 
-    //Èç¹û»º³åÒÑÂú£¬¶Ï¿ªÁ¬½Ó£¬²»ÔÙ½ÓÊÜÊı¾İ¡£
+    //å¦‚æœç¼“å†²å·²æ»¡ï¼Œæ–­å¼€è¿æ¥ï¼Œä¸å†æ¥å—æ•°æ®ã€‚
     if (session_recv_buffer_.get_buffer_size() == 0)
     {
-        //Á´½Ó¶Ï¿ª(»º³å³ÅÂúÁË)
+        //é“¾æ¥æ–­å¼€(ç¼“å†²æ’‘æ»¡äº†)
         App_WorkThreadLogic::instance()->close_session_event(connect_id_);
     }
 
@@ -96,12 +96,12 @@ void CUdpClientSession::do_receive()
                     length);
                 session_send_buffer_.set_write_data(length);
 
-                //´¦ÀíÊı¾İ²ğ°ü
+                //å¤„ç†æ•°æ®æ‹†åŒ…
                 vector<CMessage_Packet> message_list;
                 bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
                 if (!ret)
                 {
-                    //Á´½Ó¶Ï¿ª(½âÎö°ü²»ÕıÈ·)
+                    //é“¾æ¥æ–­å¼€(è§£æåŒ…ä¸æ­£ç¡®)
                     session_recv_buffer_.move(length);
                     App_WorkThreadLogic::instance()->close_session_event(connect_id_);
                     do_receive();
@@ -110,17 +110,17 @@ void CUdpClientSession::do_receive()
                 {
                     recv_data_time_ = std::chrono::steady_clock::now();
 
-                    //Ìí¼Óµ½Êı¾İ¶ÓÁĞ´¦Àí
+                    //æ·»åŠ åˆ°æ•°æ®é˜Ÿåˆ—å¤„ç†
                     App_WorkThreadLogic::instance()->do_thread_module_logic(connect_id_, message_list, self);
                 }
 
                 session_recv_buffer_.move(length);
-                //¼ÌĞø¶ÁÊı¾İ
+                //ç»§ç»­è¯»æ•°æ®
                 self->do_receive();
             }
             else
             {
-                //Á´½Ó¶Ï¿ª
+                //é“¾æ¥æ–­å¼€
                 App_WorkThreadLogic::instance()->close_session_event(connect_id_);
             }
         });
@@ -128,7 +128,7 @@ void CUdpClientSession::do_receive()
 
 void CUdpClientSession::do_write(uint32 connect_id)
 {
-    //×é×°·¢ËÍÊı¾İ
+    //ç»„è£…å‘é€æ•°æ®
     auto send_buffer = make_shared<CSendBuffer>();
     send_buffer->data_.append(session_send_buffer_.read(), session_send_buffer_.get_write_size());
     send_buffer->buffer_length_ = session_send_buffer_.get_write_size();
@@ -138,14 +138,14 @@ void CUdpClientSession::do_write(uint32 connect_id)
 
     clear_write_buffer(send_buffer->buffer_length_);
 
-    //Òì²½·¢ËÍ
+    //å¼‚æ­¥å‘é€
     auto self(shared_from_this());
     socket_.async_send_to(asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_), send_endpoint_,
         [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
         {
             if (ec)
             {
-                //ÔİÊ±²»´¦Àí
+                //æš‚æ—¶ä¸å¤„ç†
                 PSS_LOGGER_DEBUG("[CUdpClientSession::do_write]connect_id={0}, write error({1}).", connect_id, ec.message());
             }
             else
@@ -175,7 +175,7 @@ void CUdpClientSession::add_send_finish_size(uint32 connect_id, size_t send_leng
 
 void CUdpClientSession::do_write_immediately(uint32 connect_id, const char* data, size_t length)
 {
-    //×é×°·¢ËÍÊı¾İ
+    //ç»„è£…å‘é€æ•°æ®
     auto send_buffer = make_shared<CSendBuffer>();
     send_buffer->data_.append(data, length);
     send_buffer->buffer_length_ = length;
@@ -185,14 +185,14 @@ void CUdpClientSession::do_write_immediately(uint32 connect_id, const char* data
 
     clear_write_buffer(send_buffer->buffer_length_);
 
-    //Òì²½·¢ËÍ
+    //å¼‚æ­¥å‘é€
     auto self(shared_from_this());
     socket_.async_send_to(asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_), send_endpoint_,
         [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
         {
             if (ec)
             {
-                //ÔİÊ±²»´¦Àí
+                //æš‚æ—¶ä¸å¤„ç†
                 PSS_LOGGER_DEBUG("[CUdpClientSession::do_write]connect_id={0}, write error({1}).", connect_id, ec.message());
             }
             else
