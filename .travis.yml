@@ -18,6 +18,7 @@ script:
   - cd $TRAVIS_BUILD_DIR/Build/Linux
   - cmake $TRAVIS_BUILD_DIR -DCMAKE_BUILD_TYPE=Debug
   - cmake --build . --config Debug
+  - cd $TRAVIS_BUILD_DIR
   - sonar-scanner -X
  
 cache:
