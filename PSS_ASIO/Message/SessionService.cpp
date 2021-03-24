@@ -1,6 +1,6 @@
 ﻿#include "SessionService.h"
 
-void CSessionService::send_io_message(uint32 connect_id, CMessage_Packet send_packet)
+void CSessionService::send_io_message(uint32 connect_id, std::shared_ptr<CMessage_Packet> send_packet)
 {
     App_WorkThreadLogic::instance()->send_io_message(connect_id, send_packet);
 }

@@ -207,7 +207,7 @@
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties _1_1_4Build_4Windows_4server_3config_1json__JsonSchema="https://jenkins-x.io/schemas/jx-requirements.json" />
+      <UserProperties />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

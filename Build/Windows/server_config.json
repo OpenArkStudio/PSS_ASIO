@@ -12,6 +12,11 @@
       "packet parse id": 1,
       "packet parse path": "./",
       "packet parse file": "PacketParse_Inferface.dll"
+    },
+    {
+      "packet parse id": 2,
+      "packet parse path": "./",
+      "packet parse file": "PacketParse_Http.dll"
     }
   ],
 
@@ -34,7 +39,7 @@
     {
       "tcp ip": "127.0.0.1",
       "tcp port": 10003,
-      "packet parse id": 1,
+      "packet parse id": 2,
       "recv buff size": 102400,
       "send buff size": 102400
     }

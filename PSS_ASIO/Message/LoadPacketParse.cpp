@@ -102,6 +102,8 @@ bool CLoadPacketParse::LoadPacketInfo(uint32 u4PacketParseID, const std::string&
     //调用初始化
     pPacketParseInfo->packet_load_ptr_();
 
+    PSS_LOGGER_DEBUG("[CLoadPacketParse::LoadPacketInfo] load {0} OK!", packet_parse_file);
+
     return true;
 }
 

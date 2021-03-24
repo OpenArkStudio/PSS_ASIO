@@ -31,7 +31,7 @@ void CModuleLogic::close()
     sessions_interface_.close();
 }
 
-int CModuleLogic::do_thread_module_logic(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
+int CModuleLogic::do_thread_module_logic(const CMessage_Source& source, const CMessage_Packet& recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
 {
     return modules_interface_.do_module_message(source, recv_packet, send_packet);
 }
@@ -182,7 +182,7 @@ void CWorkThreadLogic::add_frame_events(uint16 command_id, uint32 mark_id, std::
     App_tms::instance()->AddMessage(0, [command_id, mark_id, remote_ip, remote_port, io_type, module_logic]() {
         CMessage_Source source;
         CMessage_Packet recv_packet;
-        CMessage_Packet send_packet;
+        auto send_packet = std::make_shared<CMessage_Packet>();
 
         recv_packet.command_id_ = command_id;
 
@@ -232,7 +232,7 @@ void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession
 
         CMessage_Source source;
         CMessage_Packet recv_packet;
-        CMessage_Packet send_packet;
+        auto send_packet = std::make_shared<CMessage_Packet>();
 
         recv_packet.command_id_ = LOGIC_COMMAND_CONNECT;
 
@@ -269,7 +269,7 @@ void CWorkThreadLogic::delete_thread_session(uint32 connect_id, _ClientIPInfo fr
         //PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
         CMessage_Source source;
         CMessage_Packet recv_packet;
-        CMessage_Packet send_packet;
+        auto send_packet = std::make_shared<CMessage_Packet>();
 
         recv_packet.command_id_ = LOGIC_COMMAND_DISCONNECT;
 
@@ -337,16 +337,16 @@ int CWorkThreadLogic::do_thread_module_logic(const uint32 connect_id, vector<CMe
 
             for (auto recv_packet : message_list)
             {
-                CMessage_Packet curr_send_packet;
+                auto curr_send_packet = std::make_shared<CMessage_Packet>();
                 module_logic->do_thread_module_logic(source, recv_packet, curr_send_packet);
 
-                if (curr_send_packet.buffer_.size() > 0)
+                if (curr_send_packet->buffer_.size() > 0)
                 {
                     //在这里添加对curr_send_packet的格式化
                     module_logic->get_session_interface(connect_id)->format_send_packet(source.connect_id_, curr_send_packet);
 
                     //将格式化后的数据填充到send_packet
-                    send_packet.buffer_.append(curr_send_packet.buffer_.c_str(), curr_send_packet.buffer_.size());
+                    send_packet.buffer_.append(curr_send_packet->buffer_.c_str(), curr_send_packet->buffer_.size());
                 }
             }
 
@@ -368,7 +368,7 @@ void CWorkThreadLogic::do_plugin_thread_module_logic(shared_ptr<CModuleLogic> mo
     App_tms::instance()->AddMessage(module_logic->get_work_thread_id(), [message_tag, recv_packet, module_logic]() {
         //PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
         CMessage_Source source;
-        CMessage_Packet send_packet;
+        auto send_packet = std::make_shared<CMessage_Packet>();
 
         source.work_thread_id_ = module_logic->get_work_thread_id();
         source.remote_ip_.m_strClientIP = message_tag;
@@ -477,14 +477,14 @@ uint16 CWorkThreadLogic::get_plugin_work_thread_count()
     return (uint16)plugin_work_thread_list_.size();
 }
 
-void CWorkThreadLogic::send_io_message(uint32 connect_id, CMessage_Packet send_packet)
+void CWorkThreadLogic::send_io_message(uint32 connect_id, std::shared_ptr<CMessage_Packet> send_packet)
 {
     //处理线程的投递
     uint16 curr_thread_index = connect_id % thread_count_;
     auto module_logic = thread_module_list_[curr_thread_index];
 
     //添加到数据队列处理
-    App_tms::instance()->AddMessage(curr_thread_index, [this, connect_id, &send_packet, module_logic]() {
+    App_tms::instance()->AddMessage(curr_thread_index, [this, connect_id, send_packet, module_logic]() {        
         if (nullptr != module_logic->get_session_interface(connect_id))
         {
             //这里调用格式化发送过程
@@ -492,8 +492,8 @@ void CWorkThreadLogic::send_io_message(uint32 connect_id, CMessage_Packet send_p
             session->format_send_packet(connect_id, send_packet);
 
             session->do_write_immediately(connect_id,
-                send_packet.buffer_.c_str(),
-                send_packet.buffer_.size());
+                send_packet->buffer_.c_str(),
+                send_packet->buffer_.size());
         }
         else
         {

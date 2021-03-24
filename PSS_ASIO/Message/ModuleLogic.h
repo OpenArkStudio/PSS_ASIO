@@ -53,7 +53,7 @@ public:
 
     void close();
 
-    int do_thread_module_logic(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet);
+    int do_thread_module_logic(const CMessage_Source& source, const CMessage_Packet& recv_packet, std::shared_ptr<CMessage_Packet> send_packet);
 
     uint16 get_work_thread_id();
 
@@ -91,7 +91,7 @@ public:
 
     int do_thread_module_logic(const uint32 connect_id, vector<CMessage_Packet>& message_list, shared_ptr<ISession> session);
 
-    void send_io_message(uint32 connect_id, CMessage_Packet send_packet);
+    void send_io_message(uint32 connect_id, std::shared_ptr<CMessage_Packet> send_packet);
 
     bool connect_io_server(const CConnect_IO_Info& io_info, EM_CONNECT_IO_TYPE io_type);
 

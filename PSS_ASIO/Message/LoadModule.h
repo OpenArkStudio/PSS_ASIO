@@ -13,7 +13,7 @@
 //定义插件函数指针入口
 using load_module_function_ptr = int(*)(IFrame_Object*, string module_param);
 using unload_module_function_ptr = void(*)(void);
-using do_message_function_ptr = int(*)(const CMessage_Source&, const CMessage_Packet&, CMessage_Packet&);
+using do_message_function_ptr = int(*)(const CMessage_Source&, const CMessage_Packet&, std::shared_ptr<CMessage_Packet>);
 using get_module_state_function_ptr = bool(*)(uint32&);
 using set_output_function_ptr = void(*)(shared_ptr<spdlog::logger>);
 

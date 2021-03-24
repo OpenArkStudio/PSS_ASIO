@@ -25,7 +25,7 @@
 using namespace std;
 
 DECLDIR bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, vector<CMessage_Packet>& message_list, EM_CONNECT_IO_TYPE emIOType);
-DECLDIR bool parse_packet_format_send_buffer(uint32 connect_id, CMessage_Packet& message, EM_CONNECT_IO_TYPE emIOType);
+DECLDIR bool parse_packet_format_send_buffer(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, EM_CONNECT_IO_TYPE emIOType);
 DECLDIR bool connect(uint32 connect_id, const _ClientIPInfo& remote_ip, const _ClientIPInfo& local_ip, EM_CONNECT_IO_TYPE emIOType);
 DECLDIR void disConnect(uint32 connect_id, EM_CONNECT_IO_TYPE emIOType);
 DECLDIR void set_output(shared_ptr<spdlog::logger> logger);
@@ -201,7 +201,7 @@ bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, ve
     return true;
 }
 
-bool parse_packet_format_send_buffer(uint32 connect_id, CMessage_Packet& message, EM_CONNECT_IO_TYPE emIOType)
+bool parse_packet_format_send_buffer(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, EM_CONNECT_IO_TYPE emIOType)
 {
     //组装http发送数据包
     auto f = map_http_parse_.find(connect_id);
@@ -210,20 +210,20 @@ bool parse_packet_format_send_buffer(uint32 connect_id, CMessage_Packet& message
         if (f->second.protocol_ == ENUM_Protocol::PROTOCAL_HTTP_POST)
         {
             //格式化http消息
-            message.buffer_ = f->second.http_format_->get_response_text(message.buffer_);
+            message->buffer_ = f->second.http_format_->get_response_text(message->buffer_);
         }
         else if (f->second.protocol_ == ENUM_Protocol::PROTOCAL_WEBSOCKET_SHARK_HAND)
         {
             //格式化协议升级信息
-            message.buffer_ = f->second.http_format_->get_response_websocket_text(message.buffer_);
+            message->buffer_ = f->second.http_format_->get_response_websocket_text(message->buffer_);
             f->second.protocol_ = ENUM_Protocol::PROTOCAL_WEBSOCKET_DATA;
         }
         else
         {
             //格式化websocket帧数据
             std::string frame_data;
-            do_websocket_send_frame(message.buffer_, frame_data);
-            message.buffer_ = frame_data;
+            do_websocket_send_frame(message->buffer_, frame_data);
+            message->buffer_ = frame_data;
         }
     }
 

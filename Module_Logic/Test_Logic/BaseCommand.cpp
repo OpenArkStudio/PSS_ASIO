@@ -58,7 +58,7 @@ void CBaseCommand::logic_connect_udp()
     session_service_->connect_io_server(io_info, io_type);
 }
 
-void CBaseCommand::logic_connect(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
+void CBaseCommand::logic_connect(const CMessage_Source& source, const CMessage_Packet& recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
 {
     PSS_LOGGER_DEBUG("[logic_connect]connand={}, connect", source.connect_id_);
     PSS_LOGGER_DEBUG("[logic_connect]connand={}, local ip={} local port={}", source.connect_id_, source.local_ip_.m_strClientIP, source.local_ip_.m_u2Port);
@@ -93,36 +93,36 @@ void CBaseCommand::logic_connect(const CMessage_Source& source, const CMessage_P
         /*测试发送UDP消息*/
         if (TEST_FRAME_WORK_FLAG == 1)
         {
-            CMessage_Packet send_asyn_packet;
-            send_asyn_packet.command_id_ = 0x1002;
-            send_asyn_packet.buffer_ = "111111";
+            auto send_asyn_packet = std::make_shared<CMessage_Packet>();
+            send_asyn_packet->command_id_ = 0x1002;
+            send_asyn_packet->buffer_ = "111111";
 
             session_service_->send_io_message(source.connect_id_, send_asyn_packet);
         }
     }
 }
 
-void CBaseCommand::logic_disconnect(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
+void CBaseCommand::logic_disconnect(const CMessage_Source& source, const CMessage_Packet& recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
 {
     PSS_LOGGER_DEBUG("[do_module_message]connand={}, disconnect", source.connect_id_);
 }
 
-void CBaseCommand::logic_test_sync(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
+void CBaseCommand::logic_test_sync(const CMessage_Source& source, const CMessage_Packet& recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
 {
     //处理发送数据(同步)
-    send_packet.buffer_.append(recv_packet.buffer_.c_str(), recv_packet.buffer_.size());
+    send_packet->buffer_.append(recv_packet.buffer_.c_str(), recv_packet.buffer_.size());
 }
 
-void CBaseCommand::logic_test_asyn(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
+void CBaseCommand::logic_test_asyn(const CMessage_Source& source, const CMessage_Packet& recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
 {
     //处理发送数据(异步)
-    CMessage_Packet send_asyn_packet;
-    send_asyn_packet.buffer_.append(recv_packet.buffer_.c_str(), recv_packet.buffer_.size());
+    auto send_asyn_packet = std::make_shared<CMessage_Packet>();
+    send_asyn_packet->buffer_.append(recv_packet.buffer_.c_str(), recv_packet.buffer_.size());
 
     session_service_->send_io_message(source.connect_id_, send_asyn_packet);
 }
 
-void CBaseCommand::logic_test_frame(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
+void CBaseCommand::logic_test_frame(const CMessage_Source& source, const CMessage_Packet& recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
 {
     //处理插件处理任务
     PSS_LOGGER_DEBUG("[logic_test_frame] tag_name={0},data={1}.", source.remote_ip_.m_strClientIP, recv_packet.buffer_);
@@ -148,37 +148,42 @@ void CBaseCommand::logic_test_frame(const CMessage_Source& source, const CMessag
     }
 }
 
-void CBaseCommand::logic_test_connect_error(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
+void CBaseCommand::logic_test_connect_error(const CMessage_Source& source, const CMessage_Packet& recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
 {
     PSS_LOGGER_DEBUG("[CBaseCommand::logic_test_connect_error]{0}:{1}", 
         source.remote_ip_.m_strClientIP,
         source.remote_ip_.m_u2Port);
 }
 
-void CBaseCommand::logic_test_listen_error(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
+void CBaseCommand::logic_test_listen_error(const CMessage_Source& source, const CMessage_Packet& recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
 {
     PSS_LOGGER_DEBUG("[CBaseCommand::logic_test_listen_error]{0}:{1}",
         source.local_ip_.m_strClientIP,
         source.local_ip_.m_u2Port);
 }
 
-void CBaseCommand::logic_http_post(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
+void CBaseCommand::logic_http_post(const CMessage_Source& source, const CMessage_Packet& recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
 {
     PSS_LOGGER_DEBUG("[logic_http_post]post data={0}", recv_packet.buffer_);
     //返回http消息
-    send_packet.buffer_ = recv_packet.buffer_;
+    send_packet->buffer_ = recv_packet.buffer_;
 }
 
-void CBaseCommand::logic_http_websocket_shark_hand(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
+void CBaseCommand::logic_http_websocket_shark_hand(const CMessage_Source& source, const CMessage_Packet& recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
 {
     PSS_LOGGER_DEBUG("[logic_http_websocket_shark_hand]server key={0}", recv_packet.buffer_);
     //返回http消息
-    send_packet.buffer_ = recv_packet.buffer_;
+    send_packet->buffer_ = recv_packet.buffer_;
 }
 
-void CBaseCommand::logic_http_websocket_data(const CMessage_Source& source, const CMessage_Packet& recv_packet, CMessage_Packet& send_packet)
+void CBaseCommand::logic_http_websocket_data(const CMessage_Source& source, const CMessage_Packet& recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
 {
     PSS_LOGGER_DEBUG("[logic_http_websocket_data]text data={0}", recv_packet.buffer_);
-    //返回websocket消息
-    send_packet.buffer_ = recv_packet.buffer_;
+    //返回websocket消息(同步测试)
+    //send_packet.buffer_ = recv_packet.buffer_;
+
+    //返回websocket消息(异步测试)
+    auto send_asyn_packet = std::make_shared<CMessage_Packet>();
+    send_asyn_packet->buffer_.append(recv_packet.buffer_.c_str(), recv_packet.buffer_.size());
+    session_service_->send_io_message(source.connect_id_, send_asyn_packet);
 }
