@@ -15,8 +15,13 @@ script:
   - cmake --build . --config Debug
   - cd $TRAVIS_BUILD_DIR/
   - build-wrapper-linux-x86-64 --out-dir bw-output cmake --build Build/Linux/
-  - cd $TRAVIS_BUILD_DIR/PSS_ASIO
-  - sonar-scanner -X
+  - ls -l
+  - cd bw-output
+  - ls -l
+  - cat build-wrapper-dump.json  
+  #- cd $TRAVIS_BUILD_DIR/PSS_ASIO
+  #- sonar-scanner -X
+  
  
 cache:
   directories:
