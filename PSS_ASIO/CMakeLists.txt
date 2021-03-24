@@ -80,6 +80,15 @@ if(WIN32)
 endif()
 
 if(UNIX)
+	message("OS is windows...")
+	if(CMAKE_BUILD_TYPE MATCHES "debug")
+		add_definitions(
+		-DASIO_DISABLE_NOEXCEPT)
+	else()
+		add_definitions(
+		-DASIO_DISABLE_NOEXCEPT)		
+	endif()
+
 	target_link_libraries(pss_asio -lpthread -ldl)
 endif()
 
