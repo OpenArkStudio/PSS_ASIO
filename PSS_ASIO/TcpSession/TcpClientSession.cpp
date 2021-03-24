@@ -117,7 +117,7 @@ void CTcpClientSession::do_read()
                 PSS_LOGGER_DEBUG("[CTcpClientSession::do_write]recv length={}.", length);
 
                 //处理数据拆包
-                vector<CMessage_Packet> message_list;
+                vector<std::shared_ptr<CMessage_Packet>> message_list;
                 bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
                 if (!ret)
                 {

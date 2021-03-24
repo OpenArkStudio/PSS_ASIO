@@ -25,7 +25,7 @@ class CDelayPluginMessage
 public:
     uint16 tag_thread_id_ = 0;
     std::string message_tag_ = "";
-    CMessage_Packet send_packet_;
+    std::shared_ptr<CMessage_Packet> send_packet_;
     CFrame_Message_Delay delay_timer_;
 };
 
@@ -53,7 +53,7 @@ public:
 
     void close();
 
-    int do_thread_module_logic(const CMessage_Source& source, const CMessage_Packet& recv_packet, std::shared_ptr<CMessage_Packet> send_packet);
+    int do_thread_module_logic(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet);
 
     uint16 get_work_thread_id();
 
@@ -89,7 +89,7 @@ public:
 
     void close_session_event(uint32 connect_id);
 
-    int do_thread_module_logic(const uint32 connect_id, vector<CMessage_Packet>& message_list, shared_ptr<ISession> session);
+    int do_thread_module_logic(const uint32 connect_id, vector<shared_ptr<CMessage_Packet>>& message_list, shared_ptr<ISession> session);
 
     void send_io_message(uint32 connect_id, std::shared_ptr<CMessage_Packet> send_packet);
 
@@ -105,11 +105,11 @@ public:
 
     void run_check_task(uint32 timeout_seconds);
 
-    bool send_frame_message(uint16 tag_thread_id, std::string message_tag, CMessage_Packet send_packet, CFrame_Message_Delay delay_timer);
+    bool send_frame_message(uint16 tag_thread_id, std::string message_tag, std::shared_ptr<CMessage_Packet> send_packet, CFrame_Message_Delay delay_timer);
 
     bool run_work_thread_logic(uint16 tag_thread_id, CFrame_Message_Delay delay_timer, task_function func);
 
-    void do_plugin_thread_module_logic(shared_ptr<CModuleLogic> module_logic, std::string message_tag, CMessage_Packet recv_packet);
+    void do_plugin_thread_module_logic(shared_ptr<CModuleLogic> module_logic, std::string message_tag, std::shared_ptr<CMessage_Packet> recv_packet);
 
     bool create_frame_work_thread(uint32 thread_id);
 

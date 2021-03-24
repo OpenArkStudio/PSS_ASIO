@@ -6,7 +6,7 @@
 #include "LoadLibrary.hpp"
 #include "SessionBuffer.hpp"
 
-using packet_from_recv_buffer = bool(*)(uint32 connectid, CSessionBuffer* buffer, vector<CMessage_Packet>& message_list, EM_CONNECT_IO_TYPE emIOType);
+using packet_from_recv_buffer = bool(*)(uint32 connectid, CSessionBuffer* buffer, vector<std::shared_ptr<CMessage_Packet>>& message_list, EM_CONNECT_IO_TYPE emIOType);
 using parse_format_send_buffer = bool(*)(uint32 connectid, std::shared_ptr<CMessage_Packet> message, EM_CONNECT_IO_TYPE emIOType);
 using packet_connect = bool(*)(uint32 connectid, const _ClientIPInfo& objClientIPInfo, const _ClientIPInfo& objLocalIPInfo, EM_CONNECT_IO_TYPE emIOType);
 using packet_disconnect = void(*)(uint32 connectid, EM_CONNECT_IO_TYPE emIOType);

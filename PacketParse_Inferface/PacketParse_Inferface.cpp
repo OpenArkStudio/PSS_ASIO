@@ -20,7 +20,7 @@
 
 using namespace std;
 
-DECLDIR bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, vector<CMessage_Packet>& message_list, EM_CONNECT_IO_TYPE emIOType);
+DECLDIR bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, vector<std::shared_ptr<CMessage_Packet>>& message_list, EM_CONNECT_IO_TYPE emIOType);
 DECLDIR bool parse_packet_format_send_buffer(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, EM_CONNECT_IO_TYPE emIOType);
 DECLDIR bool connect(uint32 connect_id, const _ClientIPInfo& remote_ip, const _ClientIPInfo& local_ip, EM_CONNECT_IO_TYPE emIOType);
 DECLDIR void disConnect(uint32 connect_id, EM_CONNECT_IO_TYPE emIOType);
@@ -29,7 +29,7 @@ DECLDIR void packet_load();
 DECLDIR void packet_close();
 
 //处理接收数据解析
-bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, vector<CMessage_Packet>& message_list, EM_CONNECT_IO_TYPE emIOType)
+bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, vector<std::shared_ptr<CMessage_Packet>>& message_list, EM_CONNECT_IO_TYPE emIOType)
 {
     uint32 packet_pos = 0;
     auto buff_length = buffer->get_write_size();
@@ -78,9 +78,9 @@ bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, ve
         if (packet_body_length == 0)
         {
             //拼接完整包，放入整包处理结构
-            CMessage_Packet logic_packet;
-            logic_packet.command_id_ = command_id;
-            logic_packet.buffer_.append(&packet_buffer_data[0], (size_t)40);
+            auto logic_packet = std::make_shared<CMessage_Packet>();
+            logic_packet->command_id_ = command_id;
+            logic_packet->buffer_.append(&packet_buffer_data[0], (size_t)40);
             message_list.emplace_back(logic_packet);
 
             uint32 curr_packet_size = 40;
@@ -98,9 +98,9 @@ bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, ve
             else
             {
                 //拼接完整包，放入整包处理结构
-                CMessage_Packet logic_packet;
-                logic_packet.command_id_ = command_id;
-                logic_packet.buffer_.append(&packet_buffer_data[0], (size_t)40 + packet_body_length);
+                auto logic_packet = std::make_shared<CMessage_Packet>();
+                logic_packet->command_id_ = command_id;
+                logic_packet->buffer_.append(&packet_buffer_data[0], (size_t)40 + packet_body_length);
                 message_list.emplace_back(logic_packet);
 
                 uint32 curr_packet_size = 40 + packet_body_length;

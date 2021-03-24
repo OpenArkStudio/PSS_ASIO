@@ -24,7 +24,7 @@
 
 using namespace std;
 
-DECLDIR bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, vector<CMessage_Packet>& message_list, EM_CONNECT_IO_TYPE emIOType);
+DECLDIR bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, vector<std::shared_ptr<CMessage_Packet>>& message_list, EM_CONNECT_IO_TYPE emIOType);
 DECLDIR bool parse_packet_format_send_buffer(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, EM_CONNECT_IO_TYPE emIOType);
 DECLDIR bool connect(uint32 connect_id, const _ClientIPInfo& remote_ip, const _ClientIPInfo& local_ip, EM_CONNECT_IO_TYPE emIOType);
 DECLDIR void disConnect(uint32 connect_id, EM_CONNECT_IO_TYPE emIOType);
@@ -54,7 +54,7 @@ const uint16 http_websocket_shark_hand = 0x1002;
 const uint16 websocket_data = 0x1003;
 
 //处理websocket数据帧
-bool dispose_websocket_data_message(CSessionBuffer* buffer, CProtocalInfo& protocal_info, vector<CMessage_Packet>& message_list)
+bool dispose_websocket_data_message(CSessionBuffer* buffer, CProtocalInfo& protocal_info, vector<std::shared_ptr<CMessage_Packet>>& message_list)
 {
     //循环解析数据帧
     size_t left_len = buffer->get_write_size();
@@ -116,9 +116,9 @@ bool dispose_websocket_data_message(CSessionBuffer* buffer, CProtocalInfo& proto
         }
 
         //拼接消息字符串
-        CMessage_Packet logic_packet;
-        logic_packet.command_id_ = websocket_data;
-        logic_packet.buffer_ = parse_data;
+        auto logic_packet = std::make_shared<CMessage_Packet>();
+        logic_packet->command_id_ = websocket_data;
+        logic_packet->buffer_ = parse_data;
         protocal_info.protocol_ = ENUM_Protocol::PROTOCAL_WEBSOCKET_DATA;
         message_list.emplace_back(logic_packet);
 
@@ -128,7 +128,7 @@ bool dispose_websocket_data_message(CSessionBuffer* buffer, CProtocalInfo& proto
 }
 
 //处理http消息拆解
-bool dispose_http_message(std::string http_request_text, CProtocalInfo& protocal_info, vector<CMessage_Packet>& message_list)
+bool dispose_http_message(std::string http_request_text, CProtocalInfo& protocal_info, vector<std::shared_ptr<CMessage_Packet>>& message_list)
 {
     int ret = protocal_info.http_format_->try_parse(http_request_text);
     if (ret == 0)
@@ -136,18 +136,18 @@ bool dispose_http_message(std::string http_request_text, CProtocalInfo& protocal
         //完整的http数据包解析完成，组装逻辑数据包
         if (protocal_info.http_format_->is_websocket() == false)
         {
-            CMessage_Packet logic_packet;
-            logic_packet.command_id_ = http_post_command;
-            logic_packet.buffer_ = protocal_info.http_format_->get_post_text();
+            auto logic_packet = std::make_shared<CMessage_Packet>();
+            logic_packet->command_id_ = http_post_command;
+            logic_packet->buffer_ = protocal_info.http_format_->get_post_text();
             protocal_info.protocol_ = ENUM_Protocol::PROTOCAL_HTTP_POST;
             message_list.emplace_back(logic_packet);
         }
         else
         {
             //是websocket的握手协议
-            CMessage_Packet logic_packet;
-            logic_packet.command_id_ = http_websocket_shark_hand;
-            logic_packet.buffer_ = WebSocketFormat::wsHandshake(protocal_info.http_format_->get_websocket_client_key());
+            auto logic_packet = std::make_shared<CMessage_Packet>();
+            logic_packet->command_id_ = http_websocket_shark_hand;
+            logic_packet->buffer_ = WebSocketFormat::wsHandshake(protocal_info.http_format_->get_websocket_client_key());
             protocal_info.protocol_ = ENUM_Protocol::PROTOCAL_WEBSOCKET_SHARK_HAND;
             message_list.emplace_back(logic_packet);
         }
@@ -175,7 +175,7 @@ bool do_websocket_send_frame(std::string send_data, std::string& send_frame)
     return true;
 }
 
-bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, vector<CMessage_Packet>& message_list, EM_CONNECT_IO_TYPE emIOType)
+bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, vector<std::shared_ptr<CMessage_Packet>>& message_list, EM_CONNECT_IO_TYPE emIOType)
 {
     //寻找对应有没有存在的http解析类
     auto f = map_http_parse_.find(connect_id);

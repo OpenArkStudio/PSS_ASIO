@@ -31,7 +31,7 @@ void CModuleLogic::close()
     sessions_interface_.close();
 }
 
-int CModuleLogic::do_thread_module_logic(const CMessage_Source& source, const CMessage_Packet& recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
+int CModuleLogic::do_thread_module_logic(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
 {
     return modules_interface_.do_module_message(source, recv_packet, send_packet);
 }
@@ -181,12 +181,12 @@ void CWorkThreadLogic::add_frame_events(uint16 command_id, uint32 mark_id, std::
 
     App_tms::instance()->AddMessage(0, [command_id, mark_id, remote_ip, remote_port, io_type, module_logic]() {
         CMessage_Source source;
-        CMessage_Packet recv_packet;
+        auto recv_packet = std::make_shared<CMessage_Packet>();
         auto send_packet = std::make_shared<CMessage_Packet>();
 
-        recv_packet.command_id_ = command_id;
+        recv_packet->command_id_ = command_id;
 
-        if (recv_packet.command_id_ == LOGIC_CONNECT_SERVER_ERROR)
+        if (recv_packet->command_id_ == LOGIC_CONNECT_SERVER_ERROR)
         {
             source.connect_id_ = 0;
             source.work_thread_id_ = module_logic->get_work_thread_id();
@@ -194,7 +194,7 @@ void CWorkThreadLogic::add_frame_events(uint16 command_id, uint32 mark_id, std::
             source.remote_ip_.m_strClientIP = remote_ip;
             source.remote_ip_.m_u2Port = remote_port;
         }
-        else if (recv_packet.command_id_ == LOGIC_LISTEN_SERVER_ERROR)
+        else if (recv_packet->command_id_ == LOGIC_LISTEN_SERVER_ERROR)
         {
             source.connect_id_ = 0;
             source.work_thread_id_ = module_logic->get_work_thread_id();
@@ -231,10 +231,10 @@ void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession
         module_logic->add_session(connect_id, session, local_info, romote_info);
 
         CMessage_Source source;
-        CMessage_Packet recv_packet;
+        auto recv_packet = std::make_shared<CMessage_Packet>();
         auto send_packet = std::make_shared<CMessage_Packet>();
 
-        recv_packet.command_id_ = LOGIC_COMMAND_CONNECT;
+        recv_packet->command_id_ = LOGIC_COMMAND_CONNECT;
 
         source.connect_id_ = connect_id;
         source.work_thread_id_ = module_logic->get_work_thread_id();
@@ -268,10 +268,10 @@ void CWorkThreadLogic::delete_thread_session(uint32 connect_id, _ClientIPInfo fr
     App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, module_logic]() {
         //PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
         CMessage_Source source;
-        CMessage_Packet recv_packet;
+        auto recv_packet = std::make_shared<CMessage_Packet>();
         auto send_packet = std::make_shared<CMessage_Packet>();
 
-        recv_packet.command_id_ = LOGIC_COMMAND_DISCONNECT;
+        recv_packet->command_id_ = LOGIC_COMMAND_DISCONNECT;
 
         source.connect_id_ = connect_id;
         source.work_thread_id_ = module_logic->get_work_thread_id();
@@ -298,7 +298,7 @@ void CWorkThreadLogic::close_session_event(uint32 connect_id)
         });
 }
 
-int CWorkThreadLogic::do_thread_module_logic(const uint32 connect_id, vector<CMessage_Packet>& message_list, shared_ptr<ISession> session)
+int CWorkThreadLogic::do_thread_module_logic(const uint32 connect_id, vector<shared_ptr<CMessage_Packet>>& message_list, shared_ptr<ISession> session)
 {
     //处理线程的投递
     uint16 curr_thread_index = connect_id % thread_count_;
@@ -317,7 +317,7 @@ int CWorkThreadLogic::do_thread_module_logic(const uint32 connect_id, vector<CMe
                 auto session = module_logic->get_session_interface(io_2_io_session_id);
                 if (nullptr != session)
                 {
-                    session->do_write_immediately(io_2_io_session_id, recv_packet.buffer_.c_str(), recv_packet.buffer_.size());
+                    session->do_write_immediately(io_2_io_session_id, recv_packet->buffer_.c_str(), recv_packet->buffer_.size());
                 }
             }
         });
@@ -362,7 +362,7 @@ int CWorkThreadLogic::do_thread_module_logic(const uint32 connect_id, vector<CMe
     return 0;
 }
 
-void CWorkThreadLogic::do_plugin_thread_module_logic(shared_ptr<CModuleLogic> module_logic, std::string message_tag, CMessage_Packet recv_packet)
+void CWorkThreadLogic::do_plugin_thread_module_logic(shared_ptr<CModuleLogic> module_logic, std::string message_tag, std::shared_ptr<CMessage_Packet> recv_packet)
 {
     //添加到数据队列处理
     App_tms::instance()->AddMessage(module_logic->get_work_thread_id(), [message_tag, recv_packet, module_logic]() {
@@ -570,7 +570,7 @@ void CWorkThreadLogic::run_check_task(uint32 timeout_seconds)
     PSS_LOGGER_DEBUG("[CWorkThreadLogic::run_check_task]check is ok.");
 }
 
-bool CWorkThreadLogic::send_frame_message(uint16 tag_thread_id, std::string message_tag, CMessage_Packet send_packet, CFrame_Message_Delay delay_timer)
+bool CWorkThreadLogic::send_frame_message(uint16 tag_thread_id, std::string message_tag, std::shared_ptr<CMessage_Packet> send_packet, CFrame_Message_Delay delay_timer)
 {
     if (false == module_init_finish_)
     {
