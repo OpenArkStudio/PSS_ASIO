@@ -19,8 +19,8 @@ script:
   - cd bw-output
   - ls -l
   - cat build-wrapper-dump.json  
-  #- cd $TRAVIS_BUILD_DIR/PSS_ASIO
-  #- sonar-scanner -X
+  - cd $TRAVIS_BUILD_DIR/PSS_ASIO
+  - sonar-scanner -X
   
  
 cache:
