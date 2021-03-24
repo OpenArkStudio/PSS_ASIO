@@ -134,25 +134,7 @@ void CUdpClientSession::do_write(uint32 connect_id)
     send_buffer->buffer_length_ = session_send_buffer_.get_write_size();
     session_send_buffer_.move(session_send_buffer_.get_write_size());
 
-    //PSS_LOGGER_DEBUG("[CUdpClientSession::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
-
-    clear_write_buffer(send_buffer->buffer_length_);
-
-    //异步发送
-    auto self(shared_from_this());
-    socket_.async_send_to(asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_), send_endpoint_,
-        [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
-        {
-            if (ec)
-            {
-                //暂时不处理
-                PSS_LOGGER_DEBUG("[CUdpClientSession::do_write]connect_id={0}, write error({1}).", connect_id, ec.message());
-            }
-            else
-            {
-                self->add_send_finish_size(connect_id, length);
-            }
-        });
+    send_io_data(connect_id, send_buffer);
 }
 
 void CUdpClientSession::set_write_buffer(uint32 connect_id, const char* data, size_t length)
@@ -181,8 +163,26 @@ void CUdpClientSession::do_write_immediately(uint32 connect_id, const char* data
     send_buffer->buffer_length_ = length;
     session_send_buffer_.move(session_send_buffer_.get_write_size());
 
-    //PSS_LOGGER_DEBUG("[CUdpClientSession::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
+    send_io_data(connect_id, send_buffer);
+}
 
+EM_CONNECT_IO_TYPE CUdpClientSession::get_io_type()
+{
+    return io_type_;
+}
+
+std::chrono::steady_clock::time_point& CUdpClientSession::get_recv_time()
+{
+    return recv_data_time_;
+}
+
+bool CUdpClientSession::format_send_packet(uint32 connect_id, CMessage_Packet& message)
+{
+    return packet_parse_interface_->parse_format_send_buffer_ptr_(connect_id, message, get_io_type());
+}
+
+void CUdpClientSession::send_io_data(uint32 connect_id, std::shared_ptr<CSendBuffer> send_buffer)
+{
     clear_write_buffer(send_buffer->buffer_length_);
 
     //异步发送
@@ -200,21 +200,6 @@ void CUdpClientSession::do_write_immediately(uint32 connect_id, const char* data
                 self->add_send_finish_size(connect_id, length);
             }
         });
-}
-
-EM_CONNECT_IO_TYPE CUdpClientSession::get_io_type()
-{
-    return io_type_;
-}
-
-std::chrono::steady_clock::time_point& CUdpClientSession::get_recv_time()
-{
-    return recv_data_time_;
-}
-
-bool CUdpClientSession::format_send_packet(uint32 connect_id, CMessage_Packet& message)
-{
-    return packet_parse_interface_->parse_format_send_buffer_ptr_(connect_id, message, get_io_type());
 }
 
 uint32 CUdpClientSession::get_mark_id(uint32 connect_id)

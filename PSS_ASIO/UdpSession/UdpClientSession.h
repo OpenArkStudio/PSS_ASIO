@@ -43,6 +43,8 @@ public:
 
     bool format_send_packet(uint32 connect_id, CMessage_Packet& message) final;
 
+    void send_io_data(uint32 connect_id, std::shared_ptr<CSendBuffer> send_buffer);
+
     uint32 get_mark_id(uint32 connect_id);
 
 private:

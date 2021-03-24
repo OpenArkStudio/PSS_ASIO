@@ -17,7 +17,7 @@
 class CServerService
 {
 public:
-    bool init_servce(std::string pss_config_file_name = config_file_name);
+    bool init_servce(const std::string pss_config_file_name = config_file_name);
 
     void close_service();
 

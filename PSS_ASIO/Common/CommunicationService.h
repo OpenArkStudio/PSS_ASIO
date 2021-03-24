@@ -22,6 +22,8 @@ public:
 class CCommunicationService : public ICommunicationInterface
 {
 public:
+    virtual ~CCommunicationService() = default;
+
     void init_communication_service(asio::io_context* io_service_context, uint16 timeout_seconds) final;
 
     bool add_connect(const CConnect_IO_Info& io_info, EM_CONNECT_IO_TYPE io_type) final;

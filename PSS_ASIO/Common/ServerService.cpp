@@ -42,7 +42,6 @@ inline void daemonize()
     }
 
     setsid();
-    umask(0);
 
     signal(SIGCLD, SIG_IGN);
     signal(SIGCHLD, SIG_IGN);
@@ -50,7 +49,7 @@ inline void daemonize()
 }
 #endif
 
-bool CServerService::init_servce(std::string pss_config_file_name)
+bool CServerService::init_servce(const std::string pss_config_file_name)
 {
     //指定当前目录，防止访问文件失败
 #if PSS_PLATFORM == PLATFORM_WIN
@@ -89,7 +88,7 @@ bool CServerService::init_servce(std::string pss_config_file_name)
         config_output.output_level_);
 
     //初始化PacketParse插件
-    for (auto packet_parse : server_config_.get_config_packet_list())
+    for (const auto packet_parse : server_config_.get_config_packet_list())
     {
         if (false == App_PacketParseLoader::instance()->LoadPacketInfo(packet_parse.packet_parse_id_, 
             packet_parse.packet_parse_path_,
@@ -106,7 +105,7 @@ bool CServerService::init_servce(std::string pss_config_file_name)
     //注册监控中断事件(LINUX)
     asio::signal_set signals(io_context_, SIGINT, SIGTERM);
     signals.async_wait(
-        [&](std::error_code ec, int)
+        [this](std::error_code ec, int)
         {
             PSS_LOGGER_DEBUG("[signals] server is error({0}).", ec.message());
             io_context_.stop();
@@ -117,14 +116,14 @@ bool CServerService::init_servce(std::string pss_config_file_name)
 
     //启动服务器间链接库
     App_CommunicationService::instance()->init_communication_service(&io_context_,
-        server_config_.get_config_workthread().s2s_timeout_seconds_);
+        (uint16)server_config_.get_config_workthread().s2s_timeout_seconds_);
 
     App_WorkThreadLogic::instance()->init_communication_service(App_CommunicationService::instance());
 
     //初始化执行库
     App_WorkThreadLogic::instance()->init_work_thread_logic(server_config_.get_config_workthread().work_thread_count_,
-        server_config_.get_config_workthread().work_timeout_seconds_,
-        server_config_.get_config_workthread().client_connect_timeout,
+        (uint16)server_config_.get_config_workthread().work_timeout_seconds_,
+        (uint32)server_config_.get_config_workthread().client_connect_timeout,
         server_config_.get_config_logic_list(),
         App_SessionService::instance());
 
