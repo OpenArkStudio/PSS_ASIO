@@ -22,7 +22,7 @@ public:
 class CCommunicationService : public ICommunicationInterface
 {
 public:
-    virtual ~CCommunicationService() = default;
+    ~CCommunicationService() final = default;
 
     void init_communication_service(asio::io_context* io_service_context, uint16 timeout_seconds) final;
 

@@ -1,6 +1,6 @@
 ﻿#include "serverconfig.h"
 
-bool CServerConfig::read_server_config_file(std::string file_name)
+bool CServerConfig::read_server_config_file(const std::string& file_name)
 {
     try
     {
@@ -77,7 +77,7 @@ bool CServerConfig::read_server_config_file(std::string file_name)
         config_input.close();
         return true;
     }
-    catch (json::parse_error& e)
+    catch (const json::parse_error& e)
     {
         std::cout << "[CServerConfig::read_server_config_file]parse error(" << e.what() << ")" << std::endl;
         return false;

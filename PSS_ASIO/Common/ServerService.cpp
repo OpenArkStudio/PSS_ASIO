@@ -49,7 +49,7 @@ inline void daemonize()
 }
 #endif
 
-bool CServerService::init_servce(const std::string pss_config_file_name)
+bool CServerService::init_servce(const std::string& pss_config_file_name)
 {
     //指定当前目录，防止访问文件失败
 #if PSS_PLATFORM == PLATFORM_WIN
@@ -88,7 +88,7 @@ bool CServerService::init_servce(const std::string pss_config_file_name)
         config_output.output_level_);
 
     //初始化PacketParse插件
-    for (const auto packet_parse : server_config_.get_config_packet_list())
+    for (const auto& packet_parse : server_config_.get_config_packet_list())
     {
         if (false == App_PacketParseLoader::instance()->LoadPacketInfo(packet_parse.packet_parse_id_, 
             packet_parse.packet_parse_path_,
@@ -160,8 +160,8 @@ bool CServerService::init_servce(const std::string pss_config_file_name)
             tty_server.send_buff_size_);
         tty_service->start(&io_context_, 
             tty_server.tty_name_, 
-            tty_server.tty_port_,
-            tty_server.char_size_,
+            (uint16)tty_server.tty_port_,
+            (uint8)tty_server.char_size_,
             0);
         tty_service_list_.emplace_back(tty_service);
     }
