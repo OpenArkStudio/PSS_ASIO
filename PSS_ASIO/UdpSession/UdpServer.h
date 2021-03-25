@@ -58,7 +58,7 @@ private:
 
     void do_receive_from(std::error_code ec, std::size_t length);
 
-    void clear_write_buffer(shared_ptr<CUdp_Session_Info> session_info);
+    void clear_write_buffer(shared_ptr<CUdp_Session_Info> session_info) const;
 
     uint32 add_udp_endpoint(const udp::endpoint& recv_endpoint_, size_t length, uint32 max_buffer_length);
 

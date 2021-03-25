@@ -92,7 +92,7 @@ void CUdpServer::set_write_buffer(uint32 connect_id, const char* data, size_t le
     session_info->session_send_buffer_.set_write_data(length);
 }
 
-void CUdpServer::clear_write_buffer(shared_ptr<CUdp_Session_Info> session_info)
+void CUdpServer::clear_write_buffer(shared_ptr<CUdp_Session_Info> session_info) const
 {
     session_info->session_send_buffer_.move(session_info->session_send_buffer_.get_write_size());
 }
