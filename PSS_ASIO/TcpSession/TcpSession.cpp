@@ -45,8 +45,6 @@ void CTcpSession::close(uint32 connect_id)
 void CTcpSession::do_read()
 {
     //接收数据
-    auto connect_id = connect_id_;
-
     //如果缓冲已满，断开连接，不再接受数据。
     if (session_recv_buffer_.get_buffer_size() == 0)
     {

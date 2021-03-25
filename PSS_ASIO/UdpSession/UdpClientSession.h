@@ -19,7 +19,7 @@ using asio::ip::udp;
 class CUdpClientSession : public std::enable_shared_from_this<CUdpClientSession>, public ISession
 {
 public:
-    CUdpClientSession(asio::io_context* io_context);
+    explicit CUdpClientSession(asio::io_context* io_context);
 
     void start(const CConnect_IO_Info& io_type);
 
@@ -45,7 +45,9 @@ public:
 
     void send_io_data(uint32 connect_id, std::shared_ptr<CSendBuffer> send_buffer);
 
-    uint32 get_mark_id(uint32 connect_id);
+    uint32 get_mark_id(uint32 connect_id) final;
+
+    void do_receive_from(std::error_code ec, std::size_t length);
 
 private:
     udp::socket socket_;

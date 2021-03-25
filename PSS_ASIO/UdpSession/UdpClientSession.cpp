@@ -73,7 +73,6 @@ void CUdpClientSession::close(uint32 connect_id)
 void CUdpClientSession::do_receive()
 {
     //接收数据
-    auto self(shared_from_this());
 
     //如果缓冲已满，断开连接，不再接受数据。
     if (session_recv_buffer_.get_buffer_size() == 0)
@@ -83,46 +82,9 @@ void CUdpClientSession::do_receive()
     }
 
     socket_.async_receive_from(asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()), recv_endpoint_,
-        [this, self](std::error_code ec, std::size_t length)
+        [this](std::error_code ec, std::size_t length)
         {
-            if (!ec)
-            {
-                recv_data_size_ += length;
-                session_recv_buffer_.set_write_data(length);
-                PSS_LOGGER_DEBUG("[CUdpClientSession::do_write]recv length={}.", length);
-
-                std::memcpy(session_send_buffer_.get_curr_write_ptr(),
-                    session_recv_buffer_.read(),
-                    length);
-                session_send_buffer_.set_write_data(length);
-
-                //处理数据拆包
-                vector<std::shared_ptr<CMessage_Packet>> message_list;
-                bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
-                if (!ret)
-                {
-                    //链接断开(解析包不正确)
-                    session_recv_buffer_.move(length);
-                    App_WorkThreadLogic::instance()->close_session_event(connect_id_);
-                    do_receive();
-                }
-                else
-                {
-                    recv_data_time_ = std::chrono::steady_clock::now();
-
-                    //添加到数据队列处理
-                    App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id_, message_list, self);
-                }
-
-                session_recv_buffer_.move(length);
-                //继续读数据
-                self->do_receive();
-            }
-            else
-            {
-                //链接断开
-                App_WorkThreadLogic::instance()->close_session_event(connect_id_);
-            }
+            do_receive_from(ec, length);
         });
 }
 
@@ -206,5 +168,47 @@ uint32 CUdpClientSession::get_mark_id(uint32 connect_id)
 {
     PSS_UNUSED_ARG(connect_id);
     return server_id_;
+}
+
+void CUdpClientSession::do_receive_from(std::error_code ec, std::size_t length)
+{
+    if (!ec)
+    {
+        recv_data_size_ += length;
+        session_recv_buffer_.set_write_data(length);
+        PSS_LOGGER_DEBUG("[CUdpClientSession::do_write]recv length={}.", length);
+
+        std::memcpy(session_send_buffer_.get_curr_write_ptr(),
+            session_recv_buffer_.read(),
+            length);
+        session_send_buffer_.set_write_data(length);
+
+        //处理数据拆包
+        vector<std::shared_ptr<CMessage_Packet>> message_list;
+        bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
+        if (!ret)
+        {
+            //链接断开(解析包不正确)
+            session_recv_buffer_.move(length);
+            App_WorkThreadLogic::instance()->close_session_event(connect_id_);
+            do_receive();
+        }
+        else
+        {
+            recv_data_time_ = std::chrono::steady_clock::now();
+
+            //添加到数据队列处理
+            App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id_, message_list, shared_from_this());
+        }
+
+        session_recv_buffer_.move(length);
+        //继续读数据
+        do_receive();
+    }
+    else
+    {
+        //链接断开
+        App_WorkThreadLogic::instance()->close_session_event(connect_id_);
+    }
 }
 

@@ -1,10 +1,10 @@
 ﻿#include "UdpServer.h"
 
-CUdpServer::CUdpServer(asio::io_context& io_context, std::string server_ip, short port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size)
-    : socket_(io_context, udp::endpoint(asio::ip::address_v4::from_string(server_ip), port)), packet_parse_id_(packet_parse_id), max_recv_size_(max_recv_size), max_send_size_(max_recv_size)
+CUdpServer::CUdpServer(asio::io_context& io_context, const std::string& server_ip, short port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size)
+    : socket_(io_context, udp::endpoint(asio::ip::address_v4::from_string(server_ip), port)), max_recv_size_(max_recv_size), max_send_size_(max_send_size)
 {
     //处理链接建立消息
-    std::cout << "[CUdpServer::do_accept](" << socket_.local_endpoint() << ") Begin Accept." << std::endl;
+    PSS_LOGGER_DEBUG("[CUdpServer::do_accept]{0}:{1} Begin Accept.", server_ip, port);
 
     session_recv_buffer_.Init(max_recv_size_);
 
@@ -19,50 +19,55 @@ void CUdpServer::do_receive()
         asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()), recv_endpoint_,
         [this](std::error_code ec, std::size_t length)
         {
-            //查询当前的connect_id
-            auto connect_id = add_udp_endpoint(recv_endpoint_, length, max_send_size_);
-            
-            if (!ec && length > 0)
-            {
-                //处理数据包
-                auto self(shared_from_this());
-
-                //如果缓冲已满，断开连接，不再接受数据。
-                if (session_recv_buffer_.get_buffer_size() == 0)
-                {
-                    //链接断开(缓冲撑满了)
-                    session_recv_buffer_.move(length);
-                    App_WorkThreadLogic::instance()->close_session_event(connect_id);
-                    do_receive();
-                }
-
-                session_recv_buffer_.set_write_data(length);
-
-                //处理数据拆包
-                vector<std::shared_ptr<CMessage_Packet>> message_list;
-                bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_client_id_, &session_recv_buffer_, message_list, io_type_);
-                if (!ret)
-                {
-                    //链接断开(解析包不正确)
-                    session_recv_buffer_.move(length);
-                    App_WorkThreadLogic::instance()->close_session_event(connect_id);
-                    do_receive();
-                }
-                else
-                {
-                    recv_data_time_ = std::chrono::steady_clock::now();
-                    //添加到数据队列处理
-                    App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id, message_list, self);
-                }
-
-
-                do_receive();
-            }
-            else
-            {
-                do_receive();
-            }
+            do_receive_from(ec, length);
         });
+}
+
+void CUdpServer::do_receive_from(std::error_code ec, std::size_t length)
+{
+    //查询当前的connect_id
+    auto connect_id = add_udp_endpoint(recv_endpoint_, length, max_send_size_);
+
+    if (!ec && length > 0)
+    {
+        //处理数据包
+        auto self(shared_from_this());
+
+        //如果缓冲已满，断开连接，不再接受数据。
+        if (session_recv_buffer_.get_buffer_size() == 0)
+        {
+            //链接断开(缓冲撑满了)
+            session_recv_buffer_.move(length);
+            App_WorkThreadLogic::instance()->close_session_event(connect_id);
+            do_receive();
+        }
+
+        session_recv_buffer_.set_write_data(length);
+
+        //处理数据拆包
+        vector<std::shared_ptr<CMessage_Packet>> message_list;
+        bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_client_id_, &session_recv_buffer_, message_list, io_type_);
+        if (!ret)
+        {
+            //链接断开(解析包不正确)
+            session_recv_buffer_.move(length);
+            App_WorkThreadLogic::instance()->close_session_event(connect_id);
+            do_receive();
+        }
+        else
+        {
+            recv_data_time_ = std::chrono::steady_clock::now();
+            //添加到数据队列处理
+            App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id, message_list, self);
+        }
+
+
+        do_receive();
+    }
+    else
+    {
+        do_receive();
+    }
 }
 
 void CUdpServer::close(uint32 connect_id)
@@ -113,13 +118,12 @@ void CUdpServer::do_write(uint32 connect_id)
     send_buffer->data_.append(session_info->session_send_buffer_.read(), session_info->session_send_buffer_.get_write_size());
     send_buffer->buffer_length_ = session_info->session_send_buffer_.get_write_size();
 
-    //PSS_LOGGER_DEBUG("[CUdpServer::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
     clear_write_buffer(session_info);
 
     auto self(shared_from_this());
     socket_.async_send_to(
         asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_), session_info->send_endpoint,
-        [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
+        [self, send_buffer, connect_id](std::error_code ec, std::size_t send_length)
         {
             if (ec)
             {
@@ -129,7 +133,7 @@ void CUdpServer::do_write(uint32 connect_id)
             else
             {
                 //这里记录发送字节数
-                self->add_send_finish_size(connect_id, send_buffer->buffer_length_);
+                self->add_send_finish_size(connect_id, send_length);
             }
         });
 }
@@ -155,13 +159,12 @@ void CUdpServer::do_write_immediately(uint32 connect_id, const char* data, size_
     send_buffer->data_.append(data, length);
     send_buffer->buffer_length_ = length;
 
-    //PSS_LOGGER_DEBUG("[CUdpServer::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
     clear_write_buffer(session_info);
 
     auto self(shared_from_this());
     socket_.async_send_to(
         asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_), session_info->send_endpoint,
-        [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
+        [self, send_buffer, connect_id](std::error_code ec, std::size_t send_length)
         {
             if (ec)
             {
@@ -171,12 +174,12 @@ void CUdpServer::do_write_immediately(uint32 connect_id, const char* data, size_
             else
             {
                 //这里记录发送字节数
-                self->add_send_finish_size(connect_id, send_buffer->buffer_length_);
+                self->add_send_finish_size(connect_id, send_length);
             }
         });
 }
 
-uint32 CUdpServer::add_udp_endpoint(udp::endpoint recv_endpoint_, size_t length, uint32 max_buffer_length)
+uint32 CUdpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint_, size_t length, uint32 max_buffer_length)
 {
     auto f = udp_endpoint_2_id_list_.find(recv_endpoint_);
     if (f != udp_endpoint_2_id_list_.end())

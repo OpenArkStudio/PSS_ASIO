@@ -134,8 +134,7 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
             tcp_server.ip_, 
             tcp_server.port_, 
             tcp_server.packet_parse_id_,
-            tcp_server.recv_buff_size_,
-            tcp_server.send_buff_size_);
+            tcp_server.recv_buff_size_);
         tcp_service_list_.emplace_back(tcp_service);
     }
 

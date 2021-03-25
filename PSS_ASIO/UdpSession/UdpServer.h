@@ -33,7 +33,7 @@ public:
 class CUdpServer : public std::enable_shared_from_this<CUdpServer>, public ISession
 {
 public:
-    CUdpServer(asio::io_context& io_context, std::string server_ip, short port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size);
+    CUdpServer(asio::io_context& io_context, const std::string& server_ip, short port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size);
 
     void close(uint32 connect_id) final;
 
@@ -56,9 +56,11 @@ public:
 private:
     void do_receive();
 
+    void do_receive_from(std::error_code ec, std::size_t length);
+
     void clear_write_buffer(shared_ptr<CUdp_Session_Info> session_info);
 
-    uint32 add_udp_endpoint(udp::endpoint recv_endpoint_, size_t length, uint32 max_buffer_length);
+    uint32 add_udp_endpoint(const udp::endpoint& recv_endpoint_, size_t length, uint32 max_buffer_length);
 
     shared_ptr<CUdp_Session_Info> find_udp_endpoint_by_id(uint32 connect_id);
    
@@ -66,7 +68,6 @@ private:
 
     udp::socket socket_;
     uint32 connect_client_id_ = 0;
-    uint32 packet_parse_id_ = 0;
     udp::endpoint recv_endpoint_;
     
     using mapudpid2endpoint = map<uint32, shared_ptr<CUdp_Session_Info>>;

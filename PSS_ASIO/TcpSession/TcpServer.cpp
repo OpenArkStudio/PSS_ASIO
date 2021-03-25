@@ -1,7 +1,7 @@
 ﻿#include "TcpServer.h"
 
-CTcpServer::CTcpServer(asio::io_context& io_context, std::string server_ip, short port, uint32 packet_parse_id, uint32 max_buffer_size, uint32 max_send_size)
-    : acceptor_(io_context, tcp::endpoint(asio::ip::address_v4::from_string(server_ip), port)), packet_parse_id_(packet_parse_id), max_recv_size_(max_buffer_size), max_send_size_(max_send_size)
+CTcpServer::CTcpServer(asio::io_context& io_context, const std::string& server_ip, short port, uint32 packet_parse_id, uint32 max_buffer_size)
+    : acceptor_(io_context, tcp::endpoint(asio::ip::address_v4::from_string(server_ip), port)), packet_parse_id_(packet_parse_id), max_recv_size_(max_buffer_size)
 {
     //处理链接建立消息
     PSS_LOGGER_INFO("[CTcpServer::do_accept]({0}:{1}) Begin Accept.", 
@@ -34,7 +34,7 @@ void CTcpServer::do_accept()
         });
 }
 
-void CTcpServer::send_accept_listen_fail(std::error_code ec)
+void CTcpServer::send_accept_listen_fail(std::error_code ec) const
 {
     //发送监听失败消息
     App_WorkThreadLogic::instance()->add_frame_events(LOGIC_LISTEN_SERVER_ERROR,
