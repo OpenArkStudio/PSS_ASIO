@@ -140,7 +140,7 @@ private:
     bool        module_init_finish_ = false;
     vector<uint32> plugin_work_thread_buffer_list_;
     vector<CDelayPluginMessage> plugin_work_thread_buffer_message_list_;
-    vector<CDelayPluginFunc> plugin_work_thread_buffer_Func_list_;
+    vector<std::shared_ptr<CDelayPluginFunc>> plugin_work_thread_buffer_Func_list_;
     hashmappluginworkthread plugin_work_thread_list_;
     hashmaplogictimer plgin_timer_list_;
     std::recursive_mutex plugin_timer_mutex_;

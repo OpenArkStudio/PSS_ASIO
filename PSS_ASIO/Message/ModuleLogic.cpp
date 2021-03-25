@@ -136,9 +136,9 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
     //加载插件逻辑
     for (const auto& plugin_logic : plugin_work_thread_buffer_Func_list_)
     {
-        run_work_thread_logic(plugin_logic.tag_thread_id_,
-            plugin_logic.delay_timer_,
-            plugin_logic.func_);
+        run_work_thread_logic(plugin_logic->tag_thread_id_,
+            plugin_logic->delay_timer_,
+            plugin_logic->func_);
     }
     plugin_work_thread_buffer_Func_list_.clear();
 
@@ -634,10 +634,10 @@ bool CWorkThreadLogic::run_work_thread_logic(uint16 tag_thread_id, CFrame_Messag
 {
     if (false == module_init_finish_)
     {
-        CDelayPluginFunc plugin_func;
-        plugin_func.tag_thread_id_ = tag_thread_id;
-        plugin_func.func_          = func;
-        plugin_func.delay_timer_   = delay_timer;
+        auto plugin_func = std::make_shared<CDelayPluginFunc>();
+        plugin_func->tag_thread_id_ = tag_thread_id;
+        plugin_func->func_          = func;
+        plugin_func->delay_timer_   = delay_timer;
         plugin_work_thread_buffer_Func_list_.emplace_back(plugin_func);
         return true;
     }
