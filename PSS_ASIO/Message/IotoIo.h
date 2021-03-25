@@ -27,21 +27,21 @@ public:
 class CIotoIo
 {
 public:
-    bool add_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type, _ClientIPInfo to_io, EM_CONNECT_IO_TYPE to_io_type);
+    bool add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type, const _ClientIPInfo& to_io, EM_CONNECT_IO_TYPE to_io_type);
 
-    bool delete_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type);
+    bool delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type);
 
-    void regedit_session_id(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE io_type, uint32 session_id);
+    void regedit_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type, uint32 session_id);
 
-    void unregedit_session_id(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE io_type);
+    void unregedit_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type);
 
     uint32 get_to_session_id(uint32 session_id);
 private:
-    bool compare_connect_io(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type, _ClientIPInfo target_io, EM_CONNECT_IO_TYPE target_io_type);
+    bool compare_connect_io(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type, const _ClientIPInfo& target_io, EM_CONNECT_IO_TYPE target_io_type) const;
  
-    uint32 get_regedit_session_id(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE io_type);
+    uint32 get_regedit_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type);
 
-    std::string get_connect_list_key(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE io_type);
+    std::string get_connect_list_key(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type) const;
 
     void delete_session_list(uint32 session_id);
 

@@ -1,9 +1,9 @@
 ﻿#include "IotoIo.h"
 
-bool CIotoIo::add_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type, _ClientIPInfo to_io, EM_CONNECT_IO_TYPE to_io_type)
+bool CIotoIo::add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type, const _ClientIPInfo& to_io, EM_CONNECT_IO_TYPE to_io_type)
 {
     std::lock_guard <std::mutex> lock(mutex_);
-    for (auto Connect_Info : io_2_io_list_)
+    for (const auto& Connect_Info : io_2_io_list_)
     {
         if (true == compare_connect_io(from_io, from_io_type, Connect_Info.from_io_, Connect_Info.from_io_type_))
         {
@@ -38,7 +38,7 @@ bool CIotoIo::add_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE f
     return true;
 }
 
-bool CIotoIo::delete_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type)
+bool CIotoIo::delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type)
 {
     //删除对应的点对点透传关系
     std::lock_guard <std::mutex> lock(mutex_);
@@ -46,21 +46,27 @@ bool CIotoIo::delete_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYP
     int connect_pos = 0;
     uint32 session_id = 0;
 
-    for (auto io_connect : io_2_io_list_)
+    bool is_break = false;
+    for (const auto& io_connect : io_2_io_list_)
     {
         if (true == compare_connect_io(from_io, from_io_type, io_connect.from_io_, io_connect.from_io_type_))
         {
             //找到了，删除之
             session_id = io_connect.from_session_id_;
             io_2_io_list_.erase(io_2_io_list_.begin() + connect_pos);
-            break;
+            is_break = true;
         }
 
-        if (true == compare_connect_io(from_io, from_io_type, io_connect.to_io_, io_connect.to_io_type_))
+        if (is_break == false && true == compare_connect_io(from_io, from_io_type, io_connect.to_io_, io_connect.to_io_type_))
         {
             //找到了，删除之
             session_id = io_connect.to_session_id_;
             io_2_io_list_.erase(io_2_io_list_.begin() + connect_pos);
+            is_break = true;
+        }
+
+        if (is_break == true)
+        {
             break;
         }
 
@@ -76,7 +82,7 @@ bool CIotoIo::delete_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYP
     return true;
 }
 
-void CIotoIo::regedit_session_id(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE io_type, uint32 session_id)
+void CIotoIo::regedit_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type, uint32 session_id)
 {
     std::lock_guard <std::mutex> lock(mutex_);
     auto from_io_key = get_connect_list_key(from_io, io_type);
@@ -107,7 +113,7 @@ void CIotoIo::regedit_session_id(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE io_ty
     }
 }
 
-void CIotoIo::unregedit_session_id(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE io_type)
+void CIotoIo::unregedit_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type)
 {
     std::lock_guard <std::mutex> lock(mutex_);
     //链接失效
@@ -121,17 +127,23 @@ void CIotoIo::unregedit_session_id(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE io_
         connect_list_.erase(from_io_key);
 
         //寻找配置消息
+        bool is_break = false;
         for (auto& connect_info : io_2_io_list_)
         {
             if (connect_info.from_session_id_ == session_id)
             {
                 connect_info.from_session_id_ = 0;
-                break;
+                is_break = true;
             }
 
-            if (connect_info.to_session_id_ == session_id)
+            if (is_break == false && connect_info.to_session_id_ == session_id)
             {
                 connect_info.to_session_id_ = 0;
+                is_break = true;
+            }
+
+            if (true == is_break)
+            {
                 break;
             }
         }
@@ -161,7 +173,7 @@ uint32 CIotoIo::get_to_session_id(uint32 session_id)
     return 0;
 }
 
-bool CIotoIo::compare_connect_io(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type, _ClientIPInfo target_io, EM_CONNECT_IO_TYPE target_io_type)
+bool CIotoIo::compare_connect_io(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type, const _ClientIPInfo& target_io, EM_CONNECT_IO_TYPE target_io_type) const
 {
     if (from_io.m_strClientIP == target_io.m_strClientIP &&
         from_io.m_u2Port == target_io.m_u2Port &&
@@ -175,7 +187,7 @@ bool CIotoIo::compare_connect_io(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_
     }
 }
 
-uint32 CIotoIo::get_regedit_session_id(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE io_type)
+uint32 CIotoIo::get_regedit_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type)
 {
     auto from_io_key = get_connect_list_key(from_io, io_type);
 
@@ -193,7 +205,7 @@ uint32 CIotoIo::get_regedit_session_id(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE
 
 }
 
-std::string CIotoIo::get_connect_list_key(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE io_type)
+std::string CIotoIo::get_connect_list_key(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type) const
 {
     std::string from_io_key;
 
