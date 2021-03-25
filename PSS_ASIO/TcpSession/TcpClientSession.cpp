@@ -107,7 +107,7 @@ void CTcpClientSession::do_read()
     }
 
     socket_.async_read_some(asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()),
-        [this, self, connect_id](std::error_code ec, std::size_t length)
+        [this, self](std::error_code ec, std::size_t length)
         {
             do_read_some(ec, length);
         });
@@ -120,12 +120,10 @@ void CTcpClientSession::do_write_immediately(uint32 connect_id, const char* data
     send_buffer->data_.append(data, length);
     send_buffer->buffer_length_ = length;
 
-    //测试代码 PSS_LOGGER_DEBUG("[CTcpClientSession::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
-
     //异步发送
     auto self(shared_from_this());
     asio::async_write(socket_, asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
-        [self, connect_id, send_buffer](std::error_code ec, std::size_t length)
+        [self, connect_id, send_buffer](std::error_code ec, std::size_t send_length)
         {
             if (ec)
             {
@@ -134,7 +132,7 @@ void CTcpClientSession::do_write_immediately(uint32 connect_id, const char* data
             }
             else
             {
-                self->add_send_finish_size(connect_id, length);
+                self->add_send_finish_size(connect_id, send_length);
             }
         });
 }
@@ -146,7 +144,6 @@ void CTcpClientSession::do_write(uint32 connect_id)
     send_buffer->data_.append(session_send_buffer_.read(), session_send_buffer_.get_write_size());
     send_buffer->buffer_length_ = session_send_buffer_.get_write_size();
 
-    //测试代码 PSS_LOGGER_DEBUG("[CTcpSession::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
     clear_write_buffer();
 
     //异步发送

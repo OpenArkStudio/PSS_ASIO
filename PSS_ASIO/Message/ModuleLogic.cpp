@@ -54,7 +54,7 @@ int CModuleLogic::get_work_thread_timeout() const
     }
 }
 
-void CModuleLogic::check_session_io_timeout(uint32 connect_timeout)
+void CModuleLogic::check_session_io_timeout(uint32 connect_timeout) const
 {
     vector<CSessionIO_Cancel> session_list;
     sessions_interface_.check_session_io_timeout(connect_timeout, session_list);

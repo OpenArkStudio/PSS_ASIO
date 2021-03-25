@@ -5,7 +5,7 @@ CTcpSession::CTcpSession(tcp::socket socket)
 {
 }
 
-void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size, uint32 send_size)
+void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size)
 {
     connect_id_ = App_ConnectCounter::instance()->CreateCounter();
 
@@ -45,8 +45,6 @@ void CTcpSession::close(uint32 connect_id)
 void CTcpSession::do_read()
 {
     //接收数据
-    auto self(shared_from_this());
-
     auto connect_id = connect_id_;
 
     //如果缓冲已满，断开连接，不再接受数据。
@@ -57,39 +55,9 @@ void CTcpSession::do_read()
     }
 
     socket_.async_read_some(asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()),
-        [this, self, connect_id](std::error_code ec, std::size_t length)
+        [this](std::error_code ec, std::size_t length)
         {
-            if (!ec)
-            {
-                recv_data_size_ += length;
-                session_recv_buffer_.set_write_data(length);
-                //PSS_LOGGER_DEBUG("[CTcpSession::do_write]recv length={}.", length);
-                
-                //处理数据拆包
-                vector<std::shared_ptr<CMessage_Packet>> message_list;
-                bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
-                if (!ret)   
-                {
-                    //链接断开(解析包不正确)
-                    App_WorkThreadLogic::instance()->close_session_event(connect_id_);
-                }
-                else
-                {
-                    //更新接收数据时间
-                    recv_data_time_ = std::chrono::steady_clock::now();
-
-                    //添加消息处理
-                    App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id_, message_list, self);
-                }
-
-                //继续读数据
-                self->do_read();
-            }
-            else
-            {
-                //链接断开
-                App_WorkThreadLogic::instance()->close_session_event(connect_id_);
-            }
+            do_read_some(ec, length);
         });
 }
 
@@ -110,7 +78,6 @@ void CTcpSession::do_write(uint32 connect_id)
     send_buffer->data_ = session_send_buffer_;
     send_buffer->buffer_length_ = session_send_buffer_.size();
 
-    //PSS_LOGGER_DEBUG("[CTcpSession::do_write]send_buffer->buffer_length_={}.", session_send_buffer_.size());
     clear_write_buffer();
 
     //异步发送
@@ -149,6 +116,40 @@ void CTcpSession::set_write_buffer(uint32 connect_id, const char* data, size_t l
 void CTcpSession::clear_write_buffer()
 {
     session_send_buffer_.clear();
+}
+
+void CTcpSession::do_read_some(std::error_code ec, std::size_t length)
+{
+    if (!ec)
+    {
+        recv_data_size_ += length;
+        session_recv_buffer_.set_write_data(length);
+
+        //处理数据拆包
+        vector<std::shared_ptr<CMessage_Packet>> message_list;
+        bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
+        if (!ret)
+        {
+            //链接断开(解析包不正确)
+            App_WorkThreadLogic::instance()->close_session_event(connect_id_);
+        }
+        else
+        {
+            //更新接收数据时间
+            recv_data_time_ = std::chrono::steady_clock::now();
+
+            //添加消息处理
+            App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id_, message_list, shared_from_this());
+        }
+
+        //继续读数据
+        do_read();
+    }
+    else
+    {
+        //链接断开
+        App_WorkThreadLogic::instance()->close_session_event(connect_id_);
+    }
 }
 
 void CTcpSession::add_send_finish_size(uint32 connect_id, size_t send_length)

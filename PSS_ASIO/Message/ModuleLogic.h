@@ -61,7 +61,7 @@ public:
 
     int get_work_thread_timeout() const;
 
-    void check_session_io_timeout(uint32 connect_timeout);
+    void check_session_io_timeout(uint32 connect_timeout) const;
 
 private:
     CSessionInterface sessions_interface_;

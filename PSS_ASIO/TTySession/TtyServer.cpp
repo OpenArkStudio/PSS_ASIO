@@ -113,7 +113,6 @@ void CTTyServer::do_write(uint32 connect_id)
     send_buffer->data_.append(session_send_buffer_.read(), session_send_buffer_.get_write_size());
     send_buffer->buffer_length_ = session_send_buffer_.get_write_size();
 
-    //测试代码 PSS_LOGGER_DEBUG("[CTTyServer::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
     clear_write_buffer();
     
     //异步发送
@@ -143,8 +142,6 @@ void CTTyServer::do_write_immediately(uint32 connect_id, const char* data, size_
     auto send_buffer = make_shared<CSendBuffer>();
     send_buffer->data_.append(data, length);
     send_buffer->buffer_length_ = length;
-
-    //测试代码 PSS_LOGGER_DEBUG("[CTTyServer::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
 
     //异步发送
     auto self(shared_from_this());

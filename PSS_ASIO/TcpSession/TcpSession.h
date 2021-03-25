@@ -19,9 +19,9 @@ using asio::ip::tcp;
 class CTcpSession : public std::enable_shared_from_this<CTcpSession>, public ISession
 {
 public:
-    CTcpSession(tcp::socket socket);
+    explicit CTcpSession(tcp::socket socket);
 
-    void open(uint32 packet_parse_id, uint32 recv_size, uint32 send_size);
+    void open(uint32 packet_parse_id, uint32 recv_size);
 
     void close(uint32 connect_id) final;
 
@@ -44,6 +44,8 @@ public:
     void do_read();
 
     void clear_write_buffer();
+
+    void do_read_some(std::error_code ec, std::size_t length);
 
 private:
     tcp::socket socket_;

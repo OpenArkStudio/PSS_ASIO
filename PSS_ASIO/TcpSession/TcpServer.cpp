@@ -23,25 +23,30 @@ void CTcpServer::do_accept()
         {
             if (!ec)
             {
-                std::make_shared<CTcpSession>(std::move(socket))->open(packet_parse_id_, max_recv_size_, max_send_size_);
+                std::make_shared<CTcpSession>(std::move(socket))->open(packet_parse_id_, max_recv_size_);
             }
             else
             {
-                //发送监听失败消息
-                App_WorkThreadLogic::instance()->add_frame_events(LOGIC_LISTEN_SERVER_ERROR,
-                    0,
-                    acceptor_.local_endpoint().address().to_string(),
-                    acceptor_.local_endpoint().port(),
-                    EM_CONNECT_IO_TYPE::CONNECT_IO_TCP);
-
-                //监听失败，查看错误信息
-                PSS_LOGGER_INFO("[CTcpServer::do_accept]({0}{1})accept error:{2}", 
-                    acceptor_.local_endpoint().address().to_string(),
-                    acceptor_.local_endpoint().port(),
-                    ec.message());
+                send_accept_listen_fail(ec);
             }
 
             do_accept();
         });
+}
+
+void CTcpServer::send_accept_listen_fail(std::error_code ec)
+{
+    //发送监听失败消息
+    App_WorkThreadLogic::instance()->add_frame_events(LOGIC_LISTEN_SERVER_ERROR,
+        0,
+        acceptor_.local_endpoint().address().to_string(),
+        acceptor_.local_endpoint().port(),
+        EM_CONNECT_IO_TYPE::CONNECT_IO_TCP);
+
+    //监听失败，查看错误信息
+    PSS_LOGGER_INFO("[CTcpServer::do_accept]({0}{1})accept error:{2}",
+        acceptor_.local_endpoint().address().to_string(),
+        acceptor_.local_endpoint().port(),
+        ec.message());
 }
 

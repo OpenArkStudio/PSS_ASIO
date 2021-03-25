@@ -17,7 +17,7 @@ using asio::ip::tcp;
 class CTcpClientSession : public std::enable_shared_from_this<CTcpClientSession>, public ISession
 {
 public:
-    CTcpClientSession(asio::io_context* io_context);
+    explicit CTcpClientSession(asio::io_context* io_context);
 
     bool start(const CConnect_IO_Info& io_info);
 

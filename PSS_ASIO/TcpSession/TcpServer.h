@@ -12,6 +12,8 @@ public:
 private:
     void do_accept();
 
+    void send_accept_listen_fail(std::error_code ec);
+
     tcp::acceptor acceptor_;
     uint32 packet_parse_id_ = 0;
     uint32 max_recv_size_ = 0;
