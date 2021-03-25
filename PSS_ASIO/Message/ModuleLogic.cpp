@@ -1,6 +1,6 @@
 ﻿#include "ModuleLogic.h"
 
-void CModuleLogic::init_logic(command_to_module_function command_to_module_function, uint16 work_thread_id)
+void CModuleLogic::init_logic(const command_to_module_function& command_to_module_function, uint16 work_thread_id)
 {
     modules_interface_.copy_from_module_list(command_to_module_function);
     work_thread_id_ = work_thread_id;
@@ -36,14 +36,13 @@ int CModuleLogic::do_thread_module_logic(const CMessage_Source& source, std::sha
     return modules_interface_.do_module_message(source, recv_packet, send_packet);
 }
 
-uint16 CModuleLogic::get_work_thread_id()
+uint16 CModuleLogic::get_work_thread_id() const 
 {
     return work_thread_id_;
 }
 
-int CModuleLogic::get_work_thread_timeout()
+int CModuleLogic::get_work_thread_timeout() const
 {
-    std::chrono::seconds time_interval(0);
     if(ENUM_WORK_THREAD_STATE::WORK_THREAD_BEGIN == work_thread_state_)
     {
         auto interval_seconds = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - work_thread_run_time_);
@@ -59,16 +58,16 @@ void CModuleLogic::check_session_io_timeout(uint32 connect_timeout)
 {
     vector<CSessionIO_Cancel> session_list;
     sessions_interface_.check_session_io_timeout(connect_timeout, session_list);
-    for (auto session_io : session_list)
+    for (const auto& session_io : session_list)
     {
         session_io.session_->close(session_io.session_id_);
     }
 }
 
-void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_seconds, uint32 connect_timeout, config_logic_list& logic_list, ISessionService* session_service)
+void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_seconds, uint32 connect_timeout, const config_logic_list& logic_list, ISessionService* session_service)
 {
     //初始化线程数
-    thread_count_ = thread_count;
+    thread_count_ = (uint16)thread_count;
     connect_timeout_ = connect_timeout;
 
     App_tms::instance()->Init();
@@ -76,7 +75,7 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
     load_module_.set_session_service(session_service);
 
     //初始化插件加载
-    for (auto logic_library : logic_list)
+    for (const auto& logic_library : logic_list)
     {
         load_module_.load_plugin_module(logic_library.logic_path_, 
             logic_library.logic_file_name_, 
@@ -88,7 +87,7 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
     {
         auto thread_logic = make_shared<CModuleLogic>();
 
-        thread_logic->init_logic(load_module_.get_module_function_list(), i);
+        thread_logic->init_logic(load_module_.get_module_function_list(), (uint16)i);
 
         thread_module_list_.emplace_back(thread_logic);
 
@@ -110,7 +109,7 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
 
         auto thread_logic = make_shared<CModuleLogic>();
 
-        thread_logic->init_logic(load_module_.get_module_function_list(), thread_id);
+        thread_logic->init_logic(load_module_.get_module_function_list(), (uint16)thread_id);
 
         plugin_work_thread_list_[thread_id] = thread_logic;
 
@@ -124,7 +123,7 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     //加载插件投递事件
-    for (auto plugin_events : plugin_work_thread_buffer_message_list_)
+    for (const auto& plugin_events : plugin_work_thread_buffer_message_list_)
     {
         send_frame_message(plugin_events.tag_thread_id_,
             plugin_events.message_tag_,
@@ -135,7 +134,7 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
     plugin_work_thread_buffer_message_list_.clear();
 
     //加载插件逻辑
-    for (auto plugin_logic : plugin_work_thread_buffer_Func_list_)
+    for (const auto& plugin_logic : plugin_work_thread_buffer_Func_list_)
     {
         run_work_thread_logic(plugin_logic.tag_thread_id_,
             plugin_logic.delay_timer_,
@@ -174,41 +173,46 @@ void CWorkThreadLogic::close()
     load_module_.Close();
 }
 
-void CWorkThreadLogic::add_frame_events(uint16 command_id, uint32 mark_id, std::string remote_ip, uint16 remote_port, EM_CONNECT_IO_TYPE io_type)
+void CWorkThreadLogic::do_work_thread_frame_events(uint16 command_id, uint32 mark_id, const std::string& remote_ip, uint16 remote_port, EM_CONNECT_IO_TYPE io_type)
 {
-    //添加框架通知事件
     auto module_logic = thread_module_list_[0];
 
-    App_tms::instance()->AddMessage(0, [command_id, mark_id, remote_ip, remote_port, io_type, module_logic]() {
-        CMessage_Source source;
-        auto recv_packet = std::make_shared<CMessage_Packet>();
-        auto send_packet = std::make_shared<CMessage_Packet>();
+    CMessage_Source source;
+    auto recv_packet = std::make_shared<CMessage_Packet>();
+    auto send_packet = std::make_shared<CMessage_Packet>();
 
-        recv_packet->command_id_ = command_id;
+    recv_packet->command_id_ = command_id;
 
-        if (recv_packet->command_id_ == LOGIC_CONNECT_SERVER_ERROR)
-        {
-            source.connect_id_ = 0;
-            source.work_thread_id_ = module_logic->get_work_thread_id();
-            source.connect_mark_id_ = mark_id;
-            source.remote_ip_.m_strClientIP = remote_ip;
-            source.remote_ip_.m_u2Port = remote_port;
-        }
-        else if (recv_packet->command_id_ == LOGIC_LISTEN_SERVER_ERROR)
-        {
-            source.connect_id_ = 0;
-            source.work_thread_id_ = module_logic->get_work_thread_id();
-            source.connect_mark_id_ = mark_id;
-            source.local_ip_.m_strClientIP = remote_ip;
-            source.local_ip_.m_u2Port = remote_port;
-        }
-        source.type_ = io_type;
+    if (recv_packet->command_id_ == LOGIC_CONNECT_SERVER_ERROR)
+    {
+        source.connect_id_ = 0;
+        source.work_thread_id_ = module_logic->get_work_thread_id();
+        source.connect_mark_id_ = mark_id;
+        source.remote_ip_.m_strClientIP = remote_ip;
+        source.remote_ip_.m_u2Port = remote_port;
+    }
+    else if (recv_packet->command_id_ == LOGIC_LISTEN_SERVER_ERROR)
+    {
+        source.connect_id_ = 0;
+        source.work_thread_id_ = module_logic->get_work_thread_id();
+        source.connect_mark_id_ = mark_id;
+        source.local_ip_.m_strClientIP = remote_ip;
+        source.local_ip_.m_u2Port = remote_port;
+    }
+    source.type_ = io_type;
 
-        module_logic->do_thread_module_logic(source, recv_packet, send_packet);
+    module_logic->do_thread_module_logic(source, recv_packet, send_packet);
+}
+
+void CWorkThreadLogic::add_frame_events(uint16 command_id, uint32 mark_id, const std::string& remote_ip, uint16 remote_port, EM_CONNECT_IO_TYPE io_type)
+{
+    //添加框架通知事件
+    App_tms::instance()->AddMessage(0, [this, command_id, mark_id, remote_ip, remote_port, io_type]() {
+        do_work_thread_frame_events(command_id, mark_id, remote_ip, remote_port, io_type);
         });
 }
 
-void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession> session, _ClientIPInfo& local_info, const _ClientIPInfo& romote_info)
+void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession> session, const _ClientIPInfo& local_info, const _ClientIPInfo& romote_info)
 {
     //session 建立连接
     uint16 curr_thread_index = connect_id % thread_count_;
@@ -226,8 +230,6 @@ void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession
 
     //向插件告知链接建立消息
     App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, module_logic, local_info, romote_info]() {
-        //PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
-
         module_logic->add_session(connect_id, session, local_info, romote_info);
 
         CMessage_Source source;
@@ -247,7 +249,7 @@ void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession
         });
 }
 
-void CWorkThreadLogic::delete_thread_session(uint32 connect_id, _ClientIPInfo from_io, shared_ptr<ISession> session)
+void CWorkThreadLogic::delete_thread_session(uint32 connect_id, const _ClientIPInfo& from_io, shared_ptr<ISession> session)
 {
     //session 连接断开
     uint16 curr_thread_index = connect_id % thread_count_;
@@ -266,7 +268,6 @@ void CWorkThreadLogic::delete_thread_session(uint32 connect_id, _ClientIPInfo fr
 
     //向插件告知链接建立消息
     App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, module_logic]() {
-        //PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
         CMessage_Source source;
         auto recv_packet = std::make_shared<CMessage_Packet>();
         auto send_packet = std::make_shared<CMessage_Packet>();
@@ -298,7 +299,7 @@ void CWorkThreadLogic::close_session_event(uint32 connect_id)
         });
 }
 
-int CWorkThreadLogic::do_thread_module_logic(const uint32 connect_id, vector<shared_ptr<CMessage_Packet>>& message_list, shared_ptr<ISession> session)
+int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, const vector<shared_ptr<CMessage_Packet>>& message_list, shared_ptr<ISession> session)
 {
     //处理线程的投递
     uint16 curr_thread_index = connect_id % thread_count_;
@@ -308,10 +309,10 @@ int CWorkThreadLogic::do_thread_module_logic(const uint32 connect_id, vector<sha
     if (io_2_io_session_id > 0)
     {
         curr_thread_index = io_2_io_session_id % thread_count_;
-        auto module_logic = thread_module_list_[io_2_io_session_id];
+        module_logic = thread_module_list_[io_2_io_session_id];
 
         //存在点对点透传，直接透传数据
-        App_tms::instance()->AddMessage(curr_thread_index, [session, io_2_io_session_id, message_list, module_logic]() {
+        App_tms::instance()->AddMessage(curr_thread_index, [io_2_io_session_id, message_list, module_logic]() {
             for (auto recv_packet : message_list)
             {
                 auto session = module_logic->get_session_interface(io_2_io_session_id);
@@ -325,48 +326,75 @@ int CWorkThreadLogic::do_thread_module_logic(const uint32 connect_id, vector<sha
     else
     {
         //添加到数据队列处理
-        App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, message_list, module_logic]() {
-            //PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
-            CMessage_Source source;
-            CMessage_Packet send_packet;
-
-            source.connect_id_ = connect_id;
-            source.work_thread_id_ = module_logic->get_work_thread_id();
-            source.type_ = session->get_io_type();
-            source.connect_mark_id_ = session->get_mark_id(connect_id);
-
-            for (auto recv_packet : message_list)
-            {
-                auto curr_send_packet = std::make_shared<CMessage_Packet>();
-                module_logic->do_thread_module_logic(source, recv_packet, curr_send_packet);
-
-                if (curr_send_packet->buffer_.size() > 0)
-                {
-                    //在这里添加对curr_send_packet的格式化
-                    module_logic->get_session_interface(connect_id)->format_send_packet(source.connect_id_, curr_send_packet);
-
-                    //将格式化后的数据填充到send_packet
-                    send_packet.buffer_.append(curr_send_packet->buffer_.c_str(), curr_send_packet->buffer_.size());
-                }
-            }
-
-            if (send_packet.buffer_.size() > 0)
-            {
-                //有需要发送的内容
-                session->set_write_buffer(connect_id, send_packet.buffer_.c_str(), send_packet.buffer_.size());
-                session->do_write(connect_id);
-            }
+        App_tms::instance()->AddMessage(curr_thread_index, [this, session, connect_id, message_list, module_logic]() {
+            do_work_thread_module_logic(session, connect_id, message_list, module_logic);
             });
     }
 
     return 0;
 }
 
-void CWorkThreadLogic::do_plugin_thread_module_logic(shared_ptr<CModuleLogic> module_logic, std::string message_tag, std::shared_ptr<CMessage_Packet> recv_packet)
+void CWorkThreadLogic::do_work_thread_module_logic(shared_ptr<ISession> session, const uint32 connect_id, const vector<shared_ptr<CMessage_Packet>>& message_list, shared_ptr<CModuleLogic> module_logic)
+{
+    CMessage_Source source;
+    CMessage_Packet send_packet;
+
+    source.connect_id_ = connect_id;
+    source.work_thread_id_ = module_logic->get_work_thread_id();
+    source.type_ = session->get_io_type();
+    source.connect_mark_id_ = session->get_mark_id(connect_id);
+
+    for (auto recv_packet : message_list)
+    {
+        auto curr_send_packet = std::make_shared<CMessage_Packet>();
+        module_logic->do_thread_module_logic(source, recv_packet, curr_send_packet);
+
+        if (curr_send_packet->buffer_.size() > 0)
+        {
+            //在这里添加对curr_send_packet的格式化
+            module_logic->get_session_interface(connect_id)->format_send_packet(source.connect_id_, curr_send_packet);
+
+            //将格式化后的数据填充到send_packet
+            send_packet.buffer_.append(curr_send_packet->buffer_.c_str(), curr_send_packet->buffer_.size());
+        }
+    }
+
+    if (send_packet.buffer_.size() > 0)
+    {
+        //有需要发送的内容
+        session->set_write_buffer(connect_id, send_packet.buffer_.c_str(), send_packet.buffer_.size());
+        session->do_write(connect_id);
+    }
+}
+
+void CWorkThreadLogic::do_io_message_delivery(uint32 connect_id, std::shared_ptr<CMessage_Packet> send_packet, shared_ptr<CModuleLogic> module_logic)
+{
+    if (nullptr != module_logic->get_session_interface(connect_id))
+    {
+        //这里调用格式化发送过程
+        auto session = module_logic->get_session_interface(connect_id);
+        session->format_send_packet(connect_id, send_packet);
+
+        session->do_write_immediately(connect_id,
+            send_packet->buffer_.c_str(),
+            send_packet->buffer_.size());
+    }
+    else
+    {
+        //查找是不是服务器间链接，如果是，则调用重连。
+        auto server_id = communicate_service_->get_server_id(connect_id);
+        if (server_id > 0)
+        {
+            //重连服务器
+            communicate_service_->reset_connect(server_id);
+        }
+    }
+}
+
+void CWorkThreadLogic::do_plugin_thread_module_logic(shared_ptr<CModuleLogic> module_logic, const std::string& message_tag, std::shared_ptr<CMessage_Packet> recv_packet)
 {
     //添加到数据队列处理
     App_tms::instance()->AddMessage(module_logic->get_work_thread_id(), [message_tag, recv_packet, module_logic]() {
-        //PSS_LOGGER_DEBUG("[CTcpSession::AddMessage]count={}.", message_list.size());
         CMessage_Source source;
         auto send_packet = std::make_shared<CMessage_Packet>();
 
@@ -409,7 +437,7 @@ bool CWorkThreadLogic::create_frame_work_thread(uint32 thread_id)
         //创建线程
         auto thread_logic = make_shared<CModuleLogic>();
 
-        thread_logic->init_logic(load_module_.get_module_function_list(), thread_id);
+        thread_logic->init_logic(load_module_.get_module_function_list(), (uint16)thread_id);
 
         plugin_work_thread_list_[thread_id] = thread_logic;
 
@@ -467,12 +495,12 @@ bool CWorkThreadLogic::delete_frame_message_timer(uint64 timer_id)
     }
 }
 
-uint16 CWorkThreadLogic::get_io_work_thread_count()
+uint16 CWorkThreadLogic::get_io_work_thread_count() const
 {
     return thread_count_;
 }
 
-uint16 CWorkThreadLogic::get_plugin_work_thread_count()
+uint16 CWorkThreadLogic::get_plugin_work_thread_count() const
 {
     return (uint16)plugin_work_thread_list_.size();
 }
@@ -485,26 +513,7 @@ void CWorkThreadLogic::send_io_message(uint32 connect_id, std::shared_ptr<CMessa
 
     //添加到数据队列处理
     App_tms::instance()->AddMessage(curr_thread_index, [this, connect_id, send_packet, module_logic]() {        
-        if (nullptr != module_logic->get_session_interface(connect_id))
-        {
-            //这里调用格式化发送过程
-            auto session = module_logic->get_session_interface(connect_id);
-            session->format_send_packet(connect_id, send_packet);
-
-            session->do_write_immediately(connect_id,
-                send_packet->buffer_.c_str(),
-                send_packet->buffer_.size());
-        }
-        else
-        {
-            //查找是不是服务器间链接，如果是，则调用重连。
-            auto server_id = communicate_service_->get_server_id(connect_id);
-            if (server_id > 0)
-            {
-                //重连服务器
-                communicate_service_->reset_connect(server_id);
-            }
-        }
+        do_io_message_delivery(connect_id, send_packet, module_logic);
         });
 }
 
@@ -532,17 +541,17 @@ uint32 CWorkThreadLogic::get_io_server_id(uint32 connect_id)
     return communicate_service_->get_server_id(connect_id);
 }
 
-bool CWorkThreadLogic::add_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type, _ClientIPInfo to_io, EM_CONNECT_IO_TYPE to_io_type)
+bool CWorkThreadLogic::add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type, const _ClientIPInfo& to_io, EM_CONNECT_IO_TYPE to_io_type)
 {
     return io_to_io_.add_session_io_mapping(from_io, from_io_type, to_io, to_io_type);
 }
 
-bool CWorkThreadLogic::delete_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type)
+bool CWorkThreadLogic::delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type)
 {
     return io_to_io_.delete_session_io_mapping(from_io, from_io_type);
 }
 
-void CWorkThreadLogic::run_check_task(uint32 timeout_seconds)
+void CWorkThreadLogic::run_check_task(uint32 timeout_seconds) const
 {
     //检测所有工作线程状态
     for (auto module_logic : thread_module_list_)
@@ -570,7 +579,7 @@ void CWorkThreadLogic::run_check_task(uint32 timeout_seconds)
     PSS_LOGGER_DEBUG("[CWorkThreadLogic::run_check_task]check is ok.");
 }
 
-bool CWorkThreadLogic::send_frame_message(uint16 tag_thread_id, std::string message_tag, std::shared_ptr<CMessage_Packet> send_packet, CFrame_Message_Delay delay_timer)
+bool CWorkThreadLogic::send_frame_message(uint16 tag_thread_id, const std::string& message_tag, std::shared_ptr<CMessage_Packet> send_packet, CFrame_Message_Delay delay_timer)
 {
     if (false == module_init_finish_)
     {
@@ -602,10 +611,9 @@ bool CWorkThreadLogic::send_frame_message(uint16 tag_thread_id, std::string mess
         auto timer_ptr = App_TimerManager::instance()->GetTimerPtr()->addTimer(delay_timer.delay_seconds_, [this, plugin_thread, message_tag, send_packet, delay_timer]()
             {
                 //对定时器列表操作加锁
-                {
-                    std::lock_guard <std::recursive_mutex> lock(plugin_timer_mutex_);
-                    plgin_timer_list_.erase(delay_timer.timer_id_);
-                }
+                plugin_timer_mutex_.lock();
+                plgin_timer_list_.erase(delay_timer.timer_id_);
+                plugin_timer_mutex_.unlock();
 
                 //延时到期，进行投递
                 do_plugin_thread_module_logic(plugin_thread, message_tag, send_packet);
@@ -622,7 +630,7 @@ bool CWorkThreadLogic::send_frame_message(uint16 tag_thread_id, std::string mess
     return true;
 }
 
-bool CWorkThreadLogic::run_work_thread_logic(uint16 tag_thread_id, CFrame_Message_Delay delay_timer, task_function func)
+bool CWorkThreadLogic::run_work_thread_logic(uint16 tag_thread_id, CFrame_Message_Delay delay_timer, const task_function& func)
 {
     if (false == module_init_finish_)
     {
@@ -651,10 +659,9 @@ bool CWorkThreadLogic::run_work_thread_logic(uint16 tag_thread_id, CFrame_Messag
         auto timer_ptr = App_TimerManager::instance()->GetTimerPtr()->addTimer(delay_timer.delay_seconds_, [this, tag_thread_id, delay_timer, func]()
             {
                 //对定时器列表操作加锁
-                {
-                    std::lock_guard <std::recursive_mutex> lock(plugin_timer_mutex_);
-                    plgin_timer_list_.erase(delay_timer.timer_id_);
-                }
+                plugin_timer_mutex_.lock();
+                plgin_timer_list_.erase(delay_timer.timer_id_);
+                plugin_timer_mutex_.unlock();
 
                 //延时到期，进行投递
                 App_tms::instance()->AddMessage(tag_thread_id, func);

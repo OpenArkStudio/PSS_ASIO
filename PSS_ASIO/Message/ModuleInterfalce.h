@@ -11,7 +11,7 @@ class CModuleInterface
 public:
     CModuleInterface() = default;
 
-    void copy_from_module_list(command_to_module_function command_to_module_function);
+    void copy_from_module_list(const command_to_module_function& command_to_module_function);
 
     int do_module_message(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet);
 

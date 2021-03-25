@@ -129,7 +129,7 @@ void CTcpClientSession::do_read()
                     recv_data_time_ = std::chrono::steady_clock::now();
 
                     //添加消息处理
-                    App_WorkThreadLogic::instance()->do_thread_module_logic(connect_id_, message_list, self);
+                    App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id_, message_list, self);
                 }
 
                 session_recv_buffer_.move(length);

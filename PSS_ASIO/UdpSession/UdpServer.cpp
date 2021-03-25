@@ -52,7 +52,7 @@ void CUdpServer::do_receive()
                 {
                     recv_data_time_ = std::chrono::steady_clock::now();
                     //添加到数据队列处理
-                    App_WorkThreadLogic::instance()->do_thread_module_logic(connect_id, message_list, self);
+                    App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id, message_list, self);
                 }
 
 

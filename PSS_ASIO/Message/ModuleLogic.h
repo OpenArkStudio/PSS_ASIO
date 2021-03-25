@@ -43,7 +43,7 @@ class CModuleLogic
 public:
     CModuleLogic() = default;
 
-    void init_logic(command_to_module_function command_to_module_function, uint16 work_thread_id);
+    void init_logic(const command_to_module_function& command_to_module_function, uint16 work_thread_id);
 
     void add_session(uint32 connect_id, shared_ptr<ISession> session, const _ClientIPInfo& local_info, const _ClientIPInfo& romote_info);
 
@@ -55,9 +55,9 @@ public:
 
     int do_thread_module_logic(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet);
 
-    uint16 get_work_thread_id();
+    uint16 get_work_thread_id() const;
 
-    int get_work_thread_timeout();
+    int get_work_thread_timeout() const;
 
     void check_session_io_timeout(uint32 connect_timeout);
 
@@ -75,21 +75,27 @@ class CWorkThreadLogic
 public:
     CWorkThreadLogic() = default;
 
-    void init_work_thread_logic(int thread_count, uint16 timeout_seconds, uint32 connect_timeout, config_logic_list& logic_list, ISessionService* session_service);
+    void init_work_thread_logic(int thread_count, uint16 timeout_seconds, uint32 connect_timeout, const config_logic_list& logic_list, ISessionService* session_service);
 
     void init_communication_service(ICommunicationInterface* communicate_service);
 
     void close();
 
-    void add_frame_events(uint16 command_id, uint32 mark_id, std::string remote_ip, uint16 remote_port, EM_CONNECT_IO_TYPE io_type);
+    void do_work_thread_frame_events(uint16 command_id, uint32 mark_id, const std::string& remote_ip, uint16 remote_port, EM_CONNECT_IO_TYPE io_type);
 
-    void add_thread_session(uint32 connect_id, shared_ptr<ISession> session, _ClientIPInfo& local_info, const _ClientIPInfo& romote_info);
+    void add_frame_events(uint16 command_id, uint32 mark_id, const std::string& remote_ip, uint16 remote_port, EM_CONNECT_IO_TYPE io_type);
 
-    void delete_thread_session(uint32 connect_id, _ClientIPInfo from_io, shared_ptr<ISession> session);
+    void add_thread_session(uint32 connect_id, shared_ptr<ISession> session, const _ClientIPInfo& local_info, const _ClientIPInfo& romote_info);
+
+    void delete_thread_session(uint32 connect_id, const _ClientIPInfo& from_io, shared_ptr<ISession> session);
 
     void close_session_event(uint32 connect_id);
 
-    int do_thread_module_logic(const uint32 connect_id, vector<shared_ptr<CMessage_Packet>>& message_list, shared_ptr<ISession> session);
+    int assignation_thread_module_logic(const uint32 connect_id, const vector<shared_ptr<CMessage_Packet>>& message_list, shared_ptr<ISession> session);
+
+    void do_work_thread_module_logic(shared_ptr<ISession> session, const uint32 connect_id, const vector<shared_ptr<CMessage_Packet>>& message_list, shared_ptr<CModuleLogic> module_logic);
+
+    void do_io_message_delivery(uint32 connect_id, std::shared_ptr<CMessage_Packet> send_packet, shared_ptr<CModuleLogic> module_logic);
 
     void send_io_message(uint32 connect_id, std::shared_ptr<CMessage_Packet> send_packet);
 
@@ -99,17 +105,17 @@ public:
 
     uint32 get_io_server_id(uint32 connect_id);
 
-    bool add_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type, _ClientIPInfo to_io, EM_CONNECT_IO_TYPE to_io_type);
+    bool add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type, const _ClientIPInfo& to_io, EM_CONNECT_IO_TYPE to_io_type);
 
-    bool delete_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type);
+    bool delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type);
 
-    void run_check_task(uint32 timeout_seconds);
+    void run_check_task(uint32 timeout_seconds) const;
 
-    bool send_frame_message(uint16 tag_thread_id, std::string message_tag, std::shared_ptr<CMessage_Packet> send_packet, CFrame_Message_Delay delay_timer);
+    bool send_frame_message(uint16 tag_thread_id, const std::string& message_tag, std::shared_ptr<CMessage_Packet> send_packet, CFrame_Message_Delay delay_timer);
 
-    bool run_work_thread_logic(uint16 tag_thread_id, CFrame_Message_Delay delay_timer, task_function func);
+    bool run_work_thread_logic(uint16 tag_thread_id, CFrame_Message_Delay delay_timer, const task_function& func);
 
-    void do_plugin_thread_module_logic(shared_ptr<CModuleLogic> module_logic, std::string message_tag, std::shared_ptr<CMessage_Packet> recv_packet);
+    void do_plugin_thread_module_logic(shared_ptr<CModuleLogic> module_logic, const std::string& message_tag, std::shared_ptr<CMessage_Packet> recv_packet);
 
     bool create_frame_work_thread(uint32 thread_id);
 
@@ -117,9 +123,9 @@ public:
 
     bool delete_frame_message_timer(uint64 timer_id);
 
-    uint16 get_io_work_thread_count();
+    uint16 get_io_work_thread_count() const;
 
-    uint16 get_plugin_work_thread_count();
+    uint16 get_plugin_work_thread_count() const;
 
 private:
     using hashmappluginworkthread = unordered_map<uint32, shared_ptr<CModuleLogic>>;

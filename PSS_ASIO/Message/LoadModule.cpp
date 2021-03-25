@@ -124,7 +124,7 @@ shared_ptr<_ModuleInfo> CLoadModule::find_module_info(const char* pModuleName)
     }
 }
 
-bool CLoadModule::load_module_info(shared_ptr<_ModuleInfo> module_info)
+bool CLoadModule::load_module_info(shared_ptr<_ModuleInfo> module_info) const
 {
     string strModuleFile;
 

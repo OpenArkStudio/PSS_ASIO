@@ -62,7 +62,7 @@ public:
     command_to_module_function& get_module_function_list();
 
 private:
-    bool load_module_info(shared_ptr<_ModuleInfo> module_info);    //开始加载模块的接口和数据
+    bool load_module_info(shared_ptr<_ModuleInfo> module_info) const;    //开始加载模块的接口和数据
 
     void delete_module_name_list(const string& module_name);
 
