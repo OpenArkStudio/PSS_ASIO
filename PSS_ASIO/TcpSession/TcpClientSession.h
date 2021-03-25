@@ -43,6 +43,8 @@ public:
 
     void clear_write_buffer();
 
+    void do_read_some(std::error_code ec, std::size_t length);
+
 private:
     tcp::socket socket_;
     uint32 server_id_  = 0;

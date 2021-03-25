@@ -42,7 +42,6 @@ bool CTcpClientSession::start(const CConnect_IO_Info& io_info)
         packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(io_info.packet_parse_id);
 
         //处理链接建立消息
-
         remote_ip_.m_strClientIP = socket_.remote_endpoint().address().to_string();
         remote_ip_.m_u2Port = socket_.remote_endpoint().port();
         local_ip_.m_strClientIP = socket_.local_endpoint().address().to_string();
@@ -110,37 +109,7 @@ void CTcpClientSession::do_read()
     socket_.async_read_some(asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()),
         [this, self, connect_id](std::error_code ec, std::size_t length)
         {
-            if (!ec)
-            {
-                recv_data_size_ += length;
-                session_recv_buffer_.set_write_data(length);
-                PSS_LOGGER_DEBUG("[CTcpClientSession::do_write]recv length={}.", length);
-
-                //处理数据拆包
-                vector<std::shared_ptr<CMessage_Packet>> message_list;
-                bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
-                if (!ret)
-                {
-                    //链接断开(解析包不正确)
-                    App_WorkThreadLogic::instance()->close_session_event(connect_id_);
-                }
-                else
-                {
-                    recv_data_time_ = std::chrono::steady_clock::now();
-
-                    //添加消息处理
-                    App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id_, message_list, self);
-                }
-
-                session_recv_buffer_.move(length);
-                //继续读数据
-                self->do_read();
-            }
-            else
-            {
-                //链接断开
-                App_WorkThreadLogic::instance()->close_session_event(connect_id_);
-            }
+            do_read_some(ec, length);
         });
 }
 
@@ -151,7 +120,7 @@ void CTcpClientSession::do_write_immediately(uint32 connect_id, const char* data
     send_buffer->data_.append(data, length);
     send_buffer->buffer_length_ = length;
 
-    //PSS_LOGGER_DEBUG("[CTcpClientSession::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
+    //测试代码 PSS_LOGGER_DEBUG("[CTcpClientSession::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
 
     //异步发送
     auto self(shared_from_this());
@@ -177,7 +146,7 @@ void CTcpClientSession::do_write(uint32 connect_id)
     send_buffer->data_.append(session_send_buffer_.read(), session_send_buffer_.get_write_size());
     send_buffer->buffer_length_ = session_send_buffer_.get_write_size();
 
-    //PSS_LOGGER_DEBUG("[CTcpSession::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
+    //测试代码 PSS_LOGGER_DEBUG("[CTcpSession::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
     clear_write_buffer();
 
     //异步发送
@@ -228,4 +197,38 @@ void CTcpClientSession::clear_write_buffer()
     session_send_buffer_.move(session_send_buffer_.get_write_size());
 }
 
+void CTcpClientSession::do_read_some(std::error_code ec, std::size_t length)
+{
+    if (!ec)
+    {
+        recv_data_size_ += length;
+        session_recv_buffer_.set_write_data(length);
+        PSS_LOGGER_DEBUG("[CTcpClientSession::do_write]recv length={}.", length);
+
+        //处理数据拆包
+        vector<std::shared_ptr<CMessage_Packet>> message_list;
+        bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
+        if (!ret)
+        {
+            //链接断开(解析包不正确)
+            App_WorkThreadLogic::instance()->close_session_event(connect_id_);
+        }
+        else
+        {
+            recv_data_time_ = std::chrono::steady_clock::now();
+
+            //添加消息处理
+            App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id_, message_list, shared_from_this());
+        }
+
+        session_recv_buffer_.move(length);
+        //继续读数据
+        do_read();
+    }
+    else
+    {
+        //链接断开
+        App_WorkThreadLogic::instance()->close_session_event(connect_id_);
+    }
+}
 

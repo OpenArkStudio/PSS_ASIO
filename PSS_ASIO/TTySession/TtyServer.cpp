@@ -11,12 +11,12 @@ CTTyServer::CTTyServer(uint32 packet_parse_id, uint32 max_recv_size, uint32 max_
     packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(packet_parse_id);
 }
 
-void CTTyServer::start(asio::io_context* io_context, std::string tty_name, uint16 tty_port, uint8 char_size, uint32 server_id)
+void CTTyServer::start(asio::io_context* io_context, const std::string& tty_name, uint16 tty_port, uint8 char_size, uint32 server_id)
 {
     if (false == add_serial_port(io_context, tty_name, tty_port, char_size))
     {
         return;
-    };
+    }
 
     recv_data_time_ = std::chrono::steady_clock::now();
 
@@ -34,7 +34,7 @@ void CTTyServer::start(asio::io_context* io_context, std::string tty_name, uint1
     {
         local_ip_.m_strClientIP = "tty";
         remote_ip_.m_strClientIP = tty_name_;
-        remote_ip_.m_u2Port = option.value();
+        remote_ip_.m_u2Port = (uint16)option.value();
 
         App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip_, remote_ip_);
 
@@ -49,50 +49,8 @@ void CTTyServer::do_receive()
     serial_port_param_->async_read_some(asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()),
         [this](std::error_code ec, std::size_t length)
         {
-            auto connect_id = connect_id_;
-
-            if (!ec && length > 0)
-            {
-                //处理数据包
-                auto self(shared_from_this());
-
-                recv_data_size_ += length;
-
-                //如果缓冲已满，断开连接，不再接受数据。
-                if (session_recv_buffer_.get_buffer_size() == 0)
-                {
-                    //不断开(缓冲撑满了)
-                    session_recv_buffer_.move(length);
-                    App_WorkThreadLogic::instance()->close_session_event(connect_id);
-                    do_receive();
-                }
-
-                session_recv_buffer_.set_write_data(length);
-
-                //处理数据拆包
-                vector<std::shared_ptr<CMessage_Packet>> message_list;
-                bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
-                if (!ret)
-                {
-                    //链接断开(解析包不正确)
-                    session_recv_buffer_.move(length);
-                    App_WorkThreadLogic::instance()->close_session_event(connect_id);
-                    do_receive();
-                }
-                else
-                {
-                    recv_data_time_ = std::chrono::steady_clock::now();
-
-                    //添加到数据队列处理
-                    App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id, message_list, self);
-                }
-
-                do_receive();
-            }
-            else
-            {
-                do_receive();
-            }
+            //处理接收数据
+            do_read_some(ec, length);
         });
 }
 
@@ -116,7 +74,7 @@ void CTTyServer::clear_write_buffer()
     session_send_buffer_.move(session_send_buffer_.get_write_size());
 }
 
-bool CTTyServer::add_serial_port(asio::io_context* io_context, std::string tty_name, uint16 tty_port, uint8 char_size)
+bool CTTyServer::add_serial_port(asio::io_context* io_context, const std::string& tty_name, uint16 tty_port, uint8 char_size)
 {
     std::error_code ec;
     serial_port_param_ = std::make_shared<asio::serial_port>(*io_context);
@@ -155,7 +113,7 @@ void CTTyServer::do_write(uint32 connect_id)
     send_buffer->data_.append(session_send_buffer_.read(), session_send_buffer_.get_write_size());
     send_buffer->buffer_length_ = session_send_buffer_.get_write_size();
 
-    //PSS_LOGGER_DEBUG("[CTTyServer::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
+    //测试代码 PSS_LOGGER_DEBUG("[CTTyServer::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
     clear_write_buffer();
     
     //异步发送
@@ -186,12 +144,12 @@ void CTTyServer::do_write_immediately(uint32 connect_id, const char* data, size_
     send_buffer->data_.append(data, length);
     send_buffer->buffer_length_ = length;
 
-    //PSS_LOGGER_DEBUG("[CTTyServer::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
+    //测试代码 PSS_LOGGER_DEBUG("[CTTyServer::do_write]send_buffer->buffer_length_={}.", send_buffer->buffer_length_);
 
     //异步发送
     auto self(shared_from_this());
     serial_port_param_->async_write_some(asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
-        [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
+        [self, send_buffer, connect_id](std::error_code ec, std::size_t send_length)
         {
             if (ec)
             {
@@ -200,7 +158,7 @@ void CTTyServer::do_write_immediately(uint32 connect_id, const char* data, size_
             }
             else
             {
-                self->add_send_finish_size(connect_id, length);
+                self->add_send_finish_size(connect_id, send_length);
             }
         });
 
@@ -243,5 +201,53 @@ std::chrono::steady_clock::time_point& CTTyServer::get_recv_time()
 bool CTTyServer::format_send_packet(uint32 connect_id, std::shared_ptr<CMessage_Packet> message)
 {
     return packet_parse_interface_->parse_format_send_buffer_ptr_(connect_id, message, get_io_type());
+}
+
+void CTTyServer::do_read_some(std::error_code ec, std::size_t length)
+{
+    auto connect_id = connect_id_;
+
+    if (!ec && length > 0)
+    {
+        //处理数据包
+        auto self(shared_from_this());
+
+        recv_data_size_ += length;
+
+        //如果缓冲已满，断开连接，不再接受数据。
+        if (session_recv_buffer_.get_buffer_size() == 0)
+        {
+            //不断开(缓冲撑满了)
+            session_recv_buffer_.move(length);
+            App_WorkThreadLogic::instance()->close_session_event(connect_id);
+            do_receive();
+        }
+
+        session_recv_buffer_.set_write_data(length);
+
+        //处理数据拆包
+        vector<std::shared_ptr<CMessage_Packet>> message_list;
+        bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
+        if (!ret)
+        {
+            //链接断开(解析包不正确)
+            session_recv_buffer_.move(length);
+            App_WorkThreadLogic::instance()->close_session_event(connect_id);
+            do_receive();
+        }
+        else
+        {
+            recv_data_time_ = std::chrono::steady_clock::now();
+
+            //添加到数据队列处理
+            App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id, message_list, self);
+        }
+
+        do_receive();
+    }
+    else
+    {
+        do_receive();
+    }
 }
 

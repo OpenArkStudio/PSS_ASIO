@@ -4,6 +4,7 @@
 #include <fstream>
 #include "json/json.hpp"
 #include "serverconfigtype.h"
+#include "define.h"
 
 const std::string config_file_name = "server_config.json";
 

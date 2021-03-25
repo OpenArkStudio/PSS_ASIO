@@ -79,7 +79,7 @@ bool CServerConfig::read_server_config_file(const std::string& file_name)
     }
     catch (const json::parse_error& e)
     {
-        std::cout << "[CServerConfig::read_server_config_file]parse error(" << e.what() << ")" << std::endl;
+        log_screen("[CServerConfig::read_server_config_file]parse error(", e.what(), ")");
         return false;
     }
 }

@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
     //读取配置文件参数
     if (argc > 2)
     {
-        printf("pass asio arg error.");
+        log_screen("pass asio config file param error.");
         return 0;
     }
      

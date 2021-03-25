@@ -315,10 +315,10 @@ int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, c
         App_tms::instance()->AddMessage(curr_thread_index, [io_2_io_session_id, message_list, module_logic]() {
             for (auto recv_packet : message_list)
             {
-                auto session = module_logic->get_session_interface(io_2_io_session_id);
-                if (nullptr != session)
+                auto session_io = module_logic->get_session_interface(io_2_io_session_id);
+                if (nullptr != session_io)
                 {
-                    session->do_write_immediately(io_2_io_session_id, recv_packet->buffer_.c_str(), recv_packet->buffer_.size());
+                    session_io->do_write_immediately(io_2_io_session_id, recv_packet->buffer_.c_str(), recv_packet->buffer_.size());
                 }
             }
         });
@@ -334,7 +334,7 @@ int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, c
     return 0;
 }
 
-void CWorkThreadLogic::do_work_thread_module_logic(shared_ptr<ISession> session, const uint32 connect_id, const vector<shared_ptr<CMessage_Packet>>& message_list, shared_ptr<CModuleLogic> module_logic)
+void CWorkThreadLogic::do_work_thread_module_logic(shared_ptr<ISession> session, const uint32 connect_id, const vector<shared_ptr<CMessage_Packet>>& message_list, shared_ptr<CModuleLogic> module_logic) const
 {
     CMessage_Source source;
     CMessage_Packet send_packet;
@@ -391,7 +391,7 @@ void CWorkThreadLogic::do_io_message_delivery(uint32 connect_id, std::shared_ptr
     }
 }
 
-void CWorkThreadLogic::do_plugin_thread_module_logic(shared_ptr<CModuleLogic> module_logic, const std::string& message_tag, std::shared_ptr<CMessage_Packet> recv_packet)
+void CWorkThreadLogic::do_plugin_thread_module_logic(shared_ptr<CModuleLogic> module_logic, const std::string& message_tag, std::shared_ptr<CMessage_Packet> recv_packet) const
 {
     //添加到数据队列处理
     App_tms::instance()->AddMessage(module_logic->get_work_thread_id(), [message_tag, recv_packet, module_logic]() {

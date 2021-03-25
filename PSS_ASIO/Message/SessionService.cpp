@@ -29,7 +29,7 @@ void CSessionService::close_io_session(uint32 connect_id)
 
 }
 
-bool CSessionService::add_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type, _ClientIPInfo to_io, EM_CONNECT_IO_TYPE to_io_type)
+bool CSessionService::add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type, const _ClientIPInfo& to_io, EM_CONNECT_IO_TYPE to_io_type)
 {
     return App_WorkThreadLogic::instance()->add_session_io_mapping(from_io,
         from_io_type,
@@ -37,13 +37,13 @@ bool CSessionService::add_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_I
         to_io_type);
 }
 
-bool CSessionService::delete_session_io_mapping(_ClientIPInfo from_io, EM_CONNECT_IO_TYPE from_io_type)
+bool CSessionService::delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type)
 {
     return App_WorkThreadLogic::instance()->delete_session_io_mapping(from_io,
         from_io_type);
 }
 
-bool CSessionService::send_frame_message(uint16 tag_thread_id, std::string message_tag, std::shared_ptr<CMessage_Packet> send_packet, CFrame_Message_Delay delay_timer)
+bool CSessionService::send_frame_message(uint16 tag_thread_id, const std::string& message_tag, std::shared_ptr<CMessage_Packet> send_packet, CFrame_Message_Delay delay_timer)
 {
     return App_WorkThreadLogic::instance()->send_frame_message(tag_thread_id,
         message_tag,
@@ -51,7 +51,7 @@ bool CSessionService::send_frame_message(uint16 tag_thread_id, std::string messa
         delay_timer);
 }
 
-bool CSessionService::run_work_thread_logic(uint16 tag_thread_id, CFrame_Message_Delay delay_timer, task_function func)
+bool CSessionService::run_work_thread_logic(uint16 tag_thread_id, CFrame_Message_Delay delay_timer, const task_function& func)
 {
     return App_WorkThreadLogic::instance()->run_work_thread_logic(tag_thread_id, delay_timer, func);
 }

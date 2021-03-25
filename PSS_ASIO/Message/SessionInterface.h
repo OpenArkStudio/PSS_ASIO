@@ -39,7 +39,7 @@ public:
 
     void close();
 
-    void check_session_io_timeout(uint32 connect_timeout, vector<CSessionIO_Cancel>& session_list);
+    void check_session_io_timeout(uint32 connect_timeout, vector<CSessionIO_Cancel>& session_list) const;
 
 private:
     using hashmapsessions = unordered_map<uint32, CSessionIOInfo>;

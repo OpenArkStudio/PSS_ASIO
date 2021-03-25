@@ -23,6 +23,7 @@ enum class ENUM_WORK_THREAD_STATE
 class CDelayPluginMessage
 {
 public:
+    CDelayPluginMessage() = default;
     uint16 tag_thread_id_ = 0;
     std::string message_tag_ = "";
     std::shared_ptr<CMessage_Packet> send_packet_;
@@ -33,6 +34,7 @@ public:
 class CDelayPluginFunc
 {
 public:
+    CDelayPluginFunc() = default;
     uint16 tag_thread_id_ = 0;
     CFrame_Message_Delay delay_timer_;
     task_function func_;
@@ -93,7 +95,7 @@ public:
 
     int assignation_thread_module_logic(const uint32 connect_id, const vector<shared_ptr<CMessage_Packet>>& message_list, shared_ptr<ISession> session);
 
-    void do_work_thread_module_logic(shared_ptr<ISession> session, const uint32 connect_id, const vector<shared_ptr<CMessage_Packet>>& message_list, shared_ptr<CModuleLogic> module_logic);
+    void do_work_thread_module_logic(shared_ptr<ISession> session, const uint32 connect_id, const vector<shared_ptr<CMessage_Packet>>& message_list, shared_ptr<CModuleLogic> module_logic) const;
 
     void do_io_message_delivery(uint32 connect_id, std::shared_ptr<CMessage_Packet> send_packet, shared_ptr<CModuleLogic> module_logic);
 
@@ -115,7 +117,7 @@ public:
 
     bool run_work_thread_logic(uint16 tag_thread_id, CFrame_Message_Delay delay_timer, const task_function& func);
 
-    void do_plugin_thread_module_logic(shared_ptr<CModuleLogic> module_logic, const std::string& message_tag, std::shared_ptr<CMessage_Packet> recv_packet);
+    void do_plugin_thread_module_logic(shared_ptr<CModuleLogic> module_logic, const std::string& message_tag, std::shared_ptr<CMessage_Packet> recv_packet) const;
 
     bool create_frame_work_thread(uint32 thread_id);
 

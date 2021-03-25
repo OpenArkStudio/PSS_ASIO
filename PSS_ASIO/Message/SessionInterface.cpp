@@ -64,11 +64,11 @@ void CSessionInterface::close()
     sessions_list_.clear();
 }
 
-void CSessionInterface::check_session_io_timeout(uint32 connect_timeout, vector<CSessionIO_Cancel>& session_list)
+void CSessionInterface::check_session_io_timeout(uint32 connect_timeout, vector<CSessionIO_Cancel>& session_list) const
 {
     auto check_connect_time_ = std::chrono::steady_clock::now();
 
-    for (auto& session_io : sessions_list_)
+    for (const auto& session_io : sessions_list_)
     {
         //目前只检查tcp
         if (session_io.second.session_->get_io_type() == EM_CONNECT_IO_TYPE::CONNECT_IO_TCP)

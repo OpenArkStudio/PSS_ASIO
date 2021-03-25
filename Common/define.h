@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <fstream>
 #include <chrono>
+#include <iostream>
 
 #include "consoleoutput.hpp"
 
@@ -104,6 +105,16 @@ public:
     uint32 recv_size = 1024;
     uint32 send_size = 1024;
 };
+
+//定义输出屏幕函数接口
+inline void log_screen() {}
+
+template<typename First, typename ...Rest>
+void log_screen(First&& first, Rest && ...rest)
+{
+    std::cout << std::forward<First>(first);
+    log_screen(std::forward<Rest>(rest)...);
+}
 
 //定义操作宏
 #define PSS_LOGGER_DEBUG(...) SPDLOG_LOGGER_DEBUG(spdlog::default_logger(), __VA_ARGS__)
