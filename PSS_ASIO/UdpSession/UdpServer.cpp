@@ -179,9 +179,9 @@ void CUdpServer::do_write_immediately(uint32 connect_id, const char* data, size_
         });
 }
 
-uint32 CUdpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint_, size_t length, uint32 max_buffer_length)
+uint32 CUdpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t length, uint32 max_buffer_length)
 {
-    auto f = udp_endpoint_2_id_list_.find(recv_endpoint_);
+    auto f = udp_endpoint_2_id_list_.find(recv_endpoint);
     if (f != udp_endpoint_2_id_list_.end())
     {
         //找到了，返回ID
@@ -193,19 +193,19 @@ uint32 CUdpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint_, size_t 
         auto connect_id = App_ConnectCounter::instance()->CreateCounter();
 
         auto session_info = make_shared<CUdp_Session_Info>();
-        session_info->send_endpoint = recv_endpoint_;
+        session_info->send_endpoint = recv_endpoint;
         session_info->recv_data_size_ += length;
         session_info->udp_state = EM_UDP_VALID::UDP_VALUD;
         session_info->session_send_buffer_.Init(max_buffer_length);
 
-        udp_endpoint_2_id_list_[recv_endpoint_] = connect_id;
+        udp_endpoint_2_id_list_[recv_endpoint] = connect_id;
         udp_id_2_endpoint_list_[connect_id] = session_info;
 
         //调用packet parse 链接建立
         _ClientIPInfo remote_ip;
         _ClientIPInfo local_ip;
-        remote_ip.m_strClientIP = recv_endpoint_.address().to_string();
-        remote_ip.m_u2Port = recv_endpoint_.port();
+        remote_ip.m_strClientIP = recv_endpoint.address().to_string();
+        remote_ip.m_u2Port = recv_endpoint.port();
         local_ip.m_strClientIP = socket_.local_endpoint().address().to_string();
         local_ip.m_u2Port = socket_.local_endpoint().port();
         packet_parse_interface_->packet_connect_ptr_(connect_id, remote_ip, local_ip, io_type_);
