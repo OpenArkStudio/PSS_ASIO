@@ -40,7 +40,7 @@ jobs:
       run: sudo apt-get install -y scons libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev python3-numpy python3-dev libtiff5-dev unzip   
 
     - name: Build SonarCloud Scan
-      working-directory: ${{github.workspace}}/Build/Linux
+      working-directory: ${{github.workspace}}
       shell: bash
       run: |
         build-wrapper-linux-x86-64 --out-dir bw-output cmake --build Build/Linux/
