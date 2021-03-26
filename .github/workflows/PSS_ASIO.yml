@@ -25,19 +25,26 @@ jobs:
       working-directory: ${{github.workspace}}/Build/Linux
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
-    - name: Build
+    - name: dowwload sonar cloud client
+      working-directory: ${{github.workspace}}
+      shell: bash
+      run: |
+        wget -nv https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.0.2311-linux.zip
+        unzip -q sonar-scanner-cli-4.6.0.2311-linux.zip
+        echo "${PWD}/sonar-scanner-4.6.0.2311-linux/bin/" >> $GITHUB_PATH
+        wget -nv https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
+        unzip -q build-wrapper-linux-x86.zip
+        echo "${PWD}/build-wrapper-linux-x86" >> $GITHUB_PATH
+    - name: Install dependencies
+      shell: bash
+      run: sudo apt-get install -y scons libfftw3-dev libopenmpi-dev openmpi-bin libhdf5-dev python3-numpy python3-dev libtiff5-dev unzip   
+
+    - name: Build SonarCloud Scan
       working-directory: ${{github.workspace}}/Build/Linux
       shell: bash
-      run: cmake --build . --config $BUILD_TYPE
-
-    #- name: check path and run program
-    #  working-directory: ${{github.workspace}}/Build/Linux  
-    #  shell: bash
-    #  run: |
-    #    ls -l
-    #    nohup ./pss_asio > pssout.file 2>&1 &
-    #    sleep 10
-    #    killall pss_asio
+      run: |
+        build-wrapper-linux-x86-64 --out-dir bw-output cmake --build Build/Linux/
+        sonar-scanner -X -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN
 
     - name: install google test
       working-directory: ${{github.workspace}}/tests
