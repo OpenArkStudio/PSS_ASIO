@@ -44,7 +44,8 @@ jobs:
       shell: bash
       run: |
         build-wrapper-linux-x86-64 --out-dir bw-output cmake --build Build/Linux/
-        sonar-scanner -X -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN
+        cd ${{github.workspace}}/PSS_ASIO
+        sonar-scanner -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN
 
     - name: install google test
       working-directory: ${{github.workspace}}/tests
