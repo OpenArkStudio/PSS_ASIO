@@ -80,7 +80,13 @@ if(WIN32)
 endif()
 
 if(UNIX)
-	message("OS is windows...")
+	message("OS is Linux...")
+	if(gcov_check STREQUAL "1")
+		message("gcov_check is set...")
+		set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -fprofile-arcs")
+		set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -ftest-coverage")
+	endif()
+	
 	if(CMAKE_BUILD_TYPE MATCHES "debug")
 		add_definitions(
 		-DASIO_DISABLE_NOEXCEPT)
@@ -89,7 +95,11 @@ if(UNIX)
 		-DASIO_DISABLE_NOEXCEPT)		
 	endif()
 
-	target_link_libraries(pss_asio -lpthread -ldl)
+	if(gcov_check STREQUAL "1")
+		target_link_libraries(pss_asio -lpthread -ldl -lgcov)
+	else()
+		target_link_libraries(pss_asio -lpthread -ldl)
+	endif()
 endif()
 
 set_target_properties(pss_asio PROPERTIES 
