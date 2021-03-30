@@ -1,6 +1,6 @@
 ﻿{
   "work thread": {
-	"linux daemonize": 0,
+	"linux daemonize": 1,
     "work thread count": 3,
     "work time check": 60,
     "server to server time check": 30,
@@ -41,6 +41,13 @@
   ],
 
   "udp server": [
+	{
+      "udp ip": "127.0.0.1",
+      "udp port": 10005,
+      "packet parse id": 1,
+      "recv buff size": 102400,
+      "send buff size": 102400  
+	}
   ],
 
   "console output": {

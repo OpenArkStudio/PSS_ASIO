@@ -8,7 +8,6 @@
 #include "tms.hpp"
 #include "singleton.h"
 
-#include "tms.hpp"
 #include "SendBuffer.h"
 #include "SessionBuffer.hpp"
 

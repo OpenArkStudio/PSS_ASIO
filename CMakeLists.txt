@@ -44,4 +44,5 @@ endif()
 add_subdirectory(PSS_ASIO)
 add_subdirectory(Module_Logic/Test_Logic)
 add_subdirectory(PacketParse_Inferface)
+add_subdirectory(PSS_ASIO_CLIENT)
 #TODO:add other dirs
