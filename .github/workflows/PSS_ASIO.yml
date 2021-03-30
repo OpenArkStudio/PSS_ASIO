@@ -44,6 +44,16 @@ jobs:
       shell: bash
       run: |
         build-wrapper-linux-x86-64 --out-dir bw-output cmake --build Build/Linux/
+        cd ${{github.workspace}}/Build/Linux/
+        ./pss_asio
+        sleep 5
+        killall pss_asio
+        echo "close pss_asio"
+
+    - name: SonarCloud Scan make report
+      working-directory: ${{github.workspace}}
+      shell: bash
+      run: |      
         cd ${{github.workspace}}/PSS_ASIO
         sonar-scanner -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN
       env:
