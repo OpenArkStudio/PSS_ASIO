@@ -52,7 +52,12 @@ jobs:
         killall pss_asio
         sleep 1
         echo "close pss_asio"
-        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/PSS_ASIO.cpp.gcda ../../PSS_ASIO/PSS_ASIO.cpp > /dev/null
+        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/*.cpp.gcda ../../PSS_ASIO/*.cpp > /dev/null
+        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/TTySession/*.cpp.gcda ../../PSS_ASIO/TTySession/*.cpp > /dev/null
+        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/TcpSession/*.cpp.gcda ../../PSS_ASIO/TcpSession/*.cpp > /dev/null
+        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/UdpSession/*.cpp.gcda ../../PSS_ASIO/UdpSession/*.cpp > /dev/null
+        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/Common/*.cpp.gcda ../../PSS_ASIO/Common/*.cpp > /dev/null
+        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/Message/*.cpp.gcda ../../PSS_ASIO/Message/*.cpp > /dev/null
 
     - name: SonarCloud Scan make report
       working-directory: ${{github.workspace}}
