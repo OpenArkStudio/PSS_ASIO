@@ -46,9 +46,13 @@ jobs:
         build-wrapper-linux-x86-64 --out-dir bw-output cmake --build Build/Linux/
         cd ${{github.workspace}}/Build/Linux/
         ./pss_asio
-        sleep 5
+        sleep 3
+        ./pss_asio_test_client
+        sleep 2
         killall pss_asio
+        sleep 1
         echo "close pss_asio"
+        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/PSS_ASIO.cpp.gcda ../../PSS_ASIO/PSS_ASIO.cpp > /dev/null
 
     - name: SonarCloud Scan make report
       working-directory: ${{github.workspace}}
