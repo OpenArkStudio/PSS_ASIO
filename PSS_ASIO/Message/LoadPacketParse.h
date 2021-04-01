@@ -17,6 +17,8 @@ using packet_set_output = void(*)(shared_ptr<spdlog::logger>);
 class _Packet_Parse_Info
 {
 public:
+    _Packet_Parse_Info() = default;
+
     uint32              m_u4PacketParseID     = 0;       //当前packetParseID
     PSS_Time_Point      m_tvCreateTime        = CTimeStamp::Get_Time_Stamp();          //模块创建时间
     Pss_Library_Handler m_hModule             = nullptr;
@@ -27,14 +29,14 @@ public:
     packet_load packet_load_ptr_                           = nullptr;
     packet_close packet_close_ptr_                         = nullptr;
     packet_set_output packet_set_output_ptr_               = nullptr;
-
-    _Packet_Parse_Info() = default;
 };
 
 class CLoadPacketParse
 {
 public:
     CLoadPacketParse() = default;
+
+    void dispaly_error_message(const std::string func_name, const std::string packet_parse_file, std::shared_ptr<_Packet_Parse_Info> pPacketParseInfo);
 
     bool LoadPacketInfo(uint32 u4PacketParseID, const std::string& packet_parse_path, const std::string& packet_parse_file);
 
