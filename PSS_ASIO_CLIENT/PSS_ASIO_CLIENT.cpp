@@ -68,7 +68,7 @@ void tcp_test_connect_asynchronous_server(std::string strIP, unsigned short port
 }
 
 //同步客户端(tcp)
-void tcp_test_connect_synchronize_server(std::string strIP, unsigned short port, asio::io_context& io_context)
+void tcp_test_connect_synchronize_server(std::string strIP, unsigned short port, uint16 command_id, uint16 packt_count, asio::io_context& io_context)
 {
     tcp::socket s(io_context);
     tcp::resolver resolver(io_context);
@@ -87,14 +87,14 @@ void tcp_test_connect_synchronize_server(std::string strIP, unsigned short port,
     std::cout << "[tcp_test_connect_synchronize_server]connect OK" << std::endl;
 
     //发送数据
-    char send_buffer[2400] = { '\0' };
+    char* send_buffer = new char [240 * packt_count];
     int nPos = 0;
 
     unsigned short client_version = 1;
-    unsigned short client_command_id = 0x2101;
+    unsigned short client_command_id = command_id;
     unsigned int client_packet_length = 200;
 
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < packt_count; i++)
     {
         std::memcpy(&send_buffer[nPos], &client_version, sizeof(short));
         nPos += sizeof(short);
@@ -106,22 +106,25 @@ void tcp_test_connect_synchronize_server(std::string strIP, unsigned short port,
         nPos += 200;
     }
 
-    asio::write(s, asio::buffer(send_buffer, 2400));
+    asio::write(s, asio::buffer(send_buffer, 240 * packt_count));
 
     //接收数据
-    char recv_buffer[2400] = { '\0' };
+    char* recv_buffer = new char[240 * packt_count];
     asio::error_code error;
 
     size_t recv_all_size = 0;
     while (true)
     {
-        size_t reply_length = asio::read(s, asio::buffer(recv_buffer, 2400));
+        size_t reply_length = asio::read(s, asio::buffer(recv_buffer, 240 * packt_count));
         recv_all_size += reply_length;
-        if (recv_all_size == 2400)
+        if (recv_all_size == 240 * packt_count)
         {
             break;
         }
     }
+
+    delete[] send_buffer;
+    delete[] recv_buffer;
 
     s.close();
 }
@@ -190,7 +193,8 @@ int main()
         });
 
 
-    tcp_test_connect_synchronize_server("127.0.0.1", 10002, io_context);
+    tcp_test_connect_synchronize_server("127.0.0.1", 10002, 0x2101, 10, io_context);
+    tcp_test_connect_synchronize_server("127.0.0.1", 10002, 0x2102, 1, io_context);
 
     udp_test_connect_synchronize_server("127.0.0.1", 10005, io_context);
 

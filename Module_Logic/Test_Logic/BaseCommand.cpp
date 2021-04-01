@@ -100,6 +100,13 @@ void CBaseCommand::logic_test_sync(const CMessage_Source& source, std::shared_pt
 {
     //处理发送数据(同步)
     send_packet->buffer_.append(recv_packet->buffer_.c_str(), recv_packet->buffer_.size());
+
+#ifdef GCOV_TEST
+    if (source.type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_UDP)
+    {
+        session_service_->close_io_session(source.connect_id_);
+    }
+#endif
 }
 
 void CBaseCommand::logic_test_asyn(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
