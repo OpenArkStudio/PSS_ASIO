@@ -38,6 +38,11 @@ std::shared_ptr<CBaseCommand> base_command = nullptr;
 //插件加载
 int load_module(IFrame_Object* frame_object, string module_param)
 {
+#ifdef GCOV_TEST
+    //如果是功能代码覆盖率检查，则开启这个开关，让插件执行所有框架接口调用
+    PSS_LOGGER_DEBUG("[load_module]gcov_check is set.");
+#endif
+
     //初始化消息处理类
     base_command = std::make_shared<CBaseCommand>();
 

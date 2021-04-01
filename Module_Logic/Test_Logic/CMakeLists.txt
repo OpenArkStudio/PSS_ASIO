@@ -44,6 +44,11 @@ if(WIN32)
 	endif()
 endif()
 
+if(gcov_check STREQUAL "1")
+	message("[Test_Logic]set GCOV_TEST...")
+	add_definitions(-DGCOV_TEST)
+endif()
+
 if(UNIX)
 	target_link_libraries(${PROJECT_NAME} -lpthread)
 endif()

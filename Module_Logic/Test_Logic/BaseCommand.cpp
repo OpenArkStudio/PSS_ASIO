@@ -4,14 +4,13 @@ void CBaseCommand::Init(ISessionService* session_service)
 {
     session_service_ = session_service;
 
-    if (TEST_FRAME_WORK_FLAG == 1)
-    {
+#ifdef GCOV_TEST
         session_service_->create_frame_work_thread(plugin_test_logic_thread_id);
 
         auto send_message = std::make_shared<CMessage_Packet>();
         CFrame_Message_Delay delay_timer;
 
-        delay_timer.delay_seconds_ = std::chrono::seconds(5);
+        delay_timer.delay_seconds_ = std::chrono::seconds(1);
         delay_timer.timer_id_ = 1001;  //这个ID必须是全局唯一的
 
         send_message->command_id_ = COMMAND_TEST_FRAME;
@@ -21,7 +20,7 @@ void CBaseCommand::Init(ISessionService* session_service)
         session_service_->run_work_thread_logic(plugin_test_logic_thread_id, delay_timer, [this](){
             PSS_LOGGER_DEBUG("[run_work_thread_logic]arrived.");
             });
-    }
+#endif
 
     PSS_LOGGER_DEBUG("[load_module]({0})io thread count.", session_service_->get_io_work_thread_count());
 }
@@ -89,16 +88,6 @@ void CBaseCommand::logic_connect(const CMessage_Source& source, std::shared_ptr<
     {
         PSS_LOGGER_DEBUG("[logic_connect]connand={}, CONNECT_IO_SERVER_UDP", source.connect_id_);
         PSS_LOGGER_DEBUG("[logic_connect]connand={}, server_id={}", source.connect_id_, source.connect_mark_id_);
-
-        /*测试发送UDP消息*/
-        if (TEST_FRAME_WORK_FLAG == 1)
-        {
-            auto send_asyn_packet = std::make_shared<CMessage_Packet>();
-            send_asyn_packet->command_id_ = 0x1002;
-            send_asyn_packet->buffer_ = "111111";
-
-            session_service_->send_io_message(source.connect_id_, send_asyn_packet);
-        }
     }
 }
 
@@ -127,8 +116,7 @@ void CBaseCommand::logic_test_frame(const CMessage_Source& source, std::shared_p
     //处理插件处理任务
     PSS_LOGGER_DEBUG("[logic_test_frame] tag_name={0},data={1}.", source.remote_ip_.m_strClientIP, recv_packet->buffer_);
 
-    if (TEST_FRAME_WORK_FLAG == 1)
-    {
+#ifdef GCOV_TEST
         auto send_message = std::make_shared<CMessage_Packet>();
         CFrame_Message_Delay delay_timer;
 
@@ -140,12 +128,9 @@ void CBaseCommand::logic_test_frame(const CMessage_Source& source, std::shared_p
         session_service_->send_frame_message(plugin_test_logic_thread_id, "time loop", send_message, delay_timer);
 
         //测试定时器(删除)
-        if (TEST_FRAME_WORK_FLAG == 1)
-        {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-            session_service_->delete_frame_message_timer(1001);
-        }
-    }
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        session_service_->delete_frame_message_timer(1001);
+#endif
 }
 
 void CBaseCommand::logic_test_connect_error(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)

@@ -48,7 +48,7 @@ jobs:
         ./pss_asio
         sleep 3
         ./pss_asio_test_client
-        sleep 2
+        sleep 5
         killall pss_asio
         sleep 1
         echo "close pss_asio"
