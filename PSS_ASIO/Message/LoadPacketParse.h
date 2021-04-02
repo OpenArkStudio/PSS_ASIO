@@ -36,7 +36,7 @@ class CLoadPacketParse
 public:
     CLoadPacketParse() = default;
 
-    void dispaly_error_message(const std::string func_name, const std::string packet_parse_file, std::shared_ptr<_Packet_Parse_Info> pPacketParseInfo);
+    void dispaly_error_message(const std::string& func_name, const std::string& packet_parse_file, std::shared_ptr<_Packet_Parse_Info> pPacketParseInfo) const;
 
     bool LoadPacketInfo(uint32 u4PacketParseID, const std::string& packet_parse_path, const std::string& packet_parse_file);
 
