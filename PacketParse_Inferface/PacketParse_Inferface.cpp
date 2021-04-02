@@ -32,7 +32,7 @@ DECLDIR void packet_close();
 //是否需要格式化数据, true为是, false为不是
 bool is_need_send_format()
 {
-    return true;
+    return false;
 }
 
 //处理接收数据解析
