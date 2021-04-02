@@ -192,6 +192,9 @@ void CServerService::close_service()
     tcp_service_list_.clear();
 
     App_WorkThreadLogic::instance()->close();
+
+    App_PacketParseLoader::instance()->Close();
+
     PSS_LOGGER_DEBUG("[CServerService::close_service]end.");
 }
 
