@@ -7,7 +7,8 @@
 #include "SessionBuffer.hpp"
 
 using packet_from_recv_buffer = bool(*)(uint32 connectid, CSessionBuffer* buffer, vector<std::shared_ptr<CMessage_Packet>>& message_list, EM_CONNECT_IO_TYPE emIOType);
-using parse_format_send_buffer = bool(*)(uint32 connectid, std::shared_ptr<CMessage_Packet> message, EM_CONNECT_IO_TYPE emIOType);
+using parse_format_send_buffer = bool(*)(uint32 connectid, std::shared_ptr<CMessage_Packet> message, std::shared_ptr<CMessage_Packet> format_message, EM_CONNECT_IO_TYPE emIOType);
+using is_need_send_format = bool(*)();
 using packet_connect = bool(*)(uint32 connectid, const _ClientIPInfo& objClientIPInfo, const _ClientIPInfo& objLocalIPInfo, EM_CONNECT_IO_TYPE emIOType);
 using packet_disconnect = void(*)(uint32 connectid, EM_CONNECT_IO_TYPE emIOType);
 using packet_load = void(*)();
@@ -29,6 +30,7 @@ public:
     packet_load packet_load_ptr_                           = nullptr;
     packet_close packet_close_ptr_                         = nullptr;
     packet_set_output packet_set_output_ptr_               = nullptr;
+    is_need_send_format is_need_send_format_ptr_           = nullptr;
 };
 
 class CLoadPacketParse

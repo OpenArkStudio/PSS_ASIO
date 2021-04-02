@@ -40,6 +40,13 @@ bool CLoadPacketParse::LoadPacketInfo(uint32 u4PacketParseID, const std::string&
         return false;
     }
 
+    pPacketParseInfo->is_need_send_format_ptr_ = (is_need_send_format)CLoadLibrary::PSS_dlsym(pPacketParseInfo->m_hModule, "is_need_send_format");
+    if (nullptr == pPacketParseInfo->m_hModule || !pPacketParseInfo->is_need_send_format_ptr_)
+    {
+        dispaly_error_message("is_need_send_format", packet_parse_file, pPacketParseInfo);
+        return false;
+    }
+
     pPacketParseInfo->parse_format_send_buffer_ptr_ = (parse_format_send_buffer)CLoadLibrary::PSS_dlsym(pPacketParseInfo->m_hModule, "parse_packet_format_send_buffer");
     if (nullptr == pPacketParseInfo->m_hModule || !pPacketParseInfo->parse_format_send_buffer_ptr_)
     {

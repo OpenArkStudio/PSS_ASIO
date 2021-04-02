@@ -352,10 +352,20 @@ void CWorkThreadLogic::do_work_thread_module_logic(shared_ptr<ISession> session,
         if (curr_send_packet->buffer_.size() > 0)
         {
             //在这里添加对curr_send_packet的格式化
-            module_logic->get_session_interface(connect_id)->format_send_packet(source.connect_id_, curr_send_packet);
-
-            //将格式化后的数据填充到send_packet
-            send_packet.buffer_.append(curr_send_packet->buffer_.c_str(), curr_send_packet->buffer_.size());
+            if (module_logic->get_session_interface(connect_id)->is_need_send_format() == true)
+            {
+                auto curr_format_send_packet = std::make_shared<CMessage_Packet>();
+                if(true == module_logic->get_session_interface(connect_id)->format_send_packet(source.connect_id_, curr_send_packet, curr_format_send_packet))
+                {
+                    //将格式化后的数据填充到send_packet
+                    send_packet.buffer_.append(curr_format_send_packet->buffer_.c_str(), curr_format_send_packet->buffer_.size());
+                }
+            }
+            else
+            {
+                //将格式化后的数据填充到send_packet
+                send_packet.buffer_.append(curr_send_packet->buffer_.c_str(), curr_send_packet->buffer_.size());
+            }
         }
     }
 
@@ -373,11 +383,25 @@ void CWorkThreadLogic::do_io_message_delivery(uint32 connect_id, std::shared_ptr
     {
         //这里调用格式化发送过程
         auto session = module_logic->get_session_interface(connect_id);
-        session->format_send_packet(connect_id, send_packet);
 
-        session->do_write_immediately(connect_id,
-            send_packet->buffer_.c_str(),
-            send_packet->buffer_.size());
+        if (session->is_need_send_format() == true)
+        {
+            //需要重新格式化数据
+            auto format_packet = std::make_shared<CMessage_Packet>();
+            if (true == session->format_send_packet(connect_id, send_packet, format_packet))
+            {
+                session->do_write_immediately(connect_id,
+                    format_packet->buffer_.c_str(),
+                    format_packet->buffer_.size());
+            }
+        }
+        else
+        {
+            //不需要格式化数据，直接发送
+            session->do_write_immediately(connect_id,
+                send_packet->buffer_.c_str(),
+                send_packet->buffer_.size());
+        }
     }
     else
     {

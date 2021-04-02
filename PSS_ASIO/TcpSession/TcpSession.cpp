@@ -177,8 +177,13 @@ std::chrono::steady_clock::time_point& CTcpSession::get_recv_time()
     return recv_data_time_;
 }
 
-bool CTcpSession::format_send_packet(uint32 connect_id, std::shared_ptr<CMessage_Packet> message)
+bool CTcpSession::format_send_packet(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, std::shared_ptr<CMessage_Packet> format_message)
 {
-    return packet_parse_interface_->parse_format_send_buffer_ptr_(connect_id, message, get_io_type());
+    return packet_parse_interface_->parse_format_send_buffer_ptr_(connect_id, message, format_message, get_io_type());
+}
+
+bool CTcpSession::is_need_send_format()
+{
+    return packet_parse_interface_->is_need_send_format_ptr_();
 }
 

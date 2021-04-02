@@ -39,7 +39,9 @@ public:
 
     std::chrono::steady_clock::time_point& get_recv_time() final;
 
-    bool format_send_packet(uint32 connect_id, std::shared_ptr<CMessage_Packet> message) final;
+    bool format_send_packet(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, std::shared_ptr<CMessage_Packet> format_message) final;
+
+    bool is_need_send_format() final;
 
     void clear_write_buffer();
 

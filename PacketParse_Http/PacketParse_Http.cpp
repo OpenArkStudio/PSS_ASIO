@@ -25,7 +25,8 @@
 using namespace std;
 
 DECLDIR bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, vector<std::shared_ptr<CMessage_Packet>>& message_list, EM_CONNECT_IO_TYPE emIOType);
-DECLDIR bool parse_packet_format_send_buffer(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, EM_CONNECT_IO_TYPE emIOType);
+DECLDIR bool parse_packet_format_send_buffer(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, std::shared_ptr<CMessage_Packet> format_message, EM_CONNECT_IO_TYPE emIOType);
+DECLDIR bool is_need_send_format();
 DECLDIR bool connect(uint32 connect_id, const _ClientIPInfo& remote_ip, const _ClientIPInfo& local_ip, EM_CONNECT_IO_TYPE emIOType);
 DECLDIR void disConnect(uint32 connect_id, EM_CONNECT_IO_TYPE emIOType);
 DECLDIR void set_output(shared_ptr<spdlog::logger> logger);
@@ -52,6 +53,12 @@ map_http_parse map_http_parse_;
 const uint16 http_post_command = 0x1001;
 const uint16 http_websocket_shark_hand = 0x1002;
 const uint16 websocket_data = 0x1003;
+
+//是否需要格式化数据, true为是, false为不是
+bool is_need_send_format()
+{
+    return true;
+}
 
 //处理websocket数据帧
 bool dispose_websocket_data_message(CSessionBuffer* buffer, CProtocalInfo& protocal_info, vector<std::shared_ptr<CMessage_Packet>>& message_list)
@@ -165,12 +172,14 @@ bool dispose_http_message(std::string http_request_text, CProtocalInfo& protocal
 //合并websocket发送帧
 bool do_websocket_send_frame(std::string send_data, std::string& send_frame)
 {
+    //PSS_LOGGER_DEBUG("[do_websocket_send_frame]send_data={0}", send_data);
     WebSocketFormat::wsFrameBuild(send_data.c_str(),
         send_data.size(),
         send_frame,
         WebSocketFormat::WebSocketFrameType::TEXT_FRAME,
         true,
         false);
+    //PSS_LOGGER_DEBUG("[do_websocket_send_frame]send_frame={0}, length={1}", send_frame, send_frame.size());
 
     return true;
 }
@@ -201,21 +210,22 @@ bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, ve
     return true;
 }
 
-bool parse_packet_format_send_buffer(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, EM_CONNECT_IO_TYPE emIOType)
+bool parse_packet_format_send_buffer(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, std::shared_ptr<CMessage_Packet> format_message, EM_CONNECT_IO_TYPE emIOType)
 {
     //组装http发送数据包
     auto f = map_http_parse_.find(connect_id);
     if (f != map_http_parse_.end())
     {
+        format_message->command_id_ = message->command_id_;
         if (f->second.protocol_ == ENUM_Protocol::PROTOCAL_HTTP_POST)
         {
             //格式化http消息
-            message->buffer_ = f->second.http_format_->get_response_text(message->buffer_);
+            format_message->buffer_ = f->second.http_format_->get_response_text(message->buffer_);
         }
         else if (f->second.protocol_ == ENUM_Protocol::PROTOCAL_WEBSOCKET_SHARK_HAND)
         {
             //格式化协议升级信息
-            message->buffer_ = f->second.http_format_->get_response_websocket_text(message->buffer_);
+            format_message->buffer_ = f->second.http_format_->get_response_websocket_text(message->buffer_);
             f->second.protocol_ = ENUM_Protocol::PROTOCAL_WEBSOCKET_DATA;
         }
         else
@@ -223,11 +233,15 @@ bool parse_packet_format_send_buffer(uint32 connect_id, std::shared_ptr<CMessage
             //格式化websocket帧数据
             std::string frame_data;
             do_websocket_send_frame(message->buffer_, frame_data);
-            message->buffer_ = frame_data;
+            format_message->buffer_ = frame_data;
         }
-    }
 
-    return true;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 bool connect(uint32 u4ConnectID, const _ClientIPInfo& remote_ip, const _ClientIPInfo& local_ip, EM_CONNECT_IO_TYPE emIOType)

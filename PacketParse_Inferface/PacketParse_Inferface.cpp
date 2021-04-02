@@ -21,12 +21,19 @@
 using namespace std;
 
 DECLDIR bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, vector<std::shared_ptr<CMessage_Packet>>& message_list, EM_CONNECT_IO_TYPE emIOType);
-DECLDIR bool parse_packet_format_send_buffer(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, EM_CONNECT_IO_TYPE emIOType);
+DECLDIR bool parse_packet_format_send_buffer(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, std::shared_ptr<CMessage_Packet> send_message, EM_CONNECT_IO_TYPE emIOType);
+DECLDIR bool is_need_send_format();
 DECLDIR bool connect(uint32 connect_id, const _ClientIPInfo& remote_ip, const _ClientIPInfo& local_ip, EM_CONNECT_IO_TYPE emIOType);
 DECLDIR void disConnect(uint32 connect_id, EM_CONNECT_IO_TYPE emIOType);
 DECLDIR void set_output(shared_ptr<spdlog::logger> logger);
 DECLDIR void packet_load();
 DECLDIR void packet_close();
+
+//是否需要格式化数据, true为是, false为不是
+bool is_need_send_format()
+{
+    return true;
+}
 
 //处理接收数据解析
 bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, vector<std::shared_ptr<CMessage_Packet>>& message_list, EM_CONNECT_IO_TYPE emIOType)
@@ -114,12 +121,15 @@ bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, ve
 }
 
 //处理发送数据格式化
-bool parse_packet_format_send_buffer(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, EM_CONNECT_IO_TYPE emIOType)
+bool parse_packet_format_send_buffer(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, std::shared_ptr<CMessage_Packet> send_message, EM_CONNECT_IO_TYPE emIOType)
 {
     PSS_UNUSED_ARG(connect_id);
     PSS_UNUSED_ARG(message);
+    PSS_UNUSED_ARG(send_message);
     PSS_UNUSED_ARG(emIOType);
-    return true;
+
+    //如果没有格式化，直接返回false，否则返回true
+    return false;
 }
 
 bool connect(uint32 u4ConnectID, const _ClientIPInfo& remote_ip, const _ClientIPInfo& local_ip, EM_CONNECT_IO_TYPE emIOType)
