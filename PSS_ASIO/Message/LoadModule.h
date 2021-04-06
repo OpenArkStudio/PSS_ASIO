@@ -34,6 +34,8 @@ public:
     get_module_state_function_ptr get_module_state_ = nullptr;
     set_output_function_ptr set_output_             = nullptr;
 
+    vector<uint16> command_id_list_;
+
     _ModuleInfo() = default;
 };
 

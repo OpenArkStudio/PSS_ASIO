@@ -80,7 +80,32 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
         load_module_.load_plugin_module(logic_library.logic_path_, 
             logic_library.logic_file_name_, 
             logic_library.logic_param_);
+
+#ifdef GCOV_TEST
+        //测试输出和关闭
+        PSS_LOGGER_DEBUG("[load_module_] module is exist = {0}", load_module_.get_module_exist(logic_library.logic_file_name_.c_str()));
+        PSS_LOGGER_DEBUG("[load_module_] name = {0}", load_module_.get_module_file_path(logic_library.logic_file_name_.c_str()));
+        PSS_LOGGER_DEBUG("[load_module_] name = {0}", load_module_.get_module_param(logic_library.logic_file_name_.c_str()));
+
+        //测试卸载模块
+        load_module_.unload_plugin_module(logic_library.logic_file_name_, true);
+
+        //测试重新加载模块
+        load_module_.load_plugin_module(logic_library.logic_path_,
+            logic_library.logic_file_name_,
+            logic_library.logic_param_);
+#endif
     }
+
+#ifdef GCOV_TEST
+    PSS_LOGGER_DEBUG("[load_module_] count = {0}", load_module_.get_module_count());
+    vector<std::string> modeinfo_list;
+    load_module_.get_all_module_name(modeinfo_list);
+    if (modeinfo_list.size() != (uint32)load_module_.get_module_count())
+    {
+        PSS_LOGGER_DEBUG("[load_module_] count is fail", load_module_.get_module_count());
+    }
+#endif
 
     //执行线程对应创建
     for (int i = 0; i < thread_count; i++)

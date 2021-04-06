@@ -96,6 +96,8 @@ if(UNIX)
 	endif()
 
 	if(gcov_check STREQUAL "1")
+		message("[PSS_ASIO]set GCOV_TEST...")
+		add_definitions(-DGCOV_TEST)
 		target_link_libraries(pss_asio -lpthread -ldl -lgcov)
 	else()
 		target_link_libraries(pss_asio -lpthread -ldl)

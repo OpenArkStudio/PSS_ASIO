@@ -67,6 +67,10 @@ bool CLoadModule::load_plugin_module(const string& module_file_path, const strin
         command_to_module_function_[command_id] = module_info->do_message_;
     }
 
+    //记录当前插件加载的命令信息
+    module_info->command_id_list_.assign(module_frame_object.module_command_list_.begin(), 
+        module_frame_object.module_command_list_.end());
+
     //将注册成功的模块，加入到Hash数组中
     module_list_[module_file_name] = module_info;
     module_name_list_.emplace_back(module_file_name);
@@ -88,6 +92,14 @@ bool CLoadModule::unload_plugin_module(const string& module_file_name, bool is_d
     {
         //清除和此关联的所有订阅
         auto module_info = f->second;
+
+        //关闭与list的关联
+        for (auto command_id : module_info->command_id_list_)
+        {
+            command_to_module_function_.erase(command_id);
+        }
+
+        //调用插件关闭消息
         module_info->unload_module_();
 
         //清除模块相关索引和数据
