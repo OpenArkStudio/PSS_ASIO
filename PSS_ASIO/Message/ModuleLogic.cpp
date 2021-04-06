@@ -105,6 +105,13 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
     {
         PSS_LOGGER_DEBUG("[load_module_] count is fail", load_module_.get_module_count());
     }
+
+    //查询指定的消息
+    auto module_info = load_module_.find_module_info("libTest_Logic.so");
+    if (nullptr == module_info)
+    {
+        PSS_LOGGER_DEBUG("[load_module_]no find libTest_Logic.so");
+    }
 #endif
 
     //执行线程对应创建
