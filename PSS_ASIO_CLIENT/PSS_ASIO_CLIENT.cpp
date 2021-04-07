@@ -68,13 +68,30 @@ void tcp_test_connect_asynchronous_server(std::string strIP, unsigned short port
 }
 
 //同步客户端(tcp)
-void tcp_test_connect_synchronize_server(std::string strIP, unsigned short port, uint16 command_id, uint16 packt_count, asio::io_context& io_context)
+void tcp_test_connect_synchronize_server(std::string strIP, unsigned short port, unsigned short remote_port, uint16 command_id, uint16 packt_count, asio::io_context& io_context)
 {
     tcp::socket s(io_context);
     tcp::resolver resolver(io_context);
     tcp::endpoint end_point(asio::ip::address::from_string(strIP.c_str()), port);
-    //asio::connect(s, end_point);
+
     asio::error_code connect_error;
+    asio::ip::tcp::endpoint localEndpoint(asio::ip::address::from_string("127.0.0.1"), remote_port);
+    
+    s.open(asio::ip::tcp::v4(), connect_error);
+    if (connect_error)
+    {
+        std::cout << "[tcp_test_connect_synchronize_server]open error(" << connect_error.message() << std::endl;
+        return;
+    }
+
+    s.bind(localEndpoint, connect_error);
+    if (connect_error)
+    {
+        //链接失败
+        std::cout << "[tcp_test_connect_synchronize_server]bind error(" << connect_error.message() << std::endl;
+        return;
+    }
+
     s.connect(end_point, connect_error);
 
     if (connect_error)
@@ -193,8 +210,8 @@ int main()
         });
 
 
-    tcp_test_connect_synchronize_server("127.0.0.1", 10002, 0x2101, 10, io_context);
-    tcp_test_connect_synchronize_server("127.0.0.1", 10002, 0x2102, 1, io_context);
+    tcp_test_connect_synchronize_server("127.0.0.1", 10002, 10010, 0x2101, 10, io_context);
+    tcp_test_connect_synchronize_server("127.0.0.1", 10002, 10011, 0x2102, 1, io_context);
 
     udp_test_connect_synchronize_server("127.0.0.1", 10005, io_context);
 
