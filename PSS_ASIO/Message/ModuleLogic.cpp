@@ -29,13 +29,10 @@ shared_ptr<ISession> CModuleLogic::get_session_interface(uint32 connect_id)
         remote_ip.m_strClientIP,
         remote_ip.m_u2Port);
 
-    uint32 connect_timeout = 30; 
-    vector<CSessionIO_Cancel> session_list;
-    sessions_interface_.check_session_io_timeout(connect_timeout, session_list);
-    PSS_LOGGER_DEBUG("[CModuleLogic::get_session_interface] CSessionIO_Cancel={0}",
-        session_list.size());
+    uint32 connect_timeout = 30;
+    check_session_io_timeout(connect_timeout);
+    get_work_thread_timeout();
 #endif
-
     return ret;
 }
 

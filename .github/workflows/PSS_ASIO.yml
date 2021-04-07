@@ -45,7 +45,7 @@ jobs:
       run: |
         build-wrapper-linux-x86-64 --out-dir bw-output cmake --build Build/Linux/
         cd ${{github.workspace}}/Build/Linux/
-        ./pss_asio
+        ./pss_asio server_config_test_gcov.json
         sleep 3
         ./pss_asio_test_client
         sleep 5
