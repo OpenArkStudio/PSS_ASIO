@@ -17,6 +17,21 @@ shared_ptr<ISession> CModuleLogic::get_session_interface(uint32 connect_id)
     auto ret = sessions_interface_.get_session_interface(connect_id);
     work_thread_state_ = ENUM_WORK_THREAD_STATE::WORK_THREAD_END;
     work_thread_run_time_ = std::chrono::steady_clock::now();
+
+#ifdef GCOV_TEST
+    auto local_ip = sessions_interface_.get_session_local_ip(connect_id);
+    PSS_LOGGER_DEBUG("[CModuleLogic::get_session_interface]local IP={0}:{1}",
+        local_ip.m_strClientIP,
+        local_ip.m_u2Port);
+
+    auto remote_ip = sessions_interface_.get_session_remote_ip(connect_id);
+    PSS_LOGGER_DEBUG("[CModuleLogic::get_session_interface]remote IP={0}:{1}",
+        remote_ip.m_strClientIP,
+        remote_ip.m_u2Port);
+
+    sessions_interface_.check_session_io_timeout();
+#endif
+
     return ret;
 }
 
@@ -298,7 +313,7 @@ void CWorkThreadLogic::delete_thread_session(uint32 connect_id, const _ClientIPI
     //清除点对点转发消息映射
     io_to_io_.unregedit_session_id(from_io, session->get_io_type());
 
-    //向插件告知链接建立消息
+    //向插件告知链接断开消息
     App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, module_logic]() {
         CMessage_Source source;
         auto recv_packet = std::make_shared<CMessage_Packet>();
@@ -345,9 +360,9 @@ int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, c
 
         //存在点对点透传，直接透传数据
         App_tms::instance()->AddMessage(curr_thread_index, [io_2_io_session_id, message_list, module_logic]() {
+            auto session_io = module_logic->get_session_interface(io_2_io_session_id);
             for (auto recv_packet : message_list)
             {
-                auto session_io = module_logic->get_session_interface(io_2_io_session_id);
                 if (nullptr != session_io)
                 {
                     session_io->do_write_immediately(io_2_io_session_id, recv_packet->buffer_.c_str(), recv_packet->buffer_.size());
