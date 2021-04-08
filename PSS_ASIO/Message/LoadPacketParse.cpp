@@ -105,6 +105,10 @@ bool CLoadPacketParse::LoadPacketInfo(uint32 u4PacketParseID, const std::string&
 
     PSS_LOGGER_DEBUG("[CLoadPacketParse::LoadPacketInfo] load {0} OK!", packet_parse_file);
 
+#ifdef GCOV_TEST
+    dispaly_error_message("test", "test coverage", pPacketParseInfo);
+#endif
+
     return true;
 }
 
