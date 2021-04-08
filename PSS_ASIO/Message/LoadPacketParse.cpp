@@ -6,7 +6,7 @@ void CLoadPacketParse::dispaly_error_message(const std::string& func_name, const
     PSS_LOGGER_DEBUG("[CLoadPacketParse::dispaly_error_message] PacketID={0} strModuleName = {1}, Function {2} is error!", 
         pPacketParseInfo->m_u4PacketParseID,
         func_name,
-        packet_parse_file, func_name);
+        packet_parse_file);
     CLoadLibrary::PSS_dlClose(pPacketParseInfo->m_hModule);
 }
 
@@ -104,11 +104,6 @@ bool CLoadPacketParse::LoadPacketInfo(uint32 u4PacketParseID, const std::string&
     pPacketParseInfo->packet_load_ptr_();
 
     PSS_LOGGER_DEBUG("[CLoadPacketParse::LoadPacketInfo] load {0} OK!", packet_parse_file);
-
-#ifdef GCOV_TEST
-    dispaly_error_message("test", "test coverage", pPacketParseInfo);
-#endif
-
     return true;
 }
 
