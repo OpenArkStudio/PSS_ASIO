@@ -37,6 +37,13 @@
       "packet parse id": 1,
       "recv buff size": 102400,
       "send buff size": 102400
+    },
+    {
+      "tcp ip": "127.0.0.1",
+      "tcp port": 10008,
+      "packet parse id": 1,
+      "recv buff size": 102400,
+      "send buff size": 102400
     }
   ],
 

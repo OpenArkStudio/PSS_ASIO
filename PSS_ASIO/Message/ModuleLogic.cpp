@@ -379,6 +379,11 @@ int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, c
             });
     }
 
+#ifdef GCOV_TEST
+    //测试连接自检
+    uint32 check_timeout = 120;
+    run_check_task(check_timeout);
+#endif
     return 0;
 }
 

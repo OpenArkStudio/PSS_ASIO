@@ -34,6 +34,9 @@ void CBaseCommand::Init(ISessionService* session_service)
         EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_TCP,
         to_io,
         EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_TCP);
+
+    //²âÊÔÁ¬½Ótcp
+    logic_connect_tcp();
 #endif
 
     PSS_LOGGER_DEBUG("[load_module]({0})io thread count.", session_service_->get_io_work_thread_count());
@@ -48,7 +51,7 @@ void CBaseCommand::logic_connect_tcp()
     io_info.send_size = 1024;
     io_info.recv_size = 1024;
     io_info.server_ip = "127.0.0.1";
-    io_info.server_port = 10005;
+    io_info.server_port = 10008;
     io_info.server_id = 1001;
     io_info.packet_parse_id = 1;
 
