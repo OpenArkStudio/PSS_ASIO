@@ -70,6 +70,8 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
         return false;
     }
 
+    PSS_LOGGER_DEBUG("[CServerService::init_servce]configure file {0} read ok.", pss_config_file_name);
+
 #if PSS_PLATFORM == PLATFORM_UNIX
     if (server_config_.get_config_workthread().linux_daemonize != 0)
     {

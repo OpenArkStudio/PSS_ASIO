@@ -1,10 +1,7 @@
-[![Github Action](https://github.com/freeeyes/PSS_alpha_test/workflows/PSS_ASIO_CMake/badge.svg)](https://github.com/freeeyes/PSS_alpha_test/actions)  
-<a href="https://isocpp.org/">
-	<img src="https://img.shields.io/badge/language-C%2B%2B11-blue.svg">
-</a>
-<a href="https://opensource.org/licenses/MIT" >
-	<img src="https://img.shields.io/apm/l/vim-mode.svg">
-</a>   
+[![Github Action](https://github.com/freeeyes/PSS_alpha_test/workflows/PSS_ASIO_CMake/badge.svg)](https://github.com/freeeyes/PSS_alpha_test/actions)
+[![C++11need](https://img.shields.io/badge/language-C%2B%2B11-blue.svg)](https://isocpp.org)
+[![MIT](https://img.shields.io/apm/l/vim-mode.svg)](https://opensource.org/licenses/MIT")  
+
 
 # Introduction  
 
