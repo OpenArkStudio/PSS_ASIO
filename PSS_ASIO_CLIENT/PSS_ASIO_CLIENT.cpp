@@ -147,11 +147,11 @@ void tcp_test_connect_synchronize_server(std::string strIP, unsigned short port,
 }
 
 //同步客户端(udp)
-void udp_test_connect_synchronize_server(std::string strIP, unsigned short port, asio::io_context& io_context)
+void udp_test_connect_synchronize_server(std::string strIP, unsigned short port, unsigned short remote_port, uint16 command_id, asio::io_context& io_context)
 {
     udp::endpoint end_point(asio::ip::address::from_string(strIP.c_str()), port);
 
-    udp::socket sock(io_context, udp::endpoint(udp::v4(), 0));
+    udp::socket sock(io_context, udp::endpoint(asio::ip::address::from_string("127.0.0.1"), remote_port));
 
     std::cout << "[udp_test_connect_synchronize_server]connect OK" << std::endl;
 
@@ -160,7 +160,7 @@ void udp_test_connect_synchronize_server(std::string strIP, unsigned short port,
     int nPos = 0;
 
     unsigned short client_version = 1;
-    unsigned short client_command_id = 0x2101;
+    unsigned short client_command_id = command_id;
     unsigned int client_packet_length = 200;
 
     std::memcpy(&send_buffer[nPos], &client_version, sizeof(short));
@@ -213,7 +213,8 @@ int main()
     tcp_test_connect_synchronize_server("127.0.0.1", 10002, 10010, 0x2101, 10, io_context);
     tcp_test_connect_synchronize_server("127.0.0.1", 10002, 10011, 0x2102, 1, io_context);
 
-    udp_test_connect_synchronize_server("127.0.0.1", 10005, io_context);
+    udp_test_connect_synchronize_server("127.0.0.1", 10005, 10012, 0x2101, io_context);
+    udp_test_connect_synchronize_server("127.0.0.1", 10005, 10012, 0x2102, io_context);
 
     io_context.stop();
     tt.join();

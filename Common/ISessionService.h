@@ -9,6 +9,7 @@ class ISessionService
 {
 public:
     virtual ~ISessionService() {};
+    virtual void get_server_listen_info(std::vector<CConfigNetIO>& io_list, EM_CONNECT_IO_TYPE io_type) = 0;
     virtual void send_io_message(uint32 connect_id, std::shared_ptr<CMessage_Packet> send_packet) = 0;
     virtual bool connect_io_server(const CConnect_IO_Info& io_info, EM_CONNECT_IO_TYPE io_type) = 0;
     virtual void close_io_session(uint32 connect_id) = 0;

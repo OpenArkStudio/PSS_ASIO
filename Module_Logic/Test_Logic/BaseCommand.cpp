@@ -4,6 +4,26 @@ void CBaseCommand::Init(ISessionService* session_service)
 {
     session_service_ = session_service;
 
+    //得到服务器的所有监听消息
+    std::vector<CConfigNetIO> io_list;
+    session_service_->get_server_listen_info(io_list, EM_CONNECT_IO_TYPE::CONNECT_IO_TCP);
+    for (const auto& io_type : io_list)
+    {
+        PSS_LOGGER_DEBUG("[CBaseCommand::Init]tcp listen {0}:{1}", io_type.ip_, io_type.port_);
+    }
+
+    session_service_->get_server_listen_info(io_list, EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
+    for (const auto& io_type : io_list)
+    {
+        PSS_LOGGER_DEBUG("[CBaseCommand::Init]udp listen {0}:{1}", io_type.ip_, io_type.port_);
+    }
+
+    session_service_->get_server_listen_info(io_list, EM_CONNECT_IO_TYPE::CONNECT_IO_TTY);
+    for (const auto& io_type : io_list)
+    {
+        PSS_LOGGER_DEBUG("[CBaseCommand::Init]tty listen {0}:{1}", io_type.ip_, io_type.port_);
+    }
+
 #ifdef GCOV_TEST
     session_service_->create_frame_work_thread(plugin_test_logic_thread_id);
 

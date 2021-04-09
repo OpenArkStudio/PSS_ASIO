@@ -59,6 +59,17 @@ enum class EM_CONNECT_IO_TYPE
     WORKTHREAD_CLOSE         //关闭当前工作线程
 };
 
+//监听服务的IO接口信息
+class CConfigNetIO
+{
+public:
+    std::string ip_;
+    unsigned short port_ = 0;
+    unsigned int packet_parse_id_ = 0;
+    unsigned int recv_buff_size_ = 1024;
+    unsigned int send_buff_size_ = 1024;
+};
+
 //客户端IP信息
 class _ClientIPInfo
 {

@@ -34,3 +34,5 @@ private:
     CConfigConsole config_output_;
     CConfigWorkThread config_work_thread_;
 };
+
+using App_ServerConfig = PSS_singleton<CServerConfig>;

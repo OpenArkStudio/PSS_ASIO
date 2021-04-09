@@ -5,11 +5,13 @@
 
 #include "ISessionService.h"
 #include "ModuleLogic.h"
+#include "serverconfig.h"
 
 class CSessionService : public ISessionService
 {
 public:
     ~CSessionService() final = default;
+    void get_server_listen_info(std::vector<CConfigNetIO>& io_list, EM_CONNECT_IO_TYPE io_type) final;
     void send_io_message(uint32 connect_id, std::shared_ptr<CMessage_Packet> send_packet) final;
     bool connect_io_server(const CConnect_IO_Info& io_info, EM_CONNECT_IO_TYPE io_type) final;
     void close_io_session(uint32 connect_id) final;

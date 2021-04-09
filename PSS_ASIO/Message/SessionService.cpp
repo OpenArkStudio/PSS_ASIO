@@ -1,5 +1,34 @@
 ﻿#include "SessionService.h"
 
+void CSessionService::get_server_listen_info(std::vector<CConfigNetIO>& io_list, EM_CONNECT_IO_TYPE io_type)
+{
+    io_list.clear();
+
+    if (io_type == EM_CONNECT_IO_TYPE::CONNECT_IO_TCP)
+    {
+        //获得列表信息
+        const auto& tcp_list = App_ServerConfig::instance()->get_config_tcp_list();
+        io_list.assign(tcp_list.begin(), tcp_list.end());
+    }
+    else if (io_type == EM_CONNECT_IO_TYPE::CONNECT_IO_UDP)
+    {
+        const auto& udp_list = App_ServerConfig::instance()->get_config_udp_list();
+        io_list.assign(udp_list.begin(), udp_list.end());
+    }
+    else if (io_type == EM_CONNECT_IO_TYPE::CONNECT_IO_TTY)
+    {
+        auto tty_list = App_ServerConfig::instance()->get_config_tty_list();
+        for (const auto& tty_config : tty_list)
+        {
+            CConfigNetIO io_info;
+            io_info.packet_parse_id_ = tty_config.packet_parse_id_;
+            io_info.port_ = tty_config.tty_port_;
+            io_info.ip_ = tty_config.tty_name_;
+            io_list.emplace_back(io_info);
+        }
+    }
+}
+
 void CSessionService::send_io_message(uint32 connect_id, std::shared_ptr<CMessage_Packet> send_packet)
 {
     App_WorkThreadLogic::instance()->send_io_message(connect_id, send_packet);

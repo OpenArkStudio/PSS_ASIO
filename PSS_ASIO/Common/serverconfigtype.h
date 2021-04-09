@@ -5,6 +5,7 @@
 
 #include <string>
 #include <vector>
+#include "define.h"
 
 //定义参数类型表
 class CConfigWorkThread
@@ -36,16 +37,6 @@ public:
 };
 
 using config_logic_list = std::vector<CConfigLogicInfo>;
-
-class CConfigNetIO
-{
-public:
-    std::string ip_;
-    unsigned short port_ = 0;
-    unsigned int packet_parse_id_ = 0;
-    unsigned int recv_buff_size_ = 1024;
-    unsigned int send_buff_size_ = 1024;
-};
 
 using config_tcp_list = std::vector<CConfigNetIO>;
 using config_udp_list = std::vector<CConfigNetIO>;

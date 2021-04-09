@@ -65,7 +65,7 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
 #endif
 
     //读取配置文件
-    if (false == server_config_.read_server_config_file(pss_config_file_name))
+    if (false == App_ServerConfig::instance()->read_server_config_file(pss_config_file_name))
     {
         return false;
     }
@@ -73,14 +73,14 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
     PSS_LOGGER_DEBUG("[CServerService::init_servce]configure file {0} read ok.", pss_config_file_name);
 
 #if PSS_PLATFORM == PLATFORM_UNIX
-    if (server_config_.get_config_workthread().linux_daemonize != 0)
+    if (App_ServerConfig::instance()->get_config_workthread().linux_daemonize != 0)
     {
         //Linux 开启守护
         daemonize();
     }
 #endif
 
-    auto config_output = server_config_.get_config_console();
+    auto config_output = App_ServerConfig::instance()->get_config_console();
 
     //初始化输出
     Init_Console_Output(config_output.file_output_,
@@ -90,7 +90,7 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
         config_output.output_level_);
 
     //初始化PacketParse插件
-    for (const auto& packet_parse : server_config_.get_config_packet_list())
+    for (const auto& packet_parse : App_ServerConfig::instance()->get_config_packet_list())
     {
         if (false == App_PacketParseLoader::instance()->LoadPacketInfo(packet_parse.packet_parse_id_, 
             packet_parse.packet_parse_path_,
@@ -118,19 +118,19 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
 
     //启动服务器间链接库
     App_CommunicationService::instance()->init_communication_service(&io_context_,
-        (uint16)server_config_.get_config_workthread().s2s_timeout_seconds_);
+        (uint16)App_ServerConfig::instance()->get_config_workthread().s2s_timeout_seconds_);
 
     App_WorkThreadLogic::instance()->init_communication_service(App_CommunicationService::instance());
 
     //初始化执行库
-    App_WorkThreadLogic::instance()->init_work_thread_logic(server_config_.get_config_workthread().work_thread_count_,
-        (uint16)server_config_.get_config_workthread().work_timeout_seconds_,
-        (uint32)server_config_.get_config_workthread().client_connect_timeout,
-        server_config_.get_config_logic_list(),
+    App_WorkThreadLogic::instance()->init_work_thread_logic(App_ServerConfig::instance()->get_config_workthread().work_thread_count_,
+        (uint16)App_ServerConfig::instance()->get_config_workthread().work_timeout_seconds_,
+        (uint32)App_ServerConfig::instance()->get_config_workthread().client_connect_timeout,
+        App_ServerConfig::instance()->get_config_logic_list(),
         App_SessionService::instance());
 
     //加载Tcp监听
-    for(auto tcp_server : server_config_.get_config_tcp_list())
+    for(auto tcp_server : App_ServerConfig::instance()->get_config_tcp_list())
     {
         auto tcp_service = make_shared<CTcpServer>(io_context_, 
             tcp_server.ip_, 
@@ -141,7 +141,7 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
     }
 
     //加载UDP监听
-    for (auto udp_server : server_config_.get_config_udp_list())
+    for (auto udp_server : App_ServerConfig::instance()->get_config_udp_list())
     {
         auto udp_service = make_shared<CUdpServer>(io_context_, 
             udp_server.ip_,
@@ -153,7 +153,7 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
     }
 
     //加载tty监听
-    for (auto tty_server : server_config_.get_config_tty_list())
+    for (auto tty_server : App_ServerConfig::instance()->get_config_tty_list())
     {
         auto tty_service = make_shared<CTTyServer>(
             tty_server.packet_parse_id_,
