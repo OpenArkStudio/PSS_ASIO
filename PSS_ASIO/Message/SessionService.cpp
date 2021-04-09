@@ -22,7 +22,7 @@ void CSessionService::get_server_listen_info(std::vector<CConfigNetIO>& io_list,
         {
             CConfigNetIO io_info;
             io_info.packet_parse_id_ = tty_config.packet_parse_id_;
-            io_info.port_ = tty_config.tty_port_;
+            io_info.port_ = (uint16)tty_config.tty_port_;
             io_info.ip_ = tty_config.tty_name_;
             io_list.emplace_back(io_info);
         }

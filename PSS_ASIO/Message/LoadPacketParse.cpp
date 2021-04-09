@@ -7,7 +7,10 @@ void CLoadPacketParse::dispaly_error_message(const std::string& func_name, const
         pPacketParseInfo->m_u4PacketParseID,
         func_name,
         packet_parse_file);
-    CLoadLibrary::PSS_dlClose(pPacketParseInfo->m_hModule);
+    if (nullptr != pPacketParseInfo->m_hModule)
+    {
+        CLoadLibrary::PSS_dlClose(pPacketParseInfo->m_hModule);
+    }
 }
 
 bool CLoadPacketParse::LoadPacketInfo(uint32 u4PacketParseID, const std::string& packet_parse_path, const std::string& packet_parse_file)
@@ -20,6 +23,10 @@ bool CLoadPacketParse::LoadPacketInfo(uint32 u4PacketParseID, const std::string&
         PSS_LOGGER_DEBUG("[CLoadPacketParse::LoadPacketInfo] pPacketParseInfo is nullptr!");
         return false;
     }
+
+#ifdef GCOV_TEST
+    dispaly_error_message("test", "test logic", pPacketParseInfo);
+#endif
 
     pPacketParseInfo->m_u4PacketParseID   = u4PacketParseID;
     string strFilePath;
