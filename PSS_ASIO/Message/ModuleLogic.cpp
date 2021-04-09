@@ -357,7 +357,7 @@ int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, c
     if (io_2_io_session_id > 0)
     {
         curr_thread_index = io_2_io_session_id % thread_count_;
-        module_logic = thread_module_list_[io_2_io_session_id];
+        module_logic = thread_module_list_[curr_thread_index];
 
         //存在点对点透传，直接透传数据
         App_tms::instance()->AddMessage(curr_thread_index, [io_2_io_session_id, message_list, module_logic]() {

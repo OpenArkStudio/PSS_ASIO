@@ -210,11 +210,11 @@ int main()
         });
 
 
-    tcp_test_connect_synchronize_server("127.0.0.1", 10002, 10010, 0x2101, 10, io_context);
-    tcp_test_connect_synchronize_server("127.0.0.1", 10002, 10011, 0x2102, 1, io_context);
+    tcp_test_connect_synchronize_server("127.0.0.1", 10002, 10010, 0x2101, 1, io_context);
+    //tcp_test_connect_synchronize_server("127.0.0.1", 10002, 10011, 0x2102, 1, io_context);
 
-    udp_test_connect_synchronize_server("127.0.0.1", 10005, 10012, 0x2101, io_context);
-    udp_test_connect_synchronize_server("127.0.0.1", 10005, 10012, 0x2102, io_context);
+    //udp_test_connect_synchronize_server("127.0.0.1", 10005, 10012, 0x2101, io_context);
+    //udp_test_connect_synchronize_server("127.0.0.1", 10005, 10012, 0x2102, io_context);
 
     io_context.stop();
     tt.join();

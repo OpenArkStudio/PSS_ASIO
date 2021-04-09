@@ -41,22 +41,22 @@ void CBaseCommand::Init(ISessionService* session_service)
         PSS_LOGGER_DEBUG("[run_work_thread_logic]arrived.");
         });
 
+    //测试连接tcp
+    logic_connect_tcp();
+
     //测试数据透传接口
     _ClientIPInfo from_io;
     from_io.m_strClientIP = "127.0.0.1";
     from_io.m_u2Port = 10010;
 
     _ClientIPInfo to_io;
-    from_io.m_strClientIP = "127.0.0.1";
-    from_io.m_u2Port = 10003;
+    to_io.m_strClientIP = "127.0.0.1";
+    to_io.m_u2Port = 10003;
 
     session_service_->add_session_io_mapping(from_io,
-        EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_TCP,
+        EM_CONNECT_IO_TYPE::CONNECT_IO_TCP,
         to_io,
         EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_TCP);
-
-    //测试连接tcp
-    logic_connect_tcp();
 #endif
 
     PSS_LOGGER_DEBUG("[load_module]({0})io thread count.", session_service_->get_io_work_thread_count());
@@ -71,7 +71,7 @@ void CBaseCommand::logic_connect_tcp()
     io_info.send_size = 1024;
     io_info.recv_size = 1024;
     io_info.server_ip = "127.0.0.1";
-    io_info.server_port = 10008;
+    io_info.server_port = 10003;
     io_info.server_id = 1001;
     io_info.packet_parse_id = 1;
 
