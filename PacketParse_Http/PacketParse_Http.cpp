@@ -50,6 +50,7 @@ public:
 
 using map_http_parse = map<uint32, CProtocalInfo>;
 map_http_parse map_http_parse_;
+std::mutex http_list_lock_;
 const uint16 http_post_command = 0x1001;
 const uint16 http_websocket_shark_hand = 0x1002;
 const uint16 websocket_data = 0x1003;
@@ -213,6 +214,7 @@ bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, ve
 bool parse_packet_format_send_buffer(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, std::shared_ptr<CMessage_Packet> format_message, EM_CONNECT_IO_TYPE emIOType)
 {
     //组装http发送数据包
+    std::lock_guard <std::mutex> lock(http_list_lock_);
     auto f = map_http_parse_.find(connect_id);
     if (f != map_http_parse_.end())
     {
@@ -246,6 +248,7 @@ bool parse_packet_format_send_buffer(uint32 connect_id, std::shared_ptr<CMessage
 
 bool connect(uint32 u4ConnectID, const _ClientIPInfo& remote_ip, const _ClientIPInfo& local_ip, EM_CONNECT_IO_TYPE emIOType)
 {
+
     PSS_UNUSED_ARG(emIOType);
     PSS_LOGGER_INFO("[Connect]u4ConnectID = {}, {}:{} ==> {}:{}",
         u4ConnectID,
@@ -254,6 +257,7 @@ bool connect(uint32 u4ConnectID, const _ClientIPInfo& remote_ip, const _ClientIP
         local_ip.m_strClientIP,
         local_ip.m_u2Port);
 
+    http_list_lock_.lock();
     auto f = map_http_parse_.find(u4ConnectID);
     if (f == map_http_parse_.end())
     {
@@ -263,6 +267,7 @@ bool connect(uint32 u4ConnectID, const _ClientIPInfo& remote_ip, const _ClientIP
         protocal_info.http_format_ = http_parse_interface;
         map_http_parse_[u4ConnectID] = protocal_info;
     }
+    http_list_lock_.unlock();
 
     return true;
 }
@@ -273,7 +278,9 @@ void disConnect(uint32 u4ConnectID, EM_CONNECT_IO_TYPE emIOType)
     PSS_LOGGER_DEBUG("[DisConnect]u4ConnectID={}.",
         u4ConnectID);
 
+    http_list_lock_.lock();
     map_http_parse_.erase(u4ConnectID);
+    http_list_lock_.unlock();
 }
 
 void set_output(shared_ptr<spdlog::logger> logger)
