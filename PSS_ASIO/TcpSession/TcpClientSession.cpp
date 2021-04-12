@@ -17,8 +17,16 @@ bool CTcpClientSession::start(const CConnect_IO_Info& io_info)
     //建立连接
     tcp::endpoint end_point(asio::ip::address::from_string(io_info.server_ip.c_str()), io_info.server_port);
     asio::error_code connect_error;
-    socket_.connect(end_point, connect_error);
 
+    //判断链接是否需要指定客户端IP和端口
+    if (io_info.client_port > 0 && io_info.client_ip.length() > 0)
+    {
+        asio::ip::tcp::endpoint localEndpoint(asio::ip::address::from_string(io_info.client_ip), io_info.client_port);
+        socket_.open(asio::ip::tcp::v4(), connect_error);
+        socket_.bind(localEndpoint, connect_error);
+    }
+
+    socket_.connect(end_point, connect_error);
     if (connect_error)
     {
         //连接建立失败

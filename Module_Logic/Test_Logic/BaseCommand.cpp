@@ -72,6 +72,8 @@ void CBaseCommand::logic_connect_tcp()
     io_info.recv_size = 1024;
     io_info.server_ip = "127.0.0.1";
     io_info.server_port = 10003;
+    io_info.client_ip = "127.0.0.1";
+    io_info.client_port = 10091;
     io_info.server_id = 1001;
     io_info.packet_parse_id = 1;
 

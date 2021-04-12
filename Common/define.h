@@ -109,12 +109,14 @@ public:
 class CConnect_IO_Info
 {
 public:
-    uint32 server_id = 0; 
-    string server_ip; 
-    uint16 server_port = 0;
-    uint32 packet_parse_id = 1;
-    uint32 recv_size = 1024;
-    uint32 send_size = 1024;
+    uint32 server_id = 0;         //服务器ID
+    std::string server_ip;        //远程服务器的IP
+    uint16 server_port = 0;       //远程服务器的端口
+    std::string client_ip;        //发起端的IP(默认可以设置)
+    uint16 client_port = 0;       //发起端绑定的IP(默认可以不设置)
+    uint32 packet_parse_id = 1;   //解码的PacketParse插件ID
+    uint32 recv_size = 1024;      //接收数据最大缓冲
+    uint32 send_size = 1024;      //发送数据最大缓冲
 };
 
 //定义输出屏幕函数接口
