@@ -14,7 +14,7 @@ private:
 
     void send_accept_listen_fail(std::error_code ec) const;
 
-    tcp::acceptor acceptor_;
+    std::shared_ptr<tcp::acceptor> acceptor_;
     uint32 packet_parse_id_ = 0;
     uint32 max_recv_size_ = 0;
 };
