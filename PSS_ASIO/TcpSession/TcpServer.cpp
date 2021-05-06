@@ -20,7 +20,7 @@ CTcpServer::CTcpServer(asio::io_context& io_context, const std::string& server_i
     }
 }
 
-void CTcpServer::close()
+void CTcpServer::close() const
 {
     acceptor_->close();
 }
