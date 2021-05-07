@@ -34,7 +34,7 @@ ssl_server_dh_file_(ssl_server_dh_file)
     }
     catch (std::system_error const& ex)
     {
-        PSS_LOGGER_DEBUG("[CTcpSSLServer::CTcpSSLServer]error={0}", ex.what());
+        PSS_LOGGER_DEBUG("[CTcpSSLServer::CTcpSSLServer]({0}:{1}) error={2}", server_ip, port, ex.what());
     }
 }
 
