@@ -14,7 +14,7 @@ CTcpServer::CTcpServer(asio::io_context& io_context, const std::string& server_i
 
         do_accept();
     }
-    catch (std::system_error ex)
+    catch (std::system_error const& ex)
     {
         PSS_LOGGER_INFO("[CTcpServer::do_accept]({0}:{1}) accept error.", server_ip, port);
     }

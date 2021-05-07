@@ -1,10 +1,11 @@
-﻿#pragma once
+#pragma once
+#ifdef SSL_SUPPORT
 
-#include <cstdlib>
+#include "define.h"
 #include <iostream>
-#include <memory>
-#include <utility>
-#include "asio.hpp"
+#include <functional>
+#include <asio.hpp>
+#include <asio/ssl.hpp>
 
 #include "tms.hpp"
 #include "SendBuffer.h"
@@ -16,10 +17,10 @@
 
 using asio::ip::tcp;
 
-class CTcpSession : public std::enable_shared_from_this<CTcpSession>, public ISession
+class CTcpSSLSession : public std::enable_shared_from_this<CTcpSSLSession>, public ISession
 {
 public:
-    explicit CTcpSession(tcp::socket socket);
+    CTcpSSLSession(asio::ssl::stream<tcp::socket> socket);
 
     void open(uint32 packet_parse_id, uint32 recv_size);
 
@@ -50,7 +51,11 @@ public:
     void do_read_some(std::error_code ec, std::size_t length);
 
 private:
-    tcp::socket socket_;
+    void do_handshake();
+
+
+private:
+    asio::ssl::stream<tcp::socket> ssl_socket_;
     uint32 connect_id_ = 0;
     CSessionBuffer session_recv_buffer_;
     std::string session_send_buffer_;
@@ -67,6 +72,6 @@ private:
     _ClientIPInfo local_ip_;
     std::chrono::steady_clock::time_point recv_data_time_ = std::chrono::steady_clock::now();
 
-    EM_CONNECT_IO_TYPE io_type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_TCP;
+    EM_CONNECT_IO_TYPE io_type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_SSL;
 };
-
+#endif

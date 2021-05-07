@@ -87,6 +87,12 @@
     <ClCompile Include="Message\IotoIo.cpp">
       <Filter>Message</Filter>
     </ClCompile>
+    <ClCompile Include="TcpSession\TcpSSLServer.cpp">
+      <Filter>TcpSession</Filter>
+    </ClCompile>
+    <ClCompile Include="TcpSession\TcpSSLSession.cpp">
+      <Filter>TcpSession</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TcpSession\TcpServer.h">
@@ -193,6 +199,12 @@
     </ClInclude>
     <ClInclude Include="..\Common\WriteBuffer.hpp">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="TcpSession\TcpSSLServer.h">
+      <Filter>TcpSession</Filter>
+    </ClInclude>
+    <ClInclude Include="TcpSession\TcpSSLSession.h">
+      <Filter>TcpSession</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

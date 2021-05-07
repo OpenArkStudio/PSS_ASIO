@@ -63,13 +63,13 @@ void CTcpSession::do_write(uint32 connect_id)
 {
     std::lock_guard<std::mutex> lck(send_thread_mutex_);
 
-    if (is_send_finish == false || session_send_buffer_.size() == 0)
+    if (is_send_finish_ == false || session_send_buffer_.size() == 0)
     {
         //上次发送没有完成或者已经发送完成
         return;
     }
 
-    is_send_finish = false;
+    is_send_finish_ = false;
 
     //组装发送数据
     auto send_buffer = make_shared<CSendBuffer>();
@@ -158,7 +158,7 @@ void CTcpSession::add_send_finish_size(uint32 connect_id, size_t send_length)
 
     io_send_count_++;
 
-    is_send_finish = true;
+    is_send_finish_ = true;
 }
 
 EM_CONNECT_IO_TYPE CTcpSession::get_io_type()
