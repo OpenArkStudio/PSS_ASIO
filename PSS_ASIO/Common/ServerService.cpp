@@ -132,12 +132,34 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
     //加载Tcp监听
     for(auto tcp_server : App_ServerConfig::instance()->get_config_tcp_list())
     {
-        auto tcp_service = make_shared<CTcpServer>(io_context_, 
-            tcp_server.ip_, 
-            tcp_server.port_, 
-            tcp_server.packet_parse_id_,
-            tcp_server.recv_buff_size_);
-        tcp_service_list_.emplace_back(tcp_service);
+        if (tcp_server.ssl_server_password_ != ""
+            && tcp_server.ssl_server_pem_file_ != ""
+            && tcp_server.ssl_dh_pem_file_ != "")
+        {
+#ifdef SSL_SUPPORT
+            auto tcp_ssl_service = make_shared<CTcpSSLServer>(io_context_,
+                tcp_server.ip_,
+                tcp_server.port_,
+                tcp_server.packet_parse_id_,
+                tcp_server.recv_buff_size_,
+                tcp_server.ssl_server_password_,
+                tcp_server.ssl_server_pem_file_,
+                tcp_server.ssl_dh_pem_file_);
+            tcp_ssl_service_list_.emplace_back(tcp_ssl_service);
+#else
+            PSS_LOGGER_DEBUG("[CServerService::init_servce]you must set SSL_SUPPORT macro on compilation options.");
+#endif
+        }
+        else
+        {
+            //正常的tcp链接
+            auto tcp_service = make_shared<CTcpServer>(io_context_,
+                tcp_server.ip_,
+                tcp_server.port_,
+                tcp_server.packet_parse_id_,
+                tcp_server.recv_buff_size_);
+            tcp_service_list_.emplace_back(tcp_service);
+        }
     }
 
     //加载UDP监听

@@ -19,9 +19,9 @@ public:
 private:
     std::string get_password() const;
 
-    void send_accept_listen_fail(std::error_code ec) const;
-
     void do_accept();
+
+    void send_accept_listen_fail(std::error_code ec) const;
 
     std::shared_ptr<tcp::acceptor> acceptor_;
     asio::ssl::context context_;

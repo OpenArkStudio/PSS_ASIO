@@ -69,6 +69,9 @@ public:
     unsigned int packet_parse_id_ = 0;
     unsigned int recv_buff_size_ = 1024;
     unsigned int send_buff_size_ = 1024;
+    std::string ssl_server_password_;
+    std::string ssl_server_pem_file_;
+    std::string ssl_dh_pem_file_;
 };
 
 //客户端IP信息

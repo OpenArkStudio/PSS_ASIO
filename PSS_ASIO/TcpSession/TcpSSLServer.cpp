@@ -30,6 +30,11 @@ ssl_server_dh_file_(ssl_server_dh_file)
         context_.use_private_key_file(ssl_server_pem_file_, asio::ssl::context::pem);
         context_.use_tmp_dh_file(ssl_server_dh_file_);
 
+        //处理链接建立消息
+        PSS_LOGGER_INFO("[CTcpSSLServer::do_accept]({0}:{1}) Begin Accept.",
+            acceptor_->local_endpoint().address().to_string(),
+            acceptor_->local_endpoint().port());
+
         do_accept();
     }
     catch (std::system_error const& ex)

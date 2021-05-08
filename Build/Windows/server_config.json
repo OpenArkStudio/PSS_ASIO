@@ -41,7 +41,10 @@
       "tcp port": 10003,
       "packet parse id": 1,
       "recv buff size": 102400,
-      "send buff size": 102400
+      "send buff size": 102400,
+      "ssl server password": "test",
+      "ssl server pem file": "server.pem",
+      "ssl dh pem file": "dh2048.pem"
     }
   ],
 

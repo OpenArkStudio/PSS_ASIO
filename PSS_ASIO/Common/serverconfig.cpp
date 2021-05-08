@@ -41,6 +41,23 @@ bool CServerConfig::read_server_config_file(const std::string& file_name)
             config_netio.packet_parse_id_ = tcp["packet parse id"];
             config_netio.recv_buff_size_ = tcp["recv buff size"];
             config_netio.send_buff_size_ = tcp["send buff size"];
+
+            //读取ssl相关配置
+            if (tcp["ssl server password"] != nullptr)
+            {
+                config_netio.ssl_server_password_ = tcp["ssl server password"];
+            }
+
+            if (tcp["ssl server pem file"] != nullptr)
+            {
+                config_netio.ssl_server_pem_file_ = tcp["ssl server pem file"];
+            }
+
+            if (tcp["ssl dh pem file"] != nullptr)
+            {
+                config_netio.ssl_dh_pem_file_ = tcp["ssl dh pem file"];
+            }
+
             config_tcp_list_.emplace_back(config_netio);
         }
 
