@@ -26,9 +26,12 @@ public:
 
 private:
     vector<shared_ptr<CTcpServer>> tcp_service_list_;
-    vector<shared_ptr<CTcpSSLServer>> tcp_ssl_service_list_;
     vector<shared_ptr<CUdpServer>> udp_service_list_;
     vector<shared_ptr<CTTyServer>> tty_service_list_;
+
+#ifdef SSL_SUPPORT
+    vector<shared_ptr<CTcpSSLServer>> tcp_ssl_service_list_;
+#endif
 
     asio::io_context io_context_;
 };
