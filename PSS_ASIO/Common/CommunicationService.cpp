@@ -92,7 +92,7 @@ void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
         auto ssl_client_session = make_shared<CTcpSSLClientSession>(io_service_context_);
         ssl_client_session->start(connect_info.io_info_);
 #else
-        PSS_LOGGER_DEBUG("[CCommunicationService::io_connect]you mest use SSL_SUPPORT macro support ths ssl.")
+        PSS_LOGGER_DEBUG("[CCommunicationService::io_connect]you mest use SSL_SUPPORT macro support ths ssl.");
 #endif
     }
 }
