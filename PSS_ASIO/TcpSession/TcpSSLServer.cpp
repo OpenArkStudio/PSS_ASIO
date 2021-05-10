@@ -43,6 +43,11 @@ ssl_server_dh_file_(ssl_server_dh_file)
     }
 }
 
+void CTcpSSLServer::close() const
+{
+    acceptor_->close();
+}
+
 std::string CTcpSSLServer::get_password() const
 {
     return ssl_server_password_;

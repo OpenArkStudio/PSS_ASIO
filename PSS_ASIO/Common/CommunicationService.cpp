@@ -86,6 +86,15 @@ void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
             connect_info.io_info_.server_id);
         connect_info.session_ = tty_client_session;
     }
+    else if (connect_info.io_type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_SSL)
+    {
+#ifdef SSL_SUPPORT
+        auto ssl_client_session = make_shared<CTcpSSLClientSession>(io_service_context_);
+        ssl_client_session->start(connect_info.io_info_);
+#else
+        PSS_LOGGER_DEBUG("[CCommunicationService::io_connect]you mest use SSL_SUPPORT macro support ths ssl.")
+#endif
+    }
 }
 
 void CCommunicationService::run_server_to_server()

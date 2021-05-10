@@ -207,11 +207,19 @@ void CServerService::close_service()
     //关闭框架定时器
     App_TimerManager::instance()->Close();
 
-    //回收清理数据
-    for (auto tcp_service : tcp_service_list_)
+    //停止所有的TCP监听(TCP)
+    for (const auto& tcp_service : tcp_service_list_)
     {
         tcp_service->close();
     }
+
+#ifdef SSL_SUPPORT
+    //停止所有的SSL监听
+    for (const auto& tcp_ssl_service : tcp_ssl_service_list_)
+    {
+        tcp_ssl_service->close();
+    }
+#endif
 
     tcp_service_list_.clear();
 

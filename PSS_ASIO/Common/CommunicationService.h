@@ -3,6 +3,7 @@
 #include "ICommunicationService.h"
 #include "TcpClientSession.h"
 #include "UdpClientSession.h"
+#include "TcpSSLClientSession.h"
 #include "TtyServer.h"
 #include "tms.hpp"
 #include "CoreTimer.hpp"

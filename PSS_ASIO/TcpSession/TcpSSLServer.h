@@ -16,6 +16,8 @@ public:
         std::string ssl_server_pem_file,
         std::string ssl_server_dh_file);
 
+    void close() const;
+
 private:
     std::string get_password() const;
 

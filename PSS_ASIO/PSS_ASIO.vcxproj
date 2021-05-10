@@ -160,6 +160,7 @@
     <ClCompile Include="TcpSession\TcpClientSession.cpp" />
     <ClCompile Include="TcpSession\TcpServer.cpp" />
     <ClCompile Include="TcpSession\TcpSession.cpp" />
+    <ClCompile Include="TcpSession\TcpSSLClientSession.cpp" />
     <ClCompile Include="TcpSession\TcpSSLServer.cpp" />
     <ClCompile Include="TcpSession\TcpSSLSession.cpp" />
     <ClCompile Include="TTySession\TtyServer.cpp" />
@@ -199,6 +200,7 @@
     <ClInclude Include="TcpSession\TcpClientSession.h" />
     <ClInclude Include="TcpSession\TcpServer.h" />
     <ClInclude Include="TcpSession\TcpSession.h" />
+    <ClInclude Include="TcpSession\TcpSSLClientSession.h" />
     <ClInclude Include="TcpSession\TcpSSLServer.h" />
     <ClInclude Include="TcpSession\TcpSSLSession.h" />
     <ClInclude Include="TTySession\TtyServer.h" />
