@@ -96,6 +96,7 @@ jobs:
         python google_test.py Test_Pss_Asio.xml
         git config --global user.name github-actions
         git config --global user.email github-actions@github.com
+        git pull
         git add -f gtest_output.html
         git commit -m "make google test report"
     - name: Push changes
