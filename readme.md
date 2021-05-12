@@ -14,7 +14,7 @@ Table of Contents
  - [Documentation](#documentation)
  - [Support](#support)
  - [Contributing](#contributing)
- - [test](#test report)
+ - [test](#test-report)
 
 Overview
 ========
@@ -47,6 +47,9 @@ Build and Install
 Documentation
 =============
 (In the process of finishing)  
+ * [How to make packetparse plugin](md/How_to_make_packetparse_plugin.md)
+ * [How to make logic plugin](md/How_to_make_logic_plugin.md)
+ * [How to config server](md/How_to_config_server.md)
 
 Support
 =======
