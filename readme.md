@@ -20,7 +20,7 @@ Overview
 ========
 
 PSS is a plug-in management system for different IO logic. You can ignore the details of IO establishment and build your own logic application.  
-PSS encapsulates a unified interface for Tcp, udp, serial_port, http, websocket, and ssl.  
+PSS encapsulates a unified interface for Tcp, udp, serial port, http, websocket, and ssl.  
 You can use Configure files or unified interfaces to create and use them.  
 The logic plug-in is to complete the logic processing after the data arrives,  
 all loaded in the form of a dynamic library,  
