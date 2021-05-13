@@ -46,10 +46,10 @@ Build and Install
 
 Documentation
 =============
-(In the process of finishing)  
  * [How to make packetparse plugin](md/How_to_make_packetparse_plugin.md)
  * [How to make logic plugin](md/How_to_make_logic_plugin.md)
  * [How to config server](md/How_to_config_server.md)
+ * [How to use framework api in logic plugin](md/How_to_use_framework_api_in_logic_plugin.md)
 
 Support
 =======
