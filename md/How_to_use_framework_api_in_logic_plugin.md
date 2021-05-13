@@ -5,9 +5,13 @@ You can use the API provided by the framework to simplify your logic plug-in dev
 
 Table of Contents
 =================
- - [How to register a message event](#How_to_egister_a_message_event)
- - [how to connect other server io](#how_to_connect_other_server_io)
- - [how to recv or send other server io](#how_to_recv_or_send_other_server_io)
+ - [How to register a message event](#How-to-egister-a-message-event)
+ - [How to connect other server io](#How-to-connect-other-server-io)
+ - [How to recv or send other server io](#How-to-recv-or-send-other-server-io)
+ - [How to synchronize send message](#How-to-synchronize-send-message)
+ - [How to create a framework timed message](#How-to-create-a-framework-timed-message)
+ - [How to transparently transmit data from one IO to another IO](#How-to-transparently-transmit-data-from-one-IO-to-another-IO)
+ - [How to delete io to io](#How-to-delete-io-to-io)
 
 How to register a message event
 ===============================
@@ -53,7 +57,7 @@ void CBaseCommand::logic_connect(const CMessage_Source& source, std::shared_ptr<
 | recv_packet | message | recv message |  
 | send_packet | message | send message |  
 
-how to connect other server io
+How to connect other server io
 ==============================
 For example, I want to establish a tcp or udp link to a remote server.  
 ```c++
@@ -92,11 +96,11 @@ void CBaseCommand::logic_connect_udp()
 }
 ```  
 
-how to recv or send other server io
+How to recv or send other server io
 ===================================
 recv message:  
 Please refer to [How to register a message event](#How_to_egister_a_message_event)  
-send message:  
+send message:(asynchronous send)  
 ```c++
 void CBaseCommand::logic_test_asyn(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
 {
@@ -107,4 +111,112 @@ void CBaseCommand::logic_test_asyn(const CMessage_Source& source, std::shared_pt
 }
 ```  
 
+How to synchronize send message
+===============================
+```c++
+void CBaseCommand::logic_test_sync(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
+{
+    send_packet->buffer_.append(recv_packet->buffer_.c_str(), recv_packet->buffer_.size());
+}
+```  
+
+How to create a framework timed message
+=======================================
+Sometimes, we need to send a message to our logic module regularly to let the logic module perform a certain task regularly.  
+(1) You must create a thread as the basis of message delivery in your frame when the plugin is loaded. After this thread is created, it will provide services for your in-frame delivery.  
+NOTE: This thread can be shared in multiple logic plug-ins, as long as it is created once in one plug-in.  
+```c++
+void CBaseCommand::Init(ISessionService* session_service)
+{
+    session_service_->create_frame_work_thread(plugin_test_logic_thread_id);
+}
+```
+(2) Create a message to be delivered.  
+For example, you want the frame to receive this message after 1 second.  
+If it is executed immediately, there is no need to set "delay_timer.delay_seconds_".  
+"delay_timer.timer_id_" It must be globally unique. The meaning of this parameter is that you can cancel the specified timed execution message at any time.  
+```c++
+void CBaseCommand::Init(ISessionService* session_service)
+{
+    session_service_->create_frame_work_thread(plugin_test_logic_thread_id);
+
+    auto send_message = std::make_shared<CMessage_Packet>();
+    CFrame_Message_Delay delay_timer;
+
+    delay_timer.delay_seconds_ = std::chrono::seconds(1);
+    delay_timer.timer_id_ = 1001;
+
+    send_message->command_id_ = COMMAND_TEST_FRAME;
+    send_message->buffer_ = "freeeyes";
+}
+```
+
+(3) Send a specified message to the framework.  
+```c++
+void CBaseCommand::Init(ISessionService* session_service)
+{
+    session_service_->create_frame_work_thread(plugin_test_logic_thread_id);
+
+    auto send_message = std::make_shared<CMessage_Packet>();
+    CFrame_Message_Delay delay_timer;
+
+    delay_timer.delay_seconds_ = std::chrono::seconds(1);
+    delay_timer.timer_id_ = 1001;
+
+    send_message->command_id_ = COMMAND_TEST_FRAME;
+    send_message->buffer_ = "freeeyes";
+
+    session_service_->run_work_thread_logic(plugin_test_logic_thread_id, delay_timer, [this]() {
+        PSS_LOGGER_DEBUG("[run_work_thread_logic]arrived.");
+    });
+}
+```
+
+(4) Of course, you can cancel a message that has been scheduled to be executed.  
+For example, cancel a "1001"("delay_timer.timer_id_") task message.  
+```c++
+void CBaseCommand::Init(ISessionService* session_service)
+{
+    session_service_->delete_frame_message_timer(1001);
+}
+```  
+
+How to transparently transmit data from one IO to another IO
+============================================================
+It is equivalent to bridging two IOs together, the data is directly transmitted transparently, and data messages are no longer delivered to the logic plug-in.  
+For example, the local 10010 port data is delivered to the 10003 port.  
+```c++
+void CBaseCommand::Init(ISessionService* session_service)
+{
+    _ClientIPInfo from_io;
+    from_io.m_strClientIP = "127.0.0.1";
+    from_io.m_u2Port = 10010;
+
+    _ClientIPInfo to_io;
+    to_io.m_strClientIP = "127.0.0.1";
+    to_io.m_u2Port = 10003;
+
+    session_service_->add_session_io_mapping(from_io,
+        EM_CONNECT_IO_TYPE::CONNECT_IO_TCP,
+        to_io,
+        EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_TCP);
+}
+```  
+
+How to delete io to io
+======================
+```c++
+void CBaseCommand::Init(ISessionService* session_service)
+{
+    _ClientIPInfo from_io;
+    from_io.m_strClientIP = "127.0.0.1";
+    from_io.m_u2Port = 10010;
+
+    _ClientIPInfo to_io;
+    to_io.m_strClientIP = "127.0.0.1";
+    to_io.m_u2Port = 10003;
+
+    session_service_->delete_session_io_mapping(from_io, to_io);
+}
+```  
 
