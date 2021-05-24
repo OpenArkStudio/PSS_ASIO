@@ -128,6 +128,19 @@ void CBaseCommand::logic_connect(const CMessage_Source& source, std::shared_ptr<
         PSS_LOGGER_DEBUG("[logic_connect]connand={}, CONNECT_IO_SERVER_UDP", source.connect_id_);
         PSS_LOGGER_DEBUG("[logic_connect]connand={}, server_id={}", source.connect_id_, source.connect_mark_id_);
     }
+
+#ifdef GCOV_TEST
+    //测试插件间调用
+#if PSS_PLATFORM == PLATFORM_WIN
+    std::string module_name = "Test_Logic.dll";
+#else
+    std::string module_name = "libTest_Logic.so";
+#endif
+    auto module_send_packet = std::make_shared<CMessage_Packet>();
+    auto module_return_packet = std::make_shared<CMessage_Packet>();
+    module_send_packet->command_id_ = 0x5000;
+    session_service_->module_run(module_name, module_send_packet, module_return_packet);
+#endif
 }
 
 void CBaseCommand::logic_disconnect(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)

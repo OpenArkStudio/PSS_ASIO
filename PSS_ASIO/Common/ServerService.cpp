@@ -80,7 +80,7 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
     }
 #endif
 
-    auto config_output = App_ServerConfig::instance()->get_config_console();
+    const auto& config_output = App_ServerConfig::instance()->get_config_console();
 
     //初始化输出
     Init_Console_Output(config_output.file_output_,

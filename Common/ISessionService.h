@@ -22,4 +22,5 @@ public:
     virtual bool close_frame_work_thread(uint32 thread_id) = 0;
     virtual uint16 get_io_work_thread_count() = 0;
     virtual uint16 get_plugin_work_thread_count() = 0;
+    virtual int module_run(std::string module_name, std::shared_ptr<CMessage_Packet> send_packet, std::shared_ptr<CMessage_Packet> return_packet) = 0;
 };

@@ -26,6 +26,7 @@ DECLDIR int load_module(IFrame_Object* frame_object, string module_param);
 DECLDIR void unload_module();
 DECLDIR int do_module_message(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet);
 DECLDIR int module_state();
+DECLDIR int module_run(std::shared_ptr<CMessage_Packet> send_packet, std::shared_ptr<CMessage_Packet> return_packet);
 DECLDIR void set_output(shared_ptr<spdlog::logger> logger);
 
 ISessionService* session_service = nullptr;
@@ -92,6 +93,16 @@ int do_module_message(const CMessage_Source& source, std::shared_ptr<CMessage_Pa
     MESSAGE_FUNCTION(COMMAND_WEBSOCKET_DATA, base_command->logic_http_websocket_data, source, recv_packet, send_packet);
     MESSAGE_FUNCTION_END;
 
+    return 0;
+}
+
+//模块间同步调用
+int module_run(std::shared_ptr<CMessage_Packet> send_packet, std::shared_ptr<CMessage_Packet> return_packet)
+{
+    //这里添加你的逻辑处理代码
+    PSS_LOGGER_DEBUG("[module_run]command_id_={0}.\n", send_packet->command_id_);
+    return_packet->buffer_ = send_packet->buffer_;
+    return_packet->command_id_ = send_packet->command_id_;
     return 0;
 }
 

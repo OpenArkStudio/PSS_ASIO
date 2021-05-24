@@ -584,6 +584,11 @@ uint16 CWorkThreadLogic::get_plugin_work_thread_count() const
     return (uint16)plugin_work_thread_list_.size();
 }
 
+int CWorkThreadLogic::module_run(std::string module_name, std::shared_ptr<CMessage_Packet> send_packet, std::shared_ptr<CMessage_Packet> return_packet)
+{
+    return load_module_.plugin_in_name_to_module_run(module_name, send_packet, return_packet);
+}
+
 void CWorkThreadLogic::send_io_message(uint32 connect_id, std::shared_ptr<CMessage_Packet> send_packet)
 {
     //处理线程的投递

@@ -24,6 +24,7 @@ public:
     bool delete_frame_message_timer(uint64 timer_id) final;
     uint16 get_io_work_thread_count() final;
     uint16 get_plugin_work_thread_count() final;
+    int module_run(std::string module_name, std::shared_ptr<CMessage_Packet> send_packet, std::shared_ptr<CMessage_Packet> return_packet) final;
 };
 
 using App_SessionService = PSS_singleton<CSessionService>;

@@ -67,6 +67,9 @@ bool CLoadModule::load_plugin_module(const string& module_file_path, const strin
         command_to_module_function_[command_id] = module_info->do_message_;
     }
 
+    //添加模块间调用的映射关系
+    plugin_name_to_module_run_[module_file_name] = module_info->module_run_finction_ptr_;
+
     //记录当前插件加载的命令信息
     module_info->command_id_list_.assign(module_frame_object.module_command_list_.begin(), 
         module_frame_object.module_command_list_.end());
@@ -193,7 +196,14 @@ bool CLoadModule::load_module_info(shared_ptr<_ModuleInfo> module_info) const
 
     if (nullptr == module_info->set_output_)
     {
-        PSS_LOGGER_DEBUG("[CLoadModule::LoadModuleInfo] module_name = {0}, Function GetModuleState is error({1})!", module_info->module_file_name_, errno);
+        PSS_LOGGER_DEBUG("[CLoadModule::LoadModuleInfo] module_name = {0}, Function set_output is error({1})!", module_info->module_file_name_, errno);
+        return false;
+    }
+
+    module_info->module_run_finction_ptr_ = (module_run_finction_ptr)CLoadLibrary::PSS_dlsym(module_info->hModule_, "module_run");
+    if (nullptr == module_info->set_output_)
+    {
+        PSS_LOGGER_DEBUG("[CLoadModule::LoadModuleInfo] module_name = {0}, Function module_run is error({1})!", module_info->module_file_name_, errno);
         return false;
     }
 
@@ -213,6 +223,21 @@ void CLoadModule::delete_module_name_list(const string& module_name)
 command_to_module_function& CLoadModule::get_module_function_list()
 {
     return command_to_module_function_;
+}
+
+int CLoadModule::plugin_in_name_to_module_run(std::string module_name, std::shared_ptr<CMessage_Packet> send_packet, std::shared_ptr<CMessage_Packet> return_packet)
+{
+    auto f = plugin_name_to_module_run_.find(module_name);
+    if (f != plugin_name_to_module_run_.end())
+    {
+        //找到了，执行代码
+        return f->second(send_packet, return_packet);
+    }
+    else
+    {
+        PSS_LOGGER_DEBUG("[CLoadModule::plugin_in_name_to_module_run]module name={0} is no find.", module_name);
+        return -1;
+    }
 }
 
 bool CLoadModule::get_module_exist(const char* pModuleName)
