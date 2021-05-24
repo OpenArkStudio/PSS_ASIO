@@ -67,7 +67,7 @@ public:
 
     //插件命令处理同步相关功能
     command_to_module_function& get_module_function_list();
-    int plugin_in_name_to_module_run(std::string module_name, std::shared_ptr<CMessage_Packet> send_packet, std::shared_ptr<CMessage_Packet> return_packet);
+    int plugin_in_name_to_module_run(const std::string& module_name, std::shared_ptr<CMessage_Packet> send_packet, std::shared_ptr<CMessage_Packet> return_packet);
 
 private:
     bool load_module_info(shared_ptr<_ModuleInfo> module_info) const;    //开始加载模块的接口和数据

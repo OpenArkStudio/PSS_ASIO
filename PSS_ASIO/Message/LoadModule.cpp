@@ -225,7 +225,7 @@ command_to_module_function& CLoadModule::get_module_function_list()
     return command_to_module_function_;
 }
 
-int CLoadModule::plugin_in_name_to_module_run(std::string module_name, std::shared_ptr<CMessage_Packet> send_packet, std::shared_ptr<CMessage_Packet> return_packet)
+int CLoadModule::plugin_in_name_to_module_run(const std::string& module_name, std::shared_ptr<CMessage_Packet> send_packet, std::shared_ptr<CMessage_Packet> return_packet)
 {
     auto f = plugin_name_to_module_run_.find(module_name);
     if (f != plugin_name_to_module_run_.end())

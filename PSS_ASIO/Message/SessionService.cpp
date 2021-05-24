@@ -110,7 +110,7 @@ uint16 CSessionService::get_plugin_work_thread_count()
     return App_WorkThreadLogic::instance()->get_plugin_work_thread_count();
 }
 
-int CSessionService::module_run(std::string module_name, std::shared_ptr<CMessage_Packet> send_packet, std::shared_ptr<CMessage_Packet> return_packet)
+int CSessionService::module_run(const std::string& module_name, std::shared_ptr<CMessage_Packet> send_packet, std::shared_ptr<CMessage_Packet> return_packet)
 {
     return App_WorkThreadLogic::instance()->module_run(module_name, send_packet, return_packet);
 }

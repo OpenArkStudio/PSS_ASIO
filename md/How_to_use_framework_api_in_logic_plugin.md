@@ -12,6 +12,7 @@ Table of Contents
  - [How to create a framework timed message](#How-to-create-a-framework-timed-message)
  - [How to transparently transmit data from one IO to another IO](#How-to-transparently-transmit-data-from-one-IO-to-another-IO)
  - [How to delete io to io](#How-to-delete-io-to-io)
+ - [How to synchronously send inter-plugin message](#How-to-synchronously-send-inter-plugin-message)
 
 How to register a message event
 ===============================
@@ -220,3 +221,34 @@ void CBaseCommand::Init(ISessionService* session_service)
 }
 ```  
 
+How to synchronously send inter-plugin message
+==============================================
+You can synchronously call the interfaces of other logic plug-ins during the running of the plug-in,  
+but be aware that in multi-threading, you need to add data locks to your plug-in logic.  
+You must implement the module_run method of the logic module.  
+
+```c++
+int module_run(std::shared_ptr<CMessage_Packet> send_packet, std::shared_ptr<CMessage_Packet> return_packet)
+{
+    // do your job.
+    PSS_LOGGER_DEBUG("[module_run]command_id_={0}.\n", send_packet->command_id_);
+    return_packet->buffer_ = send_packet->buffer_;
+    return_packet->command_id_ = send_packet->command_id_;
+    return 0;
+}
+```
+
+```c++
+void CBaseCommand::logic_connect(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
+{
+#if PSS_PLATFORM == PLATFORM_WIN
+    std::string module_name = "Test_Logic.dll";
+#else
+    std::string module_name = "libTest_Logic.so";
+#endif
+    auto module_send_packet = std::make_shared<CMessage_Packet>();
+    auto module_return_packet = std::make_shared<CMessage_Packet>();
+    module_send_packet->command_id_ = 0x5000;
+    session_service_->module_run(module_name, module_send_packet, module_return_packet);
+}
+```
