@@ -62,7 +62,7 @@ void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
         auto tcp_client_session = make_shared<CTcpClientSession>(io_service_context_);
         if (true == tcp_client_session->start(connect_info.io_info_))
         {
-            connect_info.session_ = tcp_client_session;
+            communication_list_[connect_info.io_info_.server_id].session_ = tcp_client_session;
         }
     }
     else if(connect_info.io_type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_UDP)
@@ -70,7 +70,7 @@ void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
         //IO是UDP
         auto udp_client_session = make_shared<CUdpClientSession>(io_service_context_);
         udp_client_session->start(connect_info.io_info_);
-        connect_info.session_ = udp_client_session;
+        communication_list_[connect_info.io_info_.server_id].session_ = udp_client_session;
     }
     else if (connect_info.io_type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_TTY)
     {
@@ -84,13 +84,14 @@ void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
             connect_info.io_info_.server_port,
             8,
             connect_info.io_info_.server_id);
-        connect_info.session_ = tty_client_session;
+        communication_list_[connect_info.io_info_.server_id].session_ = tty_client_session;
     }
     else if (connect_info.io_type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_SSL)
     {
 #ifdef SSL_SUPPORT
         auto ssl_client_session = make_shared<CTcpSSLClientSession>(io_service_context_);
         ssl_client_session->start(connect_info.io_info_);
+        communication_list_[connect_info.io_info_.server_id].session_ = ssl_client_session;
 #else
         PSS_LOGGER_DEBUG("[CCommunicationService::io_connect]you mest use SSL_SUPPORT macro support ths ssl.");
 #endif

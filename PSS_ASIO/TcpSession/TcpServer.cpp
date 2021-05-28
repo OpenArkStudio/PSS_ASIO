@@ -22,7 +22,10 @@ CTcpServer::CTcpServer(asio::io_context& io_context, const std::string& server_i
 
 void CTcpServer::close() const
 {
-    acceptor_->close();
+    if (nullptr != acceptor_)
+    {
+        acceptor_->close();
+    }
 }
 
 void CTcpServer::do_accept()
