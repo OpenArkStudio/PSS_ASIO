@@ -132,6 +132,21 @@ bool CHttpFormat::is_websocket()
     }
 }
 
+std::string CHttpFormat::get_head_info(std::string field_name)
+{
+    transform(field_name.begin(), field_name.end(), field_name.begin(), ::tolower);
+
+    auto f = http_text_buffer_.head_info_list_.find(field_name);
+    if (f != http_text_buffer_.head_info_list_.end())
+    {
+        return f->second;
+    }
+    else
+    {
+        return "";
+    }
+}
+
 int CHttpFormat::sChunkComplete(http_parser* hp)
 {
     CHttpTextBuffer* http_text_buffer = (CHttpTextBuffer*)hp->data;
@@ -184,11 +199,13 @@ int CHttpFormat::sHeadValue(http_parser* hp, const char* at, size_t length)
 {
     CHttpTextBuffer* http_text_buffer = (CHttpTextBuffer*)hp->data;
     http_text_buffer->http_func_name_ = "sHeadValue";
-    //std::cout << "[sHeadValue]" << http_data << std::endl;
+
+    std::string http_data;
+    http_data.append(at, length);
+    http_text_buffer->head_info_list_[http_text_buffer->http_head_info_.field_] = http_data;
+
     if (http_text_buffer->is_post_length_ == true)
     {
-        std::string http_data;
-        http_data.append(at, length);
         http_text_buffer->content_length_ = atoi(http_data.c_str());
         http_text_buffer->is_post_length_ = false;
     }
@@ -215,7 +232,12 @@ int CHttpFormat::sHeadField(http_parser* hp, const char* at, size_t length)
     http_text_buffer->http_func_name_ = "sHeadField";
     std::string http_data;
     http_data.append(at, length);
+
     transform(http_data.begin(), http_data.end(), http_data.begin(), ::tolower);
+
+    //记录http头参数
+    http_text_buffer->http_head_info_.field_ = http_data;
+
     if (http_data == "content-length")
     {
         http_text_buffer->is_post_length_ = true;

@@ -32,7 +32,7 @@
     {
       "tcp ip": "127.0.0.1",
       "tcp port": 10002,
-      "packet parse id": 1,
+      "packet parse id": 2,
       "recv buff size": 102400,
       "send buff size": 102400
     },

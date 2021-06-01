@@ -4,11 +4,18 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <map>
 #include "http_parser.h"
 
 // http协议解析
 // 当前只处理post请求的数据
 // add by freeeyes
+
+class CHttpHeadInfo
+{
+public:
+    std::string field_;
+};
 
 class CHttpTextBuffer
 {
@@ -25,6 +32,9 @@ public:
     bool is_websocket_key_ = false;  //是否有websocket_key字段
     std::string websocket_key_;      //websocket_key内容
 
+    std::map<std::string, std::string> head_info_list_;
+    CHttpHeadInfo http_head_info_;
+
     void clear()
     {
         buffer_parse_pos_ = 0;
@@ -36,6 +46,8 @@ public:
         content_length_ = 0;
         is_upgrade = false;
         is_websocket_key_ = false;
+
+        head_info_list_.clear();
     }
 };
 
@@ -54,6 +66,8 @@ public:
     std::string get_response_websocket_text(std::string data);
 
     bool is_websocket();
+
+    std::string get_head_info(std::string field_name);
 
     static int sChunkComplete(http_parser* hp);
     static int sChunkHeader(http_parser* hp);
