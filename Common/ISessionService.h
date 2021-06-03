@@ -23,4 +23,5 @@ public:
     virtual uint16 get_io_work_thread_count() = 0;
     virtual uint16 get_plugin_work_thread_count() = 0;
     virtual int module_run(const std::string& module_name, std::shared_ptr<CMessage_Packet> send_packet, std::shared_ptr<CMessage_Packet> return_packet) = 0;
+    virtual uint32 get_curr_thread_logic_id() = 0;
 };

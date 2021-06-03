@@ -23,7 +23,6 @@ void CBaseCommand::Init(ISessionService* session_service)
     {
         PSS_LOGGER_DEBUG("[CBaseCommand::Init]tty listen {0}:{1}", io_type.ip_, io_type.port_);
     }
-
 #ifdef GCOV_TEST
     session_service_->create_frame_work_thread(plugin_test_logic_thread_id);
 
@@ -38,7 +37,7 @@ void CBaseCommand::Init(ISessionService* session_service)
     session_service_->send_frame_message(plugin_test_logic_thread_id, "time loop", send_message, delay_timer);
 
     session_service_->run_work_thread_logic(plugin_test_logic_thread_id, delay_timer, [this]() {
-        PSS_LOGGER_DEBUG("[run_work_thread_logic]arrived.");
+        PSS_LOGGER_DEBUG("[run_work_thread_logic]arrived({0}).", session_service_->get_curr_thread_logic_id());
         });
 
     //≤‚ ‘¡¨Ω”tcp

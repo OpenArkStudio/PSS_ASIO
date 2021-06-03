@@ -115,3 +115,8 @@ int CSessionService::module_run(const std::string& module_name, std::shared_ptr<
     return App_WorkThreadLogic::instance()->module_run(module_name, send_packet, return_packet);
 }
 
+uint32 CSessionService::get_curr_thread_logic_id()
+{
+    return App_WorkThreadLogic::instance()->get_curr_thread_logic_id();
+}
+

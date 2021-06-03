@@ -131,6 +131,8 @@ public:
 
     int module_run(const std::string& module_name, std::shared_ptr<CMessage_Packet> send_packet, std::shared_ptr<CMessage_Packet> return_packet);
 
+    uint32 get_curr_thread_logic_id();
+
 private:
     using hashmappluginworkthread = unordered_map<uint32, shared_ptr<CModuleLogic>>;
     using hashmaplogictimer = unordered_map<uint64, brynet::Timer::WeakPtr>;

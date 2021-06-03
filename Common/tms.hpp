@@ -78,6 +78,11 @@ public:
         //PSS_LOGGER_DEBUG("[Close]Thread({0}) is over.", m_u4ThreadID);
     }
 
+    std::thread::id get_thread_id()
+    {
+        return m_ttlogic.get_id();
+    }
+
 private:
     CMessageQueue<shared_ptr<CLogicMessage>> m_thread_queue;
     bool m_run = false;
@@ -116,11 +121,29 @@ public:
 
             m_mapLogicList[u4LogicID] = pLogicTask;
 
+            //记录映射关系
+            m_TidtologicidList[pLogicTask->get_thread_id()] = u4LogicID;
             //cout << "CreateLogic(" << u4LogicID << ")." << endl;
         }
 
         return true;
     };
+
+    uint32 GetLogicThreadID()
+    {
+        std::thread::id tid = std::this_thread::get_id();
+
+        auto f = m_TidtologicidList.find(tid);
+        if (f != m_TidtologicidList.end())
+        {
+            return f->second;
+        }
+        else
+        {
+            //没有找到工作线程
+            return 0;
+        }
+    }
 
     bool CloseLogic(uint32 u4LogicID)  //关闭一个逻辑线程
     {
@@ -128,6 +151,10 @@ public:
         if (f != m_mapLogicList.end())
         {
             auto pLogicTask = f->second;
+            
+            //关闭映射关系
+            m_TidtologicidList.erase(pLogicTask->get_thread_id());
+            
             pLogicTask->Close();
             m_mapLogicList.erase(f);
             return true;
@@ -211,9 +238,11 @@ public:
 
 private:
     using mapthreads = map<uint32, std::shared_ptr<CLogicTasK>>;
+    using mapthreadidtologicid = map<std::thread::id, uint32>;
     brynet::TimerMgr m_timerManager;
     mapthreads m_mapLogicList;
     std::thread m_ttTimer;
+    mapthreadidtologicid m_TidtologicidList;
 };
 
 using App_tms = PSS_singleton<TMS>;
