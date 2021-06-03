@@ -36,8 +36,9 @@ void CBaseCommand::Init(ISessionService* session_service)
     send_message->buffer_ = "freeeyes";
     session_service_->send_frame_message(plugin_test_logic_thread_id, "time loop", send_message, delay_timer);
 
-    session_service_->run_work_thread_logic(plugin_test_logic_thread_id, delay_timer, [this]() {
-        PSS_LOGGER_DEBUG("[run_work_thread_logic]arrived({0}).", session_service_->get_curr_thread_logic_id());
+    ISessionService* temp = session_service_;
+    session_service_->run_work_thread_logic(plugin_test_logic_thread_id, delay_timer, [temp, this]() {
+        PSS_LOGGER_DEBUG("[run_work_thread_logic]arrived({0}).", temp->get_curr_thread_logic_id());
         });
 
     //≤‚ ‘¡¨Ω”tcp

@@ -122,7 +122,12 @@ public:
             m_mapLogicList[u4LogicID] = pLogicTask;
 
             //记录映射关系
-            m_TidtologicidList[pLogicTask->get_thread_id()] = u4LogicID;
+            std::thread::id tid = pLogicTask->get_thread_id();
+            std::ostringstream thread_id_stream;
+            thread_id_stream << tid;
+            std::string thread_id_str = thread_id_stream.str();
+
+            m_TidtologicidList[thread_id_str] = u4LogicID;
             //cout << "CreateLogic(" << u4LogicID << ")." << endl;
         }
 
@@ -132,8 +137,11 @@ public:
     uint32 GetLogicThreadID()
     {
         std::thread::id tid = std::this_thread::get_id();
+        std::ostringstream thread_id_stream;
+        thread_id_stream << tid;
+        std::string thread_id_str = thread_id_stream.str();
 
-        auto f = m_TidtologicidList.find(tid);
+        auto f = m_TidtologicidList.find(thread_id_str);
         if (f != m_TidtologicidList.end())
         {
             return f->second;
@@ -153,7 +161,11 @@ public:
             auto pLogicTask = f->second;
             
             //关闭映射关系
-            m_TidtologicidList.erase(pLogicTask->get_thread_id());
+            std::thread::id tid = pLogicTask->get_thread_id();
+            std::ostringstream thread_id_stream;
+            thread_id_stream << tid;
+            std::string thread_id_str = thread_id_stream.str();
+            m_TidtologicidList.erase(thread_id_str);
             
             pLogicTask->Close();
             m_mapLogicList.erase(f);
@@ -238,7 +250,7 @@ public:
 
 private:
     using mapthreads = map<uint32, std::shared_ptr<CLogicTasK>>;
-    using mapthreadidtologicid = map<std::thread::id, uint32>;
+    using mapthreadidtologicid = map<std::string, uint32>;
     brynet::TimerMgr m_timerManager;
     mapthreads m_mapLogicList;
     std::thread m_ttTimer;
