@@ -255,7 +255,10 @@ void CWorkThreadLogic::do_work_thread_frame_events(uint16 command_id, uint32 mar
 void CWorkThreadLogic::add_frame_events(uint16 command_id, uint32 mark_id, const std::string& remote_ip, uint16 remote_port, EM_CONNECT_IO_TYPE io_type)
 {
     //添加框架通知事件
-    App_tms::instance()->AddMessage(0, [this, command_id, mark_id, remote_ip, remote_port, io_type]() {
+    App_tms::instance()->AddMessage(0, [this, command_id, mark_id, remote_ip, remote_port, io_type](uint32 work_thread_id) {
+#ifdef GCOV_TEST
+        PSS_LOGGER_DEBUG("[CWorkThreadLogic::add_frame_events]work_thread_id={0}", work_thread_id);
+#endif
         do_work_thread_frame_events(command_id, mark_id, remote_ip, remote_port, io_type);
         });
 }
@@ -277,7 +280,10 @@ void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession
     io_to_io_.regedit_session_id(romote_info, session->get_io_type(), connect_id);
 
     //向插件告知链接建立消息
-    App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, module_logic, local_info, romote_info]() {
+    App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, module_logic, local_info, romote_info](uint32 work_thread_id) {
+#ifdef GCOV_TEST
+        PSS_LOGGER_DEBUG("[CWorkThreadLogic::add_thread_session]work_thread_id={0}", work_thread_id);
+#endif
         module_logic->add_session(connect_id, session, local_info, romote_info);
 
         CMessage_Source source;
@@ -315,7 +321,10 @@ void CWorkThreadLogic::delete_thread_session(uint32 connect_id, const _ClientIPI
     io_to_io_.unregedit_session_id(from_io, session->get_io_type());
 
     //向插件告知链接断开消息
-    App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, module_logic]() {
+    App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, module_logic](uint32 work_thread_id) {
+#ifdef GCOV_TEST
+        PSS_LOGGER_DEBUG("[CWorkThreadLogic::delete_thread_session]work_thread_id={0}", work_thread_id);
+#endif
         CMessage_Source source;
         auto recv_packet = std::make_shared<CMessage_Packet>();
         auto send_packet = std::make_shared<CMessage_Packet>();
@@ -337,7 +346,10 @@ void CWorkThreadLogic::close_session_event(uint32 connect_id)
     uint16 curr_thread_index = connect_id % thread_count_;
     auto module_logic = thread_module_list_[curr_thread_index];
 
-    App_tms::instance()->AddMessage(curr_thread_index, [module_logic, connect_id]() {
+    App_tms::instance()->AddMessage(curr_thread_index, [module_logic, connect_id](uint32 work_thread_id) {
+#ifdef GCOV_TEST
+        PSS_LOGGER_DEBUG("[CWorkThreadLogic::close_session_event]work_thread_id={0}", work_thread_id);
+#endif
         auto session = module_logic->get_session_interface(connect_id);
         if (session != nullptr)
         {
@@ -360,7 +372,10 @@ int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, c
         module_logic = thread_module_list_[curr_thread_index];
 
         //存在点对点透传，直接透传数据
-        App_tms::instance()->AddMessage(curr_thread_index, [io_2_io_session_id, message_list, module_logic]() {
+        App_tms::instance()->AddMessage(curr_thread_index, [io_2_io_session_id, message_list, module_logic](uint32 work_thread_id) {
+#ifdef GCOV_TEST
+            PSS_LOGGER_DEBUG("[CWorkThreadLogic::assignation_thread_module_logic]work_thread_id={0}", work_thread_id);
+#endif
             auto session_io = module_logic->get_session_interface(io_2_io_session_id);
             for (auto recv_packet : message_list)
             {
@@ -374,7 +389,10 @@ int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, c
     else
     {
         //添加到数据队列处理
-        App_tms::instance()->AddMessage(curr_thread_index, [this, session, connect_id, message_list, module_logic]() {
+        App_tms::instance()->AddMessage(curr_thread_index, [this, session, connect_id, message_list, module_logic](uint32 work_thread_id) {
+#ifdef GCOV_TEST
+            PSS_LOGGER_DEBUG("[CWorkThreadLogic::assignation_thread_module_logic]work_thread_id={0}", work_thread_id);
+#endif
             do_work_thread_module_logic(session, connect_id, message_list, module_logic);
             });
     }
@@ -473,7 +491,10 @@ void CWorkThreadLogic::do_io_message_delivery(uint32 connect_id, std::shared_ptr
 void CWorkThreadLogic::do_plugin_thread_module_logic(shared_ptr<CModuleLogic> module_logic, const std::string& message_tag, std::shared_ptr<CMessage_Packet> recv_packet) const
 {
     //添加到数据队列处理
-    App_tms::instance()->AddMessage(module_logic->get_work_thread_id(), [message_tag, recv_packet, module_logic]() {
+    App_tms::instance()->AddMessage(module_logic->get_work_thread_id(), [message_tag, recv_packet, module_logic](uint32 work_thread_id) {
+#ifdef GCOV_TEST
+        PSS_LOGGER_DEBUG("[CWorkThreadLogic::do_plugin_thread_module_logic]work_thread_id={0}", work_thread_id);
+#endif
         CMessage_Source source;
         auto send_packet = std::make_shared<CMessage_Packet>();
 
@@ -596,7 +617,10 @@ void CWorkThreadLogic::send_io_message(uint32 connect_id, std::shared_ptr<CMessa
     auto module_logic = thread_module_list_[curr_thread_index];
 
     //添加到数据队列处理
-    App_tms::instance()->AddMessage(curr_thread_index, [this, connect_id, send_packet, module_logic]() {        
+    App_tms::instance()->AddMessage(curr_thread_index, [this, connect_id, send_packet, module_logic](uint32 work_thread_id) {
+#ifdef GCOV_TEST
+        PSS_LOGGER_DEBUG("[CWorkThreadLogic::send_io_message]work_thread_id={0}", work_thread_id);
+#endif
         do_io_message_delivery(connect_id, send_packet, module_logic);
         });
 }
@@ -653,7 +677,10 @@ void CWorkThreadLogic::run_check_task(uint32 timeout_seconds) const
         uint32 connect_timeout = connect_timeout_;
         for (auto module_logic : thread_module_list_)
         {
-            App_tms::instance()->AddMessage(module_logic->get_work_thread_id(), [connect_timeout, module_logic]() {
+            App_tms::instance()->AddMessage(module_logic->get_work_thread_id(), [connect_timeout, module_logic](uint32 work_thread_id) {
+#ifdef GCOV_TEST
+                PSS_LOGGER_DEBUG("[CWorkThreadLogic::run_check_task]work_thread_id={0}", work_thread_id);
+#endif
                 module_logic->check_session_io_timeout(connect_timeout);
                 });
         }

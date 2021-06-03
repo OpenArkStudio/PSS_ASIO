@@ -109,7 +109,10 @@ void CTcpClientSession::do_read()
     if (session_recv_buffer_.get_buffer_size() == 0)
     {
         //链接断开(缓冲撑满了)
-        App_tms::instance()->AddMessage(1, [self, connect_id]() {
+        App_tms::instance()->AddMessage(1, [self, connect_id](uint32 work_thread_id) {
+#ifdef GCOV_TEST
+            PSS_LOGGER_DEBUG("[CTcpClientSession::do_read]work_thread_id={0}", work_thread_id);
+#endif
             self->close(connect_id);
             });
     }

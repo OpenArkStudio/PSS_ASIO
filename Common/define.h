@@ -97,8 +97,9 @@ public:
 class CMessage_Packet
 {
 public:
-    string buffer_;
-    uint16 command_id_;
+    std::vector<string> param_arg_; //其他的透传参数    
+    string buffer_;                 //数据内容
+    uint16 command_id_;             //消息ID
 };
 
 //插件内调用延迟消息数据体
@@ -147,7 +148,7 @@ const uint16 LOGIC_CONNECT_SERVER_ERROR = 0x0003;  //链接服务器不成功事
 const uint16 LOGIC_LISTEN_SERVER_ERROR = 0x0004;  //创建监听事件
 const uint16 LOGIC_MAX_FRAME_COMMAND = 0x0010;   //内部事件ID上限 
 
-using task_function = std::function<void()>;
+using task_function = std::function<void(uint32)>;
 
 //暂不使用的参数
 template <typename T>
