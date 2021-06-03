@@ -101,7 +101,7 @@ void tcp_test_connect_synchronize_server(std::string strIP, unsigned short port,
         return;
     }
 
-    std::cout << "[tcp_test_connect_synchronize_server]connect OK" << std::endl;
+    std::cout << "[tcp_test_connect_synchronize_server]("<< command_id << ")connect OK" << std::endl;
 
     //发送数据
     char* send_buffer = new char [240 * packt_count];
