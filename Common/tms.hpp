@@ -67,7 +67,7 @@ public:
             if (EM_LOGIC_TYPE::LOGIC_TYPE_RUN == msg->m_emType)
             {
                 //获得了数据，进行处理
-                msg->m_func(m_u4ThreadID);
+                msg->m_func();
             }
             else
             {

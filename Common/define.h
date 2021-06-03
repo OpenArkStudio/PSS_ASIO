@@ -148,7 +148,7 @@ const uint16 LOGIC_CONNECT_SERVER_ERROR = 0x0003;  //链接服务器不成功事
 const uint16 LOGIC_LISTEN_SERVER_ERROR = 0x0004;  //创建监听事件
 const uint16 LOGIC_MAX_FRAME_COMMAND = 0x0010;   //内部事件ID上限 
 
-using task_function = std::function<void(uint32)>;
+using task_function = std::function<void()>;
 
 //暂不使用的参数
 template <typename T>
