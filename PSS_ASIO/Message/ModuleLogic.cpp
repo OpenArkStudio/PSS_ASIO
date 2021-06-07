@@ -19,9 +19,6 @@ shared_ptr<ISession> CModuleLogic::get_session_interface(uint32 connect_id)
     work_thread_run_time_ = std::chrono::steady_clock::now();
 
 #ifdef GCOV_TEST
-    plugin_work_thread_buffer_message_list_.clear();
-    plugin_work_thread_buffer_Func_list_.clear();
-
     auto local_ip = sessions_interface_.get_session_local_ip(connect_id);
     PSS_LOGGER_DEBUG("[CModuleLogic::get_session_interface]local IP={0}:{1}",
         local_ip.m_strClientIP,
@@ -101,6 +98,9 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
             logic_library.logic_param_);
 
 #ifdef GCOV_TEST
+        plugin_work_thread_buffer_message_list_.clear();
+        plugin_work_thread_buffer_Func_list_.clear();
+
         //测试输出和关闭
         PSS_LOGGER_DEBUG("[load_module_] module is exist = {0}", load_module_.get_module_exist(logic_library.logic_file_name_.c_str()));
         PSS_LOGGER_DEBUG("[load_module_] name = {0}", load_module_.get_module_file_path(logic_library.logic_file_name_.c_str()));
