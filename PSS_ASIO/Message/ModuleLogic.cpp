@@ -19,6 +19,9 @@ shared_ptr<ISession> CModuleLogic::get_session_interface(uint32 connect_id)
     work_thread_run_time_ = std::chrono::steady_clock::now();
 
 #ifdef GCOV_TEST
+    plugin_work_thread_buffer_message_list_.clear();
+    plugin_work_thread_buffer_Func_list_.clear();
+
     auto local_ip = sessions_interface_.get_session_local_ip(connect_id);
     PSS_LOGGER_DEBUG("[CModuleLogic::get_session_interface]local IP={0}:{1}",
         local_ip.m_strClientIP,
