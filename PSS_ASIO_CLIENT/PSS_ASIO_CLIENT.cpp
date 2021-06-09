@@ -189,7 +189,7 @@ void udp_test_connect_synchronize_server(std::string strIP, unsigned short port,
         std::cout << "[udp_test_connect_synchronize_server]udp test fail." << std::endl;
     }
 
-    std::cout << "[tcp_test_connect_synchronize_server]tcp test ok." << std::endl;
+    std::cout << "[udp_test_connect_synchronize_server]udp test ok." << std::endl;
     sock.close();
 }
 

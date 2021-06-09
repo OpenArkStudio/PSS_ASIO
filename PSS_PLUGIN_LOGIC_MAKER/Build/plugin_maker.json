@@ -1,0 +1,83 @@
+{
+  "plugin project name": "example_logic",
+  "plugin project path": "./",
+  "plugin class": [
+    {
+      "class name": "Crecv_sample",
+      "class type": [
+        {
+          "name": "message_version_",
+          "type": "uint16"
+        },
+        {
+          "name": "message_command_id_",
+          "type": "uint16"
+        },
+        {
+          "name": "message_length_",
+          "type": "uint32"
+        },
+        {
+          "name": "message_session_",
+          "type": "string",
+          "buffer_length": "32"
+        },
+        {
+          "name": "message_data_",
+          "type": "string",
+          "buffer_length": "200"
+        }
+      ]
+    },
+    {
+      "class name": "Csend_sample",
+      "class type": [
+        {
+          "name": "message_version_",
+          "type": "uint16"
+        },
+        {
+          "name": "message_command_id_",
+          "type": "uint16"
+        },
+        {
+          "name": "message_length_",
+          "type": "uint32"
+        },
+        {
+          "name": "message_session_",
+          "type": "string",
+          "buffer_length": "32"
+        },
+        {
+          "name": "message_data_",
+          "type": "string",
+          "buffer_length": "200"
+        }
+      ]
+    }
+  ],
+
+  "command": [
+    {
+      "command macro": "LOGIC_COMMAND_CONNECT",
+      "command id": "",
+      "command function": "logic_connect"
+    },
+    {
+      "command macro": "LOGIC_COMMAND_DISCONNECT",
+      "command id": "",
+      "command function": "logic_disconnect"
+    },
+    {
+      "command macro": "COMMAND_TEST_SYNC",
+      "command id": "0x2101",
+      "command function": "logic_test_sync"
+    },
+    {
+      "command macro": "COMMAND_TEST_ASYN",
+      "command id": "0x2102",
+      "command function": "logic_test_asyn"
+    }
+  ]
+}
