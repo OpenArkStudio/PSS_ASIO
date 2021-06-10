@@ -22,8 +22,16 @@ inline int64 ntohll_int64(int64 val)
 class CReadBuffer
 {
 public:
+    CReadBuffer() = default;
+
     CReadBuffer(const std::string* buffer) : buffer_(buffer)
     {
+        write_ptr_ = (uint32)buffer->size();
+    }
+
+    void append(const std::string* buffer)
+    {
+        buffer_ = buffer;
         write_ptr_ = (uint32)buffer->size();
     }
 

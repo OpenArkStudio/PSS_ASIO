@@ -22,8 +22,16 @@ inline int64 htonll_int64(int64 val)
 class CWriteBuffer
 {
 public:
+    CWriteBuffer() = default;
+
     CWriteBuffer(std::string* buffer) : buffer_(buffer)
     {
+        write_ptr_ = (uint32)buffer->size();
+    }
+
+    void append(std::string* buffer)
+    {
+        buffer_ = buffer;
         write_ptr_ = (uint32)buffer->size();
     }
 
