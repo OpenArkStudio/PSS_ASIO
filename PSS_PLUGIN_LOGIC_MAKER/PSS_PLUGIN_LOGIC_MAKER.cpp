@@ -12,6 +12,12 @@ int main()
 
     read_logic_json_info.make_logic_class_file();
 
+    read_logic_json_info.make_command_h_file();
+
+    read_logic_json_info.make_command_cpp_file();
+
+    read_logic_json_info.make_logic_plugin_cpp();
+
     getchar();
     return 0;
 }

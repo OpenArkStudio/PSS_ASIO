@@ -3,6 +3,7 @@
   "plugin project path": "./",
   "plugin class": [
     {
+      "message type" : "Message Input",
       "class name": "Crecv_sample",
       "class type": [
         {
@@ -20,16 +21,17 @@
         {
           "name": "message_session_",
           "type": "string",
-          "buffer_length": "32"
+          "buffer_length": 32
         },
         {
           "name": "message_data_",
           "type": "string",
-          "buffer_length": "200"
+          "buffer_length": 200
         }
       ]
     },
     {
+      "message type": "Message Output",
       "class name": "Csend_sample",
       "class type": [
         {
@@ -46,13 +48,11 @@
         },
         {
           "name": "message_session_",
-          "type": "string",
-          "buffer_length": "32"
+          "type": "string"
         },
         {
           "name": "message_data_",
-          "type": "string",
-          "buffer_length": "200"
+          "type": "string"
         }
       ]
     }

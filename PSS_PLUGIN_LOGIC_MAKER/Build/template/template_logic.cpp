@@ -1,11 +1,11 @@
-﻿// Test_Logic.cpp : Define the logic plug-in call interface
+// Define the logic plug-in call interface
 
 #include <iostream>
 
 #include "IFrameObject.h"
 #include "define.h"
 
-[include command file head file]
+#include "[include command file head file]"
 
 #if PSS_PLATFORM == PLATFORM_WIN
 #ifdef TEST_LOGIC_EXPORTS
@@ -33,19 +33,19 @@ std::shared_ptr<[command class name]> base_command = nullptr;
 #define MESSAGE_FUNCTION(x,y,z,h,i) case x: { y(z,h,i); break; }
 #define MESSAGE_FUNCTION_END }
 
-//插件加载
+//Plugin loading
 int load_module(IFrame_Object* frame_object, string module_param)
 {
 #ifdef GCOV_TEST
-    //如果是功能代码覆盖率检查，则开启这个开关，让插件执行所有框架接口调用
+    //If it is a functional code coverage check, turn on this switch and let the plug-in execute all framework interface calls
     PSS_LOGGER_DEBUG("[load_module]gcov_check is set.");
 #endif
 
-    //初始化消息处理类
+    //Initialize the message processing class
     base_command = std::make_shared<[command class name]>();
 
-    //注册插件
-    [regedit command id]
+    //Register the plugin
+    [register command id]
 
     session_service = frame_object->get_session_service();
 
@@ -56,46 +56,44 @@ int load_module(IFrame_Object* frame_object, string module_param)
     return 0;
 }
 
-//卸载插件
+//Uninstall plugin
 void unload_module()
 {
     PSS_LOGGER_DEBUG("[unload_module]finish.");
 }
 
-//执行消息处理
+//Perform message processing
 int do_module_message(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
 {
-    //插件消息处理
+    //Plug-in message processing
     //PSS_LOGGER_DEBUG("[do_module_message]command_id={0}.", recv_packet.command_id_);
 
     MESSAGE_FUNCTION_BEGIN(recv_packet->command_id_);
-    //MESSAGE_FUNCTION(LOGIC_COMMAND_CONNECT, base_command->logic_connect, source, recv_packet, send_packet);
-    [message map logic funcion]
+    [message map logic function]
     MESSAGE_FUNCTION_END;
 
     return 0;
 }
 
-//模块间同步调用
+//Synchronous calls between modules
 int module_run(std::shared_ptr<CMessage_Packet> send_packet, std::shared_ptr<CMessage_Packet> return_packet)
 {
-    //这里添加你的逻辑处理代码
+    //Add your logic processing code here
     PSS_LOGGER_DEBUG("[module_run]command_id_={0}.\n", send_packet->command_id_);
     return_packet->buffer_ = send_packet->buffer_;
     return_packet->command_id_ = send_packet->command_id_;
     return 0;
 }
 
-//获得当前插件状态
+//Get the current plug-in status
 int module_state()
 {
     return 0;
 }
 
-//设置日志输出
+//Set log output
 void set_output(shared_ptr<spdlog::logger> logger)
 {
-    //设置输出对象
     spdlog::set_default_logger(logger);
 }
 

@@ -1,4 +1,4 @@
-#include "template_Command.h"
+#include "[command head file]"
 
 void CBaseCommand::Init(ISessionService* session_service)
 {
