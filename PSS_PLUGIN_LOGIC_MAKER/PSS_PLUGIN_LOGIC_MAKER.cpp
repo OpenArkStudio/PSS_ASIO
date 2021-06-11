@@ -18,6 +18,10 @@ int main()
 
     read_logic_json_info.make_logic_plugin_cpp();
 
+    read_logic_json_info.make_do_message_h_file();
+
+    read_logic_json_info.make_do_message_cpp_file();
+
     getchar();
     return 0;
 }

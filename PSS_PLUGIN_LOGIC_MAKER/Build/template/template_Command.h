@@ -14,6 +14,8 @@ public:
 
 	[command logic function define]
 
+private:
 	ISessionService* session_service_ = nullptr;
+	[do message logic]
 };
 

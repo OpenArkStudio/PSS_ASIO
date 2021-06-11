@@ -62,22 +62,30 @@
     {
       "command macro": "LOGIC_COMMAND_CONNECT",
       "command id": "",
-      "command function": "logic_connect"
+      "command function": "logic_connect",
+      "message in": "",
+      "message out": ""
     },
     {
       "command macro": "LOGIC_COMMAND_DISCONNECT",
       "command id": "",
-      "command function": "logic_disconnect"
+      "command function": "logic_disconnect",
+      "message in": "",
+      "message out": ""
     },
     {
       "command macro": "COMMAND_TEST_SYNC",
       "command id": "0x2101",
-      "command function": "logic_test_sync"
+      "command function": "logic_test_sync",
+      "message in": "Crecv_sample",
+      "message out": "Csend_sample"
     },
     {
       "command macro": "COMMAND_TEST_ASYN",
       "command id": "0x2102",
-      "command function": "logic_test_asyn"
+      "command function": "logic_test_asyn",
+      "message in": "Crecv_sample",
+      "message out": ""
     }
   ]
 }

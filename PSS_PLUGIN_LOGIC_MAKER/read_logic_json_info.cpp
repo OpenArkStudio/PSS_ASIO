@@ -41,6 +41,8 @@ bool Cread_logic_json_info::read_json_file(std::string file_name)
             command_info.command_macro_ = command_parse["command macro"];
             command_info.command_id_ = command_parse["command id"];
             command_info.command_function_ = command_parse["command function"];
+            command_info.message_in_ = command_parse["message in"];
+            command_info.message_out_ = command_parse["message out"];
 
             command_list_.command_list_.emplace_back(command_info);
         }
@@ -217,7 +219,7 @@ bool Cread_logic_json_info::make_command_h_file()
 
     //添加头文件
     h_file_content = template_h_content;
-    std::string class_h_file = "#include \"" + plugin_project_info_.plugin_project_name + "_type.hpp\"";
+    std::string class_h_file = "#include \"" + plugin_project_info_.plugin_project_name + "_do_message.hpp\"";
     replace_all_distinct(h_file_content, "[include file]", class_h_file);
 
     //声明命令ID
@@ -249,6 +251,10 @@ bool Cread_logic_json_info::make_command_h_file()
     }
     replace_all_distinct(h_file_content, "[command logic function define]", command_func_define);
 
+    //声明处理类
+    std::string do_message_class = "C" + plugin_project_info_.plugin_project_name + "_do_message do_logic;";
+    replace_all_distinct(h_file_content, "[do message logic]", do_message_class);
+
     fwrite(h_file_content.c_str(), h_file_content.length(), sizeof(char), stream);
     fclose(stream);
     return true;
@@ -277,12 +283,33 @@ bool Cread_logic_json_info::make_command_cpp_file()
     for (const auto command_id_info : command_list_.command_list_)
     {
         command_func_achieve += "void C" + plugin_project_info_.plugin_project_name + "_command" + "::" + command_id_info.command_function_ + "(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)\n";
-        command_func_achieve += "{\n\t//do somthing your logic\n}\n\n";
+        command_func_achieve += "{\n\t//do message logic\n";
+
+        if (command_id_info.message_in_ != "" && command_id_info.message_out_ != "")
+        {
+            command_func_achieve += "\t" + command_id_info.message_in_ + " recv;\n";
+            command_func_achieve += "\t" + command_id_info.message_out_ + " send;\n";
+            command_func_achieve += "\trecv.read_message(&recv_packet->buffer_);\n";
+            command_func_achieve += "\tdo_logic->do_message_" + command_id_info.command_macro_
+                + "(source.connect_id_, recv_packet->command_id_, recv, send);\n";
+            command_func_achieve += "\tsend.write_message(send_packet->buffer_);\n";
+        }
+        else if (command_id_info.message_in_ != "" && command_id_info.message_out_ == "")
+        {
+            command_func_achieve += "\t" + command_id_info.message_in_ + " recv;\n";
+            command_func_achieve += "\trecv.read_message(&recv_packet->buffer_);\n";
+            command_func_achieve += "\tdo_logic->do_message_" + command_id_info.command_macro_
+                + "(source.connect_id_, recv_packet->command_id_, recv);\n";
+        }
+
+        command_func_achieve += "}\n\n";
     }
 
     replace_all_distinct(cpp_file_content, "[command logic function achieve]", command_func_achieve);
 
     replace_all_distinct(cpp_file_content, "[command head file]", plugin_project_info_.plugin_project_name + "_command.h");
+
+    replace_all_distinct(cpp_file_content, "[do message logic init]", "do_logic.set_frame_object(session_service);");
 
     fwrite(cpp_file_content.c_str(), cpp_file_content.length(), sizeof(char), stream);
     fclose(stream);
@@ -342,6 +369,123 @@ bool Cread_logic_json_info::make_logic_plugin_cpp()
     replace_all_distinct(cpp_file_content, "[message map logic function]", regedit_command_function);
 
     fwrite(cpp_file_content.c_str(), cpp_file_content.length(), sizeof(char), stream);
+    fclose(stream);
+    return true;
+}
+
+bool Cread_logic_json_info::make_do_message_h_file()
+{
+    std::string cpp_file_content;
+    std::string project_path = plugin_project_info_.plugin_path + plugin_project_info_.plugin_project_name;
+    std::string logic_file = project_path + "/" + plugin_project_info_.plugin_project_name + "_do_message.h";
+    FILE* stream = nullptr;
+
+    //打开文件
+    if (false == create_logic_file(stream, logic_file))
+    {
+        return false;
+    }
+
+    std::string line;
+    line = "#pragma once\n\n";
+    fwrite(line.c_str(), line.length(), sizeof(char), stream);
+    line = "#include \"" + plugin_project_info_.plugin_project_name + "_type.hpp\"\n";
+    fwrite(line.c_str(), line.length(), sizeof(char), stream);
+    line = "#include \"IFrameObject.h\"\n\n";
+    fwrite(line.c_str(), line.length(), sizeof(char), stream);
+    line = "class C" + plugin_project_info_.plugin_project_name + "_do_message" + "\n";
+    fwrite(line.c_str(), line.length(), sizeof(char), stream);
+    line = "{\n";
+    fwrite(line.c_str(), line.length(), sizeof(char), stream);
+    line = "public:\n";
+    fwrite(line.c_str(), line.length(), sizeof(char), stream);
+    line = "\tvoid set_frame_object(ISessionService* session_service);\n";
+    fwrite(line.c_str(), line.length(), sizeof(char), stream);
+
+    for (const auto& command_id_info : command_list_.command_list_)
+    {
+        if (command_id_info.message_in_ != "" && command_id_info.message_out_ != "")
+        {
+            line = "\tvoid do_message_" + command_id_info.command_macro_ 
+                + "(uint32 connect_id, uint32 command_id, " + command_id_info.message_in_ + "& recv, " 
+                + command_id_info.message_out_ + "& send);\n";
+            fwrite(line.c_str(), line.length(), sizeof(char), stream);
+        }
+        else if (command_id_info.message_in_ != "" && command_id_info.message_out_ == "")
+        {
+            line = "\tvoid do_message_" + command_id_info.command_macro_
+                + "(uint32 connect_id, uint32 command_id, " + command_id_info.message_in_ + "& recv);\n";
+            fwrite(line.c_str(), line.length(), sizeof(char), stream);
+        }
+    }
+
+    line = "private:\n";
+    fwrite(line.c_str(), line.length(), sizeof(char), stream);
+    line = "\tISessionService* session_service_ = nullptr;\n";
+    fwrite(line.c_str(), line.length(), sizeof(char), stream);
+
+    line = "};\n";
+    fwrite(line.c_str(), line.length(), sizeof(char), stream);
+    fclose(stream);
+    return true;
+}
+
+bool Cread_logic_json_info::make_do_message_cpp_file()
+{
+    std::string cpp_file_content;
+    std::string project_path = plugin_project_info_.plugin_path + plugin_project_info_.plugin_project_name;
+    std::string logic_file = project_path + "/" + plugin_project_info_.plugin_project_name + "_do_message.cpp";
+    FILE* stream = nullptr;
+
+    //打开文件
+    if (false == create_logic_file(stream, logic_file))
+    {
+        return false;
+    }
+
+    std::string line;
+    line = "#include \"" + plugin_project_info_.plugin_project_name + "_do_message.h\"\n\n";
+    fwrite(line.c_str(), line.length(), sizeof(char), stream);
+
+    for (const auto& command_id_info : command_list_.command_list_)
+    {
+        if (command_id_info.message_in_ != "" && command_id_info.message_out_ != "")
+        {
+            line = "void C" + plugin_project_info_.plugin_project_name + "_do_message" + "::do_message_" + command_id_info.command_macro_
+                + "(uint32 connect_id, uint32 command_id, " + command_id_info.message_in_ + "& recv, "
+                + command_id_info.message_out_ + "& send)\n";
+            fwrite(line.c_str(), line.length(), sizeof(char), stream);
+            line = "{\n";
+            fwrite(line.c_str(), line.length(), sizeof(char), stream);
+            line = "\t//add your logic code\n";
+            fwrite(line.c_str(), line.length(), sizeof(char), stream);
+            line = "}\n";
+            fwrite(line.c_str(), line.length(), sizeof(char), stream);
+
+        }
+        else if (command_id_info.message_in_ != "" && command_id_info.message_out_ == "")
+        {
+            line = "void C" + plugin_project_info_.plugin_project_name + "_do_message" + "::do_message_" + command_id_info.command_macro_
+                + "(uint32 connect_id, uint32 command_id, " + command_id_info.message_in_ + "& recv);\n";
+            fwrite(line.c_str(), line.length(), sizeof(char), stream);
+            line = "{\n";
+            fwrite(line.c_str(), line.length(), sizeof(char), stream);
+            line = "\t//add your logic code\n";
+            fwrite(line.c_str(), line.length(), sizeof(char), stream);
+            line = "}\n\n";
+            fwrite(line.c_str(), line.length(), sizeof(char), stream);
+        }
+    }
+
+    line = "void C" + plugin_project_info_.plugin_project_name + "_do_message" + "::set_frame_object(ISessionService* session_service);\n";
+    fwrite(line.c_str(), line.length(), sizeof(char), stream);
+    line = "{\n";
+    fwrite(line.c_str(), line.length(), sizeof(char), stream);
+    line = "\tsession_service_ = session_service;\n";
+    fwrite(line.c_str(), line.length(), sizeof(char), stream);
+    line = "}\n\n";
+    fwrite(line.c_str(), line.length(), sizeof(char), stream);
+
     fclose(stream);
     return true;
 }

@@ -52,6 +52,8 @@ public:
     std::string command_macro_;
     std::string command_id_;
     std::string command_function_;
+    std::string message_in_;
+    std::string message_out_;
 };
 
 class CCommandList

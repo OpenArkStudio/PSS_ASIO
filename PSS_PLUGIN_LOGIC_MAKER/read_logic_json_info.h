@@ -32,6 +32,8 @@ public:
     bool make_command_h_file();
     bool make_command_cpp_file();
     bool make_logic_plugin_cpp();
+    bool make_do_message_h_file();
+    bool make_do_message_cpp_file();
 
 private:
     std::string& replace_all_distinct(std::string& str, const std::string& old_value, const std::string& new_value);
