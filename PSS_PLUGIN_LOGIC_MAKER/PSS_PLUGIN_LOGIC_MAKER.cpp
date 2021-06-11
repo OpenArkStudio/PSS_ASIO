@@ -6,7 +6,11 @@
 int main()
 {
     Cread_logic_json_info read_logic_json_info;
-    read_logic_json_info.read_json_file();
+    if (false == read_logic_json_info.read_json_file())
+    {
+        getchar();
+        return 0;
+    }
 
     read_logic_json_info.make_project_path();
 

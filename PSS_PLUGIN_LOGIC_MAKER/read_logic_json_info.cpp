@@ -34,7 +34,7 @@ bool Cread_logic_json_info::read_json_file(std::string file_name)
         }
 
         //读取命令
-        for (const auto& command_parse : json_config["command"])
+        for (const auto& command_parse : json_config["message map"])
         {
             CCommandInfo command_info;
 
@@ -45,6 +45,12 @@ bool Cread_logic_json_info::read_json_file(std::string file_name)
             command_info.message_out_ = command_parse["message out"];
 
             command_list_.command_list_.emplace_back(command_info);
+        }
+
+        //读取异步发送指令
+        for (const auto& asyn_message : json_config["asynchronous send interface"])
+        {
+            asyn_message_list_.asyn_message_list_.emplace_back(asyn_message["message out"]);
         }
 
         std::cout << "[Cread_logic_json_info::Init]parse json ok." << std::endl;
@@ -419,6 +425,13 @@ bool Cread_logic_json_info::make_do_message_h_file()
         }
     }
 
+    for (const auto& asyn_message : asyn_message_list_.asyn_message_list_)
+    {
+        line = "\tvoid send_message_" + asyn_message +
+            + "(uint32 connect_id, " + asyn_message + "& send);\n";
+        fwrite(line.c_str(), line.length(), sizeof(char), stream);
+    }
+
     line = "private:\n";
     fwrite(line.c_str(), line.length(), sizeof(char), stream);
     line = "\tISessionService* session_service_ = nullptr;\n";
@@ -475,6 +488,23 @@ bool Cread_logic_json_info::make_do_message_cpp_file()
             line = "}\n\n";
             fwrite(line.c_str(), line.length(), sizeof(char), stream);
         }
+    }
+
+    for (const auto& asyn_message : asyn_message_list_.asyn_message_list_)
+    {
+        line = "void C" + plugin_project_info_.plugin_project_name + "_do_message" + "::send_message_" + asyn_message +
+            +"(uint32 connect_id, " + asyn_message + "& send)\n";
+        fwrite(line.c_str(), line.length(), sizeof(char), stream);
+        line = "{\n";
+        fwrite(line.c_str(), line.length(), sizeof(char), stream);
+        line = "\tauto send_asyn_packet = std::make_shared<CMessage_Packet>();\n";
+        fwrite(line.c_str(), line.length(), sizeof(char), stream);
+        line = "\tsend->write_message(&send_asyn_packet->buffer_);\n";
+        fwrite(line.c_str(), line.length(), sizeof(char), stream);
+        line = "\tsession_service_->send_io_message(connect_id_, send_asyn_packet);\n";
+        fwrite(line.c_str(), line.length(), sizeof(char), stream);
+        line = "}\n\n";
+        fwrite(line.c_str(), line.length(), sizeof(char), stream);
     }
 
     line = "void C" + plugin_project_info_.plugin_project_name + "_do_message" + "::set_frame_object(ISessionService* session_service);\n";

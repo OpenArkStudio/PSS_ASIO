@@ -64,3 +64,9 @@ public:
     std::vector<CCommandInfo> command_list_;
 };
 
+class CAsynMessageList
+{
+public:
+    std::vector<std::string> asyn_message_list_;
+};
+

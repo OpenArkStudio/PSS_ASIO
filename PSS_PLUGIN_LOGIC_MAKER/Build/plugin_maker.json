@@ -3,7 +3,7 @@
   "plugin project path": "./",
   "plugin class": [
     {
-      "message type" : "Message Input",
+      "message type": "Message Input",
       "class name": "Crecv_sample",
       "class type": [
         {
@@ -58,7 +58,7 @@
     }
   ],
 
-  "command": [
+  "message map": [
     {
       "command macro": "LOGIC_COMMAND_CONNECT",
       "command id": "",
@@ -86,6 +86,12 @@
       "command function": "logic_test_asyn",
       "message in": "Crecv_sample",
       "message out": ""
+    }
+  ],
+
+  "asynchronous send interface": [
+    {
+      "message out": "Csend_sample"
     }
   ]
 }

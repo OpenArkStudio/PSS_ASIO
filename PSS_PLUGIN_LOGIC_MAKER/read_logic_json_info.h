@@ -44,5 +44,6 @@ public:
     CCommandList command_list_;
     CLogicClassList logic_class_list_;
     CPlugin_Project_Info plugin_project_info_;
+    CAsynMessageList asyn_message_list_;
 };
 
