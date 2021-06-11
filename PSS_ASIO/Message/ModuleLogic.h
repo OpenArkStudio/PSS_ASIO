@@ -131,7 +131,7 @@ public:
 
     int module_run(const std::string& module_name, std::shared_ptr<CMessage_Packet> send_packet, std::shared_ptr<CMessage_Packet> return_packet);
 
-    uint32 get_curr_thread_logic_id();
+    uint32 get_curr_thread_logic_id() const;
 
 private:
     using hashmappluginworkthread = unordered_map<uint32, shared_ptr<CModuleLogic>>;

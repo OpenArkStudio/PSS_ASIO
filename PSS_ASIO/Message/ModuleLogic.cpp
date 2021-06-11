@@ -592,7 +592,7 @@ int CWorkThreadLogic::module_run(const std::string& module_name, std::shared_ptr
     return load_module_.plugin_in_name_to_module_run(module_name, send_packet, return_packet);
 }
 
-uint32 CWorkThreadLogic::get_curr_thread_logic_id()
+uint32 CWorkThreadLogic::get_curr_thread_logic_id() const
 {
     return App_tms::instance()->GetLogicThreadID();
 }
