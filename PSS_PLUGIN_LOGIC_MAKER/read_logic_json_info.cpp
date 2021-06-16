@@ -71,7 +71,7 @@ bool Cread_logic_json_info::make_project_path()
 #ifdef _WIN32
     ret = _mkdir(project_path.c_str());
 #else
-    ret = mkdir(project_path.c_str());
+    ret = mkdir(project_path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 #endif
 
     if (ret != 0)
@@ -555,7 +555,7 @@ bool Cread_logic_json_info::create_logic_file(FILE*& stream, const std::string& 
         return false;
     }
 #else
-    stream = fopen(logic_class_file.c_str(), "w");
+    stream = fopen(file_name.c_str(), "w");
     if (nullptr == stream)
     {
         std::cout << "[Cread_logic_json_info::make_logic_class_file]file=" << file_name << ",error=" << strerror(errno) << std::endl;
@@ -577,7 +577,7 @@ bool Cread_logic_json_info::read_template_file(const std::string& file_name, std
         return false;
     }
 #else
-    stream = fopen(logic_class_file.c_str(), "r");
+    stream = fopen(file_name.c_str(), "r");
     if (nullptr == stream)
     {
         std::cout << "[Cread_logic_json_info::make_logic_class_file]file=" << file_name << ",error=" << strerror(errno) << std::endl;
