@@ -1,6 +1,6 @@
 {
   "plugin project name": "example_logic",
-  "plugin project path": "./",
+  "plugin project path": "../../Module_Logic/",
   "plugin class": [
     {
       "message type": "Message Input",

@@ -1,12 +1,12 @@
 #include "[command head file]"
 
-void CBaseCommand::Init(ISessionService* session_service)
+void [class name]::Init(ISessionService* session_service)
 {
     session_service_ = session_service;
 	
 	[do message logic init]
 
-    PSS_LOGGER_DEBUG("[CBaseCommand::Init]init.");
+    PSS_LOGGER_DEBUG("[[class name]::Init]init.");
 }
 
 [command logic function achieve]

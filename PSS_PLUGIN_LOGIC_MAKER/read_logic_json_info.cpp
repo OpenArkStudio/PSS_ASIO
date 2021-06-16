@@ -146,12 +146,12 @@ bool Cread_logic_json_info::make_logic_class_file()
             {
                 if (param_info.param_size_ == 0)
                 {
-                    line = "\t\ttread_buffer_ >> " + param_info.param_name_ + ";\n";
+                    line = "\t\tread_buffer_ >> " + param_info.param_name_ + ";\n";
                     fwrite(line.c_str(), line.length(), sizeof(char), stream);
                 }
                 else
                 {
-                    line = "\t\ttread_buffer_ .read_data_to_string(" + param_info.param_name_ + ", " + std::to_string(param_info.param_size_) + ");\n";
+                    line = "\t\tread_buffer_ .read_data_to_string(" + param_info.param_name_ + ", " + std::to_string(param_info.param_size_) + ");\n";
                     fwrite(line.c_str(), line.length(), sizeof(char), stream);
                 }
             }
@@ -225,7 +225,7 @@ bool Cread_logic_json_info::make_command_h_file()
 
     //添加头文件
     h_file_content = template_h_content;
-    std::string class_h_file = "#include \"" + plugin_project_info_.plugin_project_name + "_do_message.hpp\"";
+    std::string class_h_file = "#include \"" + plugin_project_info_.plugin_project_name + "_do_message.h\"";
     replace_all_distinct(h_file_content, "[include file]", class_h_file);
 
     //声明命令ID
@@ -234,7 +234,7 @@ bool Cread_logic_json_info::make_command_h_file()
     {
         if (command_id_info.command_id_ != "")
         {
-            command_id_define += "const " + command_id_info.command_macro_ + " = " + command_id_info.command_id_ + ";\n";
+            command_id_define += "const uint16 " + command_id_info.command_macro_ + " = " + command_id_info.command_id_ + ";\n";
         }
     }
     replace_all_distinct(h_file_content, "[command id define]", command_id_define);
@@ -296,20 +296,22 @@ bool Cread_logic_json_info::make_command_cpp_file()
             command_func_achieve += "\t" + command_id_info.message_in_ + " recv;\n";
             command_func_achieve += "\t" + command_id_info.message_out_ + " send;\n";
             command_func_achieve += "\trecv.read_message(&recv_packet->buffer_);\n";
-            command_func_achieve += "\tdo_logic->do_message_" + command_id_info.command_macro_
+            command_func_achieve += "\tdo_logic.do_message_" + command_id_info.command_macro_
                 + "(source.connect_id_, recv_packet->command_id_, recv, send);\n";
-            command_func_achieve += "\tsend.write_message(send_packet->buffer_);\n";
+            command_func_achieve += "\tsend.write_message(&send_packet->buffer_);\n";
         }
         else if (command_id_info.message_in_ != "" && command_id_info.message_out_ == "")
         {
             command_func_achieve += "\t" + command_id_info.message_in_ + " recv;\n";
             command_func_achieve += "\trecv.read_message(&recv_packet->buffer_);\n";
-            command_func_achieve += "\tdo_logic->do_message_" + command_id_info.command_macro_
+            command_func_achieve += "\tdo_logic.do_message_" + command_id_info.command_macro_
                 + "(source.connect_id_, recv_packet->command_id_, recv);\n";
         }
 
         command_func_achieve += "}\n\n";
     }
+
+    replace_all_distinct(cpp_file_content, "[class name]", "C" + plugin_project_info_.plugin_project_name + "_command");
 
     replace_all_distinct(cpp_file_content, "[command logic function achieve]", command_func_achieve);
 
@@ -479,7 +481,7 @@ bool Cread_logic_json_info::make_do_message_cpp_file()
         else if (command_id_info.message_in_ != "" && command_id_info.message_out_ == "")
         {
             line = "void C" + plugin_project_info_.plugin_project_name + "_do_message" + "::do_message_" + command_id_info.command_macro_
-                + "(uint32 connect_id, uint32 command_id, " + command_id_info.message_in_ + "& recv);\n";
+                + "(uint32 connect_id, uint32 command_id, " + command_id_info.message_in_ + "& recv)\n";
             fwrite(line.c_str(), line.length(), sizeof(char), stream);
             line = "{\n";
             fwrite(line.c_str(), line.length(), sizeof(char), stream);
@@ -499,15 +501,15 @@ bool Cread_logic_json_info::make_do_message_cpp_file()
         fwrite(line.c_str(), line.length(), sizeof(char), stream);
         line = "\tauto send_asyn_packet = std::make_shared<CMessage_Packet>();\n";
         fwrite(line.c_str(), line.length(), sizeof(char), stream);
-        line = "\tsend->write_message(&send_asyn_packet->buffer_);\n";
+        line = "\tsend.write_message(&send_asyn_packet->buffer_);\n";
         fwrite(line.c_str(), line.length(), sizeof(char), stream);
-        line = "\tsession_service_->send_io_message(connect_id_, send_asyn_packet);\n";
+        line = "\tsession_service_->send_io_message(connect_id, send_asyn_packet);\n";
         fwrite(line.c_str(), line.length(), sizeof(char), stream);
         line = "}\n\n";
         fwrite(line.c_str(), line.length(), sizeof(char), stream);
     }
 
-    line = "void C" + plugin_project_info_.plugin_project_name + "_do_message" + "::set_frame_object(ISessionService* session_service);\n";
+    line = "void C" + plugin_project_info_.plugin_project_name + "_do_message" + "::set_frame_object(ISessionService* session_service)\n";
     fwrite(line.c_str(), line.length(), sizeof(char), stream);
     line = "{\n";
     fwrite(line.c_str(), line.length(), sizeof(char), stream);
@@ -516,6 +518,29 @@ bool Cread_logic_json_info::make_do_message_cpp_file()
     line = "}\n\n";
     fwrite(line.c_str(), line.length(), sizeof(char), stream);
 
+    fclose(stream);
+    return true;
+}
+
+bool Cread_logic_json_info::make_Cmake_file()
+{
+    std::string cpp_file_content;
+    std::string project_path = plugin_project_info_.plugin_path + plugin_project_info_.plugin_project_name;
+    std::string logic_file = project_path + "/CMakeLists.txt";
+    FILE* stream = nullptr;
+
+    //打开文件
+    if (false == create_logic_file(stream, logic_file))
+    {
+        return false;
+    }
+
+    std::string cmake_content;
+    read_template_file(temlpate_cmake_file, cmake_content);
+
+    replace_all_distinct(cmake_content, "[plugin name]", plugin_project_info_.plugin_project_name);
+
+    fwrite(cmake_content.c_str(), cmake_content.length(), sizeof(char), stream);
     fclose(stream);
     return true;
 }

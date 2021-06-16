@@ -1,4 +1,5 @@
-﻿#include "read_logic_json_info.h"
+﻿#include <iostream>
+#include "read_logic_json_info.h"
 
 //逻辑插件生成工具
 //add by freeeyes
@@ -8,7 +9,8 @@ int main()
     Cread_logic_json_info read_logic_json_info;
     if (false == read_logic_json_info.read_json_file())
     {
-        getchar();
+        std::cout << "Please enter the enter key to continue." << std::endl;
+        std::cin.get();
         return 0;
     }
 
@@ -26,6 +28,9 @@ int main()
 
     read_logic_json_info.make_do_message_cpp_file();
 
-    getchar();
+    read_logic_json_info.make_Cmake_file();
+
+    std::cout << "Please enter the enter key to continue." << std::endl;
+    std::cin.get();
     return 0;
 }

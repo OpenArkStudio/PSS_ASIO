@@ -20,6 +20,7 @@ using json = nlohmann::json;
 const std::string template_h_file = "./template/template_Command.h";
 const std::string template_cpp_file = "./template/template_Command.cpp";
 const std::string template_logic_file = "./template/template_logic.cpp";
+const std::string temlpate_cmake_file = "./template/CMakeLists.txt";
 
 class Cread_logic_json_info
 {
@@ -34,6 +35,7 @@ public:
     bool make_logic_plugin_cpp();
     bool make_do_message_h_file();
     bool make_do_message_cpp_file();
+    bool make_Cmake_file();
 
 private:
     std::string& replace_all_distinct(std::string& str, const std::string& old_value, const std::string& new_value);
