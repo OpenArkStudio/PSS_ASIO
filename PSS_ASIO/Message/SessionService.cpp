@@ -120,7 +120,7 @@ uint32 CSessionService::get_curr_thread_logic_id()
     return App_WorkThreadLogic::instance()->get_curr_thread_logic_id();
 }
 
-bool CSessionService::add_plugin_api(const std::string& api_name, plugin_api_logic func)
+bool CSessionService::add_plugin_api(const std::string& api_name, const plugin_api_logic& func)
 {
     auto f = func_list_.find(api_name);
     if (f != func_list_.end())
