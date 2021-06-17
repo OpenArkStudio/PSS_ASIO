@@ -52,7 +52,7 @@ jobs:
         ./pss_asio_test_client
         sleep 5
         killall pss_asio
-        sleep 1
+        sleep 5
         echo "close pss_asio"
         gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/*.cpp.gcda ../../PSS_ASIO/*.cpp > /dev/null
         gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/TcpSession/*.cpp.gcda ../../PSS_ASIO/TcpSession/*.cpp > /dev/null
