@@ -120,3 +120,31 @@ uint32 CSessionService::get_curr_thread_logic_id()
     return App_WorkThreadLogic::instance()->get_curr_thread_logic_id();
 }
 
+bool CSessionService::add_plugin_api(const std::string& api_name, plugin_api_logic func)
+{
+    auto f = func_list_.find(api_name);
+    if (f != func_list_.end())
+    {
+        PSS_LOGGER_INFO("[CSessionService::add_plugin_api]{0} is exist.", api_name);
+        return false;
+    }
+    else
+    {
+        func_list_[api_name] = func;
+        return true;
+    }
+}
+
+std::string CSessionService::do_plugin_api(const std::string& api_name, const std::string& api_func_param)
+{
+    auto f = func_list_.find(api_name);
+    if (f != func_list_.end())
+    {
+        return f->second(api_func_param);
+    }
+    else
+    {
+        return "";
+    }
+}
+

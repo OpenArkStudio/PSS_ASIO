@@ -63,6 +63,12 @@ int load_module(IFrame_Object* frame_object, string module_param)
 
     base_command->Init(session_service);
 
+    //测试注册api
+    auto test_api = std::bind(&CBaseCommand::do_logic_api, base_command.get(), std::placeholders::_1);
+    session_service->add_plugin_api("test_logic", test_api);
+
+    session_service->do_plugin_api("test_logic", "hello free eyes");
+
     PSS_LOGGER_DEBUG("[load_module]({0})finish.", module_param);
 
     return 0;

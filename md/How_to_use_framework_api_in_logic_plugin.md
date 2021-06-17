@@ -13,6 +13,7 @@ Table of Contents
  - [How to transparently transmit data from one IO to another IO](#How-to-transparently-transmit-data-from-one-IO-to-another-IO)
  - [How to delete io to io](#How-to-delete-io-to-io)
  - [How to synchronously send inter-plugin message](#How-to-synchronously-send-inter-plugin-message)
+ - [How to make api to other plgin module](#How-to-make-api-to-other-plgin-module)
 
 How to register a message event
 ===============================
@@ -251,4 +252,19 @@ void CBaseCommand::logic_connect(const CMessage_Source& source, std::shared_ptr<
     module_send_packet->command_id_ = 0x5000;
     session_service_->module_run(module_name, module_send_packet, module_return_packet);
 }
+```
+
+How to make api to other plgin module
+=====================================
+You can register an api to the framework in the plug-in so that other plug-ins can use it directly. And get the result.  
+```c++
+    //register api with the framework
+    auto test_api = std::bind(&CBaseCommand::do_logic_api, base_command.get(), std::placeholders::_1);
+    session_service->add_plugin_api("test_logic", test_api);
+```
+
+other plugin use:  
+```c++
+    //use api with the framework
+    std::string return_data = session_service->do_plugin_api("test_logic", "hello free eyes");
 ```

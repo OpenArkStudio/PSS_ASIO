@@ -241,3 +241,9 @@ void CBaseCommand::logic_http_websocket_data(const CMessage_Source& source, std:
     session_service_->send_io_message(source.connect_id_, send_asyn_packet);
 
 }
+
+std::string CBaseCommand::do_logic_api(std::string api_param)
+{
+    PSS_LOGGER_DEBUG("[CBaseCommand::do_logic_api]{0}.", api_param);
+    return api_param;
+}
