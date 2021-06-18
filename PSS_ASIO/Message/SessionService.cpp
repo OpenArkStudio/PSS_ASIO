@@ -148,3 +148,8 @@ std::string CSessionService::do_plugin_api(const std::string& api_name, const st
     }
 }
 
+void CSessionService::close()
+{
+    func_list_.clear();
+}
+

@@ -29,6 +29,8 @@ public:
     bool add_plugin_api(const std::string& api_name, const plugin_api_logic& func) final;
     std::string do_plugin_api(const std::string& api_name, const std::string& api_func_param) final;
 
+    void close();
+
 private:
     std::unordered_map<std::string, plugin_api_logic> func_list_;
 };
