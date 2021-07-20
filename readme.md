@@ -49,6 +49,7 @@ Documentation
  * [How to make logic plugin](md/How_to_make_logic_plugin.md)
  * [How to config server](md/How_to_config_server.md)
  * [How to use framework api in logic plugin](md/How_to_use_framework_api_in_logic_plugin.md)
+ * [How to use tools make logic plugin](md/How_use_tools_make_logic_plugin.md) 
 
 Support
 =======
