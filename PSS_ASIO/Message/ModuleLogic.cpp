@@ -410,11 +410,17 @@ void CWorkThreadLogic::do_work_thread_module_logic(shared_ptr<ISession> session,
             continue;
         }
 
+        auto io_session = module_logic->get_session_interface(connect_id);
+        if (nullptr == io_session)
+        {
+            continue;
+        }
+
         //在这里添加对curr_send_packet的格式化
-        if (module_logic->get_session_interface(connect_id)->is_need_send_format() == true)
+        if (io_session->is_need_send_format() == true)
         {
             auto curr_format_send_packet = std::make_shared<CMessage_Packet>();
-            if(true == module_logic->get_session_interface(connect_id)->format_send_packet(source.connect_id_, curr_send_packet, curr_format_send_packet))
+            if(true == io_session->format_send_packet(source.connect_id_, curr_send_packet, curr_format_send_packet))
             {
                 //将格式化后的数据填充到send_packet
                 send_packet.buffer_.append(curr_format_send_packet->buffer_.c_str(), curr_format_send_packet->buffer_.size());
