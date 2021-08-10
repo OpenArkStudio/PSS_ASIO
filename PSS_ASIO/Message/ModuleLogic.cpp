@@ -13,10 +13,7 @@ void CModuleLogic::add_session(uint32 connect_id, shared_ptr<ISession> session, 
 
 shared_ptr<ISession> CModuleLogic::get_session_interface(uint32 connect_id)
 {
-    work_thread_state_ = ENUM_WORK_THREAD_STATE::WORK_THREAD_BEGIN;
     auto ret = sessions_interface_.get_session_interface(connect_id);
-    work_thread_state_ = ENUM_WORK_THREAD_STATE::WORK_THREAD_END;
-    work_thread_run_time_ = std::chrono::steady_clock::now();
 
 #ifdef GCOV_TEST
     auto local_ip = sessions_interface_.get_session_local_ip(connect_id);
@@ -49,7 +46,12 @@ void CModuleLogic::close()
 
 int CModuleLogic::do_thread_module_logic(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
 {
-    return modules_interface_.do_module_message(source, recv_packet, send_packet);
+    last_dispose_command_id_ = recv_packet->command_id_;
+    work_thread_state_ = ENUM_WORK_THREAD_STATE::WORK_THREAD_BEGIN;
+    auto ret = modules_interface_.do_module_message(source, recv_packet, send_packet);
+    work_thread_state_ = ENUM_WORK_THREAD_STATE::WORK_THREAD_END;
+    work_thread_run_time_ = std::chrono::steady_clock::now();
+    return ret;
 }
 
 uint16 CModuleLogic::get_work_thread_id() const 
@@ -78,6 +80,12 @@ void CModuleLogic::check_session_io_timeout(uint32 connect_timeout) const
     {
         session_io.session_->close(session_io.session_id_);
     }
+}
+
+uint16 CModuleLogic::get_last_dispose_command_id() const
+{
+    //返回最后一个处理的命令ID
+    return last_dispose_command_id_;
 }
 
 void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_seconds, uint32 connect_timeout, const config_logic_list& logic_list, ISessionService* session_service)
@@ -657,7 +665,10 @@ void CWorkThreadLogic::run_check_task(uint32 timeout_seconds) const
         auto work_thread_timeout = module_logic->get_work_thread_timeout();
         if (work_thread_timeout > (int)timeout_seconds)
         {
-            PSS_LOGGER_ERROR("[CWorkThreadLogic::run_check_task]work thread{0} is block.", module_logic->get_work_thread_id());
+            PSS_LOGGER_ERROR("[CWorkThreadLogic::run_check_task]work thread{0} is block, timeout={1}, last_command_id={2}.", 
+                module_logic->get_work_thread_id(),
+                work_thread_timeout,
+                module_logic->get_last_dispose_command_id());
         }
     }
 

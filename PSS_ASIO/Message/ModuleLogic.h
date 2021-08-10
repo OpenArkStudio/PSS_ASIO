@@ -63,10 +63,13 @@ public:
 
     void check_session_io_timeout(uint32 connect_timeout) const;
 
+    uint16 get_last_dispose_command_id() const;
+
 private:
     CSessionInterface sessions_interface_;
     CModuleInterface modules_interface_;
     uint16 work_thread_id_ = 0;
+    uint16 last_dispose_command_id_ = 0;
 
     ENUM_WORK_THREAD_STATE work_thread_state_ = ENUM_WORK_THREAD_STATE::WORK_THREAD_INIT;
     std::chrono::steady_clock::time_point work_thread_run_time_ = std::chrono::steady_clock::now();
