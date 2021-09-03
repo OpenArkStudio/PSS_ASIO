@@ -242,6 +242,18 @@ void CBaseCommand::logic_http_websocket_data(const CMessage_Source& source, std:
 
 }
 
+void CBaseCommand::logic_work_thread_is_lock(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
+{
+    //工作线程死锁了
+    PSS_LOGGER_DEBUG("[CBaseCommand::logic_work_thread_is_lock]{0}.", recv_packet->buffer_);
+}
+
+void CBaseCommand::logic_io_write_error(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
+{
+    //发送数据失败(回调)
+    PSS_LOGGER_DEBUG("[CBaseCommand::logic_io_write_error]connect_id={0}, length={1}.", source.connect_id_, recv_packet->buffer_.length());
+}
+
 std::string CBaseCommand::do_logic_api(std::string api_param)
 {
     PSS_LOGGER_DEBUG("[CBaseCommand::do_logic_api]{0}.", api_param);

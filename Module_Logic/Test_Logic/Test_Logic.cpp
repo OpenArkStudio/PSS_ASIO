@@ -58,6 +58,8 @@ int load_module(IFrame_Object* frame_object, string module_param)
     frame_object->Regedit_command(COMMAND_TEST_HTTP_POST);
     frame_object->Regedit_command(COMMAND_WEBSOCKET_SHARK_HAND);
     frame_object->Regedit_command(COMMAND_WEBSOCKET_DATA);
+    frame_object->Regedit_command(LOGIC_THREAD_DEAD_LOCK);
+    frame_object->Regedit_command(LOGIC_THREAD_WRITE_IO_ERROR);
 
     session_service = frame_object->get_session_service();
 
@@ -97,6 +99,8 @@ int do_module_message(const CMessage_Source& source, std::shared_ptr<CMessage_Pa
     MESSAGE_FUNCTION(COMMAND_TEST_HTTP_POST, base_command->logic_http_post, source, recv_packet, send_packet);
     MESSAGE_FUNCTION(COMMAND_WEBSOCKET_SHARK_HAND, base_command->logic_http_websocket_shark_hand, source, recv_packet, send_packet);
     MESSAGE_FUNCTION(COMMAND_WEBSOCKET_DATA, base_command->logic_http_websocket_data, source, recv_packet, send_packet);
+    MESSAGE_FUNCTION(LOGIC_THREAD_DEAD_LOCK, base_command->logic_work_thread_is_lock, source, recv_packet, send_packet);
+    MESSAGE_FUNCTION(LOGIC_THREAD_WRITE_IO_ERROR, base_command->logic_io_write_error, source, recv_packet, send_packet);
     MESSAGE_FUNCTION_END;
 
     return 0;
