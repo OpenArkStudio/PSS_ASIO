@@ -54,6 +54,8 @@ public:
 
     void do_read_some(std::error_code ec, std::size_t length);
 
+    void send_write_fail_to_logic(const std::string write_fail_buffer, std::size_t buffer_length);
+
 private:
     bool verify_certificate(bool preverified, asio::ssl::verify_context& ctx);
     void handshake();

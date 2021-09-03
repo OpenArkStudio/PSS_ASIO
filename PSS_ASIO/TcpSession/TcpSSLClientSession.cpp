@@ -131,8 +131,10 @@ void CTcpSSLClientSession::do_write_immediately(uint32 connect_id, const char* d
         {
             if (ec)
             {
-                //暂时不处理
+                //发送给逻辑线程处理
                 PSS_LOGGER_DEBUG("[CTcpSSLClientSession::do_write_immediately]({0}), message({1})", connect_id, ec.message());
+
+                self->send_write_fail_to_logic(send_buffer->data_, send_length);
             }
             else
             {
@@ -157,8 +159,9 @@ void CTcpSSLClientSession::do_write(uint32 connect_id)
         {
             if (ec)
             {
-                //暂时不处理
-                PSS_LOGGER_DEBUG("[CTcpSSLClientSession::do_write]write error({0}).", ec.message());
+                //发送消息发送失败的信息给逻辑模块
+                PSS_LOGGER_DEBUG("[CTcpSSLClientSession::do_write]({0})write error({1}).", connect_id, ec.message());
+                self->send_write_fail_to_logic(send_buffer->data_, length);
             }
             else
             {
@@ -236,6 +239,18 @@ void CTcpSSLClientSession::do_read_some(std::error_code ec, std::size_t length)
         //链接断开
         App_WorkThreadLogic::instance()->close_session_event(connect_id_);
     }
+}
+
+void CTcpSSLClientSession::send_write_fail_to_logic(const std::string write_fail_buffer, std::size_t buffer_length)
+{
+    vector<std::shared_ptr<CMessage_Packet>> message_ssl_connect_list;
+    auto ssl_write_fail_packet = std::make_shared<CMessage_Packet>();
+    ssl_write_fail_packet->command_id_ = LOGIC_THREAD_WRITE_IO_ERROR;
+    ssl_write_fail_packet->buffer_.append(write_fail_buffer.c_str(), buffer_length);
+    message_ssl_connect_list.emplace_back(ssl_write_fail_packet);
+
+    //写IO失败消息提交给逻辑插件
+    App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id_, message_ssl_connect_list, shared_from_this());
 }
 
 bool CTcpSSLClientSession::verify_certificate(bool preverified, asio::ssl::verify_context& ctx)

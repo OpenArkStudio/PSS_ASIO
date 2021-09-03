@@ -106,6 +106,18 @@ void CTcpSSLSession::do_read_some(std::error_code ec, std::size_t length)
     }
 }
 
+void CTcpSSLSession::send_write_fail_to_logic(const std::string write_fail_buffer, std::size_t buffer_length)
+{
+    vector<std::shared_ptr<CMessage_Packet>> message_ssl_recv_list;
+    auto ssl_recv_write_fail_packet = std::make_shared<CMessage_Packet>();
+    ssl_recv_write_fail_packet->command_id_ = LOGIC_THREAD_WRITE_IO_ERROR;
+    ssl_recv_write_fail_packet->buffer_.append(write_fail_buffer.c_str(), buffer_length);
+    message_ssl_recv_list.emplace_back(ssl_recv_write_fail_packet);
+
+    //写IO失败消息提交给逻辑插件
+    App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id_, message_ssl_recv_list, shared_from_this());
+}
+
 void CTcpSSLSession::do_write(uint32 connect_id)
 {
     std::lock_guard<std::mutex> lck(send_thread_mutex_);
@@ -132,8 +144,10 @@ void CTcpSSLSession::do_write(uint32 connect_id)
         {
             if (ec)
             {
-                //暂时不处理
-                PSS_LOGGER_DEBUG("[CTcpSession::do_write]write error({0}).", ec.message());
+                //告诉业务逻辑发送失败
+                PSS_LOGGER_DEBUG("[CTcpSession::do_write]({0})write error({1}).", connect_id, ec.message());
+
+                self->send_write_fail_to_logic(send_buffer->data_, length);
             }
             else
             {

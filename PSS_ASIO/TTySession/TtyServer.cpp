@@ -122,8 +122,10 @@ void CTTyServer::do_write(uint32 connect_id)
         {
             if (ec)
             {
-                //暂时不处理
-                PSS_LOGGER_DEBUG("[CTTyServer::do_write]write error({0}).", ec.message());
+                //回调消息处理失败信息
+                PSS_LOGGER_DEBUG("[CTTyServer::do_write]({0})write error({1}).", connect_id, ec.message());
+
+                self->send_write_fail_to_logic(send_buffer->data_, length);
             }
             else
             {
@@ -251,5 +253,17 @@ void CTTyServer::do_read_some(std::error_code ec, std::size_t length)
     {
         do_receive();
     }
+}
+
+void CTTyServer::send_write_fail_to_logic(const std::string write_fail_buffer, std::size_t buffer_length)
+{
+    vector<std::shared_ptr<CMessage_Packet>> message_tty_list;
+    auto tty_write_fail_packet = std::make_shared<CMessage_Packet>();
+    tty_write_fail_packet->command_id_ = LOGIC_THREAD_WRITE_IO_ERROR;
+    tty_write_fail_packet->buffer_.append(write_fail_buffer.c_str(), buffer_length);
+    message_tty_list.emplace_back(tty_write_fail_packet);
+
+    //写IO失败消息提交给逻辑插件
+    App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id_, message_tty_list, shared_from_this());
 }
 

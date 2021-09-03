@@ -269,12 +269,13 @@ void CTcpClientSession::handle_connect(const asio::error_code& ec, tcp::resolver
 
 void CTcpClientSession::send_write_fail_to_logic(const std::string write_fail_buffer, std::size_t buffer_length)
 {
-    vector<std::shared_ptr<CMessage_Packet>> message_list;
+    vector<std::shared_ptr<CMessage_Packet>> message_tcp_connect_list;
     auto write_fail_packet = std::make_shared<CMessage_Packet>();
     write_fail_packet->command_id_ = LOGIC_THREAD_WRITE_IO_ERROR;
     write_fail_packet->buffer_.append(write_fail_buffer.c_str(), buffer_length);
+    message_tcp_connect_list.emplace_back(write_fail_packet);
 
     //写IO失败消息提交给逻辑插件
-    App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id_, message_list, shared_from_this());
+    App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id_, message_tcp_connect_list, shared_from_this());
 }
 
