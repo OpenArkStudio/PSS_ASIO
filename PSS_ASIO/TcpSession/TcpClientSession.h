@@ -47,10 +47,15 @@ public:
 
     void do_read_some(std::error_code ec, std::size_t length);
 
+    void handle_connect(const asio::error_code& ec, tcp::resolver::results_type::iterator endpoint_iter);
+
+    void send_write_fail_to_logic(const std::string write_fail_buffer, std::size_t buffer_length);
+
 private:
     tcp::socket socket_;
     uint32 server_id_  = 0;
     uint32 connect_id_ = 0;
+    bool is_connect_ = false;
     CSessionBuffer session_recv_buffer_;
     CSessionBuffer session_send_buffer_;
 

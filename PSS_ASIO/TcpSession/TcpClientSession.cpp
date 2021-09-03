@@ -10,6 +10,7 @@ CTcpClientSession::CTcpClientSession(asio::io_context* io_context)
 bool CTcpClientSession::start(const CConnect_IO_Info& io_info)
 {
     server_id_ = io_info.server_id;
+    packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(io_info.packet_parse_id);
 
     session_recv_buffer_.Init(io_info.recv_size);
     session_send_buffer_.Init(io_info.send_size);
@@ -26,47 +27,12 @@ bool CTcpClientSession::start(const CConnect_IO_Info& io_info)
         socket_.bind(localEndpoint, connect_error);
     }
 
-    socket_.connect(end_point, connect_error);
-    if (connect_error)
-    {
-        //连接建立失败
-        PSS_LOGGER_DEBUG("[CTcpClientSession::start]error({})", connect_error.message());
+    //异步链接
+    tcp::resolver::results_type::iterator endpoint_iter;
+    socket_.async_connect(end_point, std::bind(&CTcpClientSession::handle_connect,
+        this, std::placeholders::_1, endpoint_iter));
 
-        //发送消息给逻辑块
-        App_WorkThreadLogic::instance()->add_frame_events(LOGIC_CONNECT_SERVER_ERROR,
-            server_id_,
-            remote_ip_.m_strClientIP,
-            remote_ip_.m_u2Port,
-            io_type_);
-
-        return false;
-    }
-    else
-    {
-        connect_id_ = App_ConnectCounter::instance()->CreateCounter();
-
-        recv_data_time_ = std::chrono::steady_clock::now();
-
-        packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(io_info.packet_parse_id);
-
-        //处理链接建立消息
-        remote_ip_.m_strClientIP = socket_.remote_endpoint().address().to_string();
-        remote_ip_.m_u2Port = socket_.remote_endpoint().port();
-        local_ip_.m_strClientIP = socket_.local_endpoint().address().to_string();
-        local_ip_.m_u2Port = socket_.local_endpoint().port();
-
-        PSS_LOGGER_DEBUG("[CTcpClientSession::start]remote({0}:{1})", remote_ip_.m_strClientIP, remote_ip_.m_u2Port);
-        PSS_LOGGER_DEBUG("[CTcpClientSession::start]local({0}:{1})", local_ip_.m_strClientIP, local_ip_.m_u2Port);
-
-        packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip_, local_ip_, io_type_);
-
-        //添加映射关系
-        App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip_, remote_ip_);
-
-        do_read();
-
-        return true;
-    }
+    return true;
 }
 
 void CTcpClientSession::close(uint32 connect_id)
@@ -123,6 +89,12 @@ void CTcpClientSession::do_read()
 
 void CTcpClientSession::do_write_immediately(uint32 connect_id, const char* data, size_t length)
 {
+    if (is_connect_ == false)
+    {
+        PSS_LOGGER_DEBUG("[CTcpClientSession::do_write_immediately]({0}), connect is not ready.", connect_id);
+        return;
+    }
+
     //组装发送数据
     auto send_buffer = make_shared<CSendBuffer>();
     send_buffer->data_.append(data, length);
@@ -135,8 +107,9 @@ void CTcpClientSession::do_write_immediately(uint32 connect_id, const char* data
         {
             if (ec)
             {
-                //暂时不处理
+                //发送IO消息写入失败
                 PSS_LOGGER_DEBUG("[CTcpClientSession::do_write_immediately]({0}), message({1})", connect_id, ec.message());
+                self->send_write_fail_to_logic(send_buffer->data_, send_length);
             }
             else
             {
@@ -147,6 +120,12 @@ void CTcpClientSession::do_write_immediately(uint32 connect_id, const char* data
 
 void CTcpClientSession::do_write(uint32 connect_id)
 {
+    if (is_connect_ == false)
+    {
+        PSS_LOGGER_DEBUG("[CTcpClientSession::do_write]({0}), connect is not ready.", connect_id);
+        return;
+    }
+
     //组装发送数据
     auto send_buffer = make_shared<CSendBuffer>();
     send_buffer->data_.append(session_send_buffer_.read(), session_send_buffer_.get_write_size());
@@ -161,8 +140,9 @@ void CTcpClientSession::do_write(uint32 connect_id)
         {
             if (ec)
             {
-                //暂时不处理
+                //向逻辑线程投递发送失败消息
                 PSS_LOGGER_DEBUG("[CTcpClientSession::do_write]write error({0}).", ec.message());
+                self->send_write_fail_to_logic(send_buffer->data_, length);
             }
             else
             {
@@ -239,6 +219,62 @@ void CTcpClientSession::do_read_some(std::error_code ec, std::size_t length)
     {
         //链接断开
         App_WorkThreadLogic::instance()->close_session_event(connect_id_);
+        is_connect_ = false;
     }
+}
+
+void CTcpClientSession::handle_connect(const asio::error_code& ec, tcp::resolver::results_type::iterator endpoint_iter)
+{
+    if (!ec)
+    {
+        is_connect_ = true;
+        connect_id_ = App_ConnectCounter::instance()->CreateCounter();
+
+        recv_data_time_ = std::chrono::steady_clock::now();
+
+        //处理链接建立消息
+        remote_ip_.m_strClientIP = socket_.remote_endpoint().address().to_string();
+        remote_ip_.m_u2Port = socket_.remote_endpoint().port();
+        local_ip_.m_strClientIP = socket_.local_endpoint().address().to_string();
+        local_ip_.m_u2Port = socket_.local_endpoint().port();
+
+        PSS_LOGGER_DEBUG("[CTcpClientSession::start]remote({0}:{1})", remote_ip_.m_strClientIP, remote_ip_.m_u2Port);
+        PSS_LOGGER_DEBUG("[CTcpClientSession::start]local({0}:{1})", local_ip_.m_strClientIP, local_ip_.m_u2Port);
+
+        packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip_, local_ip_, io_type_);
+
+        //添加映射关系
+        App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip_, remote_ip_);
+
+        do_read();
+
+    }
+    else
+    {
+        is_connect_ = false;
+
+        //连接建立失败
+        PSS_LOGGER_DEBUG("[CTcpClientSession::start]({0}:{1})error({2})", socket_.local_endpoint().address().to_string(),
+            socket_.local_endpoint().port(),
+            ec.message());
+
+        //发送消息给逻辑块
+        App_WorkThreadLogic::instance()->add_frame_events(LOGIC_CONNECT_SERVER_ERROR,
+            server_id_,
+            remote_ip_.m_strClientIP,
+            remote_ip_.m_u2Port,
+            io_type_);
+    }
+}
+
+void CTcpClientSession::send_write_fail_to_logic(const std::string write_fail_buffer, std::size_t buffer_length)
+{
+    vector<std::shared_ptr<CMessage_Packet>> message_list;
+    auto write_fail_packet = std::make_shared<CMessage_Packet>();
+    write_fail_packet->command_id_ = LOGIC_THREAD_WRITE_IO_ERROR;
+    write_fail_packet->buffer_.append(write_fail_buffer.c_str(), buffer_length);
+
+    //写IO失败消息提交给逻辑插件
+    App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id_, message_list, shared_from_this());
 }
 

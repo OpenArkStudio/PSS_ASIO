@@ -677,7 +677,7 @@ void CWorkThreadLogic::run_check_task(uint32 timeout_seconds) const
             std::shared_ptr<CMessage_Packet> recv_packet = std::make_shared<CMessage_Packet>();
             std::shared_ptr<CMessage_Packet> send_packet = std::make_shared<CMessage_Packet>();
 
-            recv_packet->command_id_ = LOGIC_THREDAD_DEAD_LOCK;
+            recv_packet->command_id_ = LOGIC_THREAD_DEAD_LOCK;
             recv_packet->buffer_ = "{\"thread id\": " + std::to_string(module_logic->get_work_thread_id()) 
                 + ", \"command id\":\"" + std::to_string(module_logic->get_last_dispose_command_id()) 
                 + "\", \"work_thread_timeout\":" + std::to_string(work_thread_timeout) + "}";
