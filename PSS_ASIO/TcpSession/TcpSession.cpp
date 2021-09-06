@@ -158,7 +158,7 @@ void CTcpSession::do_read_some(std::error_code ec, std::size_t length)
     }
 }
 
-void CTcpSession::send_write_fail_to_logic(const std::string write_fail_buffer, std::size_t buffer_length)
+void CTcpSession::send_write_fail_to_logic(const std::string& write_fail_buffer, std::size_t buffer_length)
 {
     vector<std::shared_ptr<CMessage_Packet>> message_tcp_recv_list;
     auto tcp_write_fail_packet = std::make_shared<CMessage_Packet>();
@@ -166,16 +166,10 @@ void CTcpSession::send_write_fail_to_logic(const std::string write_fail_buffer, 
     tcp_write_fail_packet->buffer_.append(write_fail_buffer.c_str(), buffer_length);
     message_tcp_recv_list.emplace_back(tcp_write_fail_packet);
 
-#ifdef GCOV_TEST
-    PSS_LOGGER_DEBUG("[CTcpSession::send_write_fail_to_logic]({0})write error({1}).", connect_id_, buffer_length);
-#endif	
-
     //写IO失败消息提交给逻辑插件
-    App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id_, message_tcp_recv_list, shared_from_this());
-
-#ifdef GCOV_TEST
-    PSS_LOGGER_DEBUG("[CTcpSession::send_write_fail_to_logic]({0})write error OK({1}).", connect_id_, buffer_length);
-#endif
+    App_WorkThreadLogic::instance()->assignation_thread_module_logic_with_events(connect_id_, 
+        message_tcp_recv_list, 
+        shared_from_this());
 }
 
 void CTcpSession::add_send_finish_size(uint32 connect_id, size_t send_length)

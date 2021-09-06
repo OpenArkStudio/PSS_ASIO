@@ -49,7 +49,7 @@ public:
 
     void handle_connect(const asio::error_code& ec, tcp::resolver::results_type::iterator endpoint_iter);
 
-    void send_write_fail_to_logic(const std::string write_fail_buffer, std::size_t buffer_length);
+    void send_write_fail_to_logic(const std::string& write_fail_buffer, std::size_t buffer_length);
 
 private:
     tcp::socket socket_;

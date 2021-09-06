@@ -405,6 +405,20 @@ int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, c
     return 0;
 }
 
+int CWorkThreadLogic::assignation_thread_module_logic_with_events(const uint32 connect_id, const vector<shared_ptr<CMessage_Packet>>& message_list, shared_ptr<ISession> session)
+{
+    //处理线程的投递(内部消息事件的投递)
+    uint16 curr_thread_index = connect_id % thread_count_;
+    auto module_logic = thread_module_list_[curr_thread_index];
+
+    //添加到数据队列处理
+    App_tms::instance()->AddMessage(curr_thread_index, [this, session, connect_id, message_list, module_logic]() {
+        do_work_thread_module_logic(session, connect_id, message_list, module_logic);
+        });
+
+    return 0;
+}
+
 void CWorkThreadLogic::do_work_thread_module_logic(shared_ptr<ISession> session, const uint32 connect_id, const vector<shared_ptr<CMessage_Packet>>& message_list, shared_ptr<CModuleLogic> module_logic) const
 {
     CMessage_Source source;
@@ -681,8 +695,8 @@ void CWorkThreadLogic::run_check_task(uint32 timeout_seconds) const
             CMessage_Source source;
             source.work_thread_id_ = module_logic->get_work_thread_id();
 
-            std::shared_ptr<CMessage_Packet> recv_packet = std::make_shared<CMessage_Packet>();
-            std::shared_ptr<CMessage_Packet> send_packet = std::make_shared<CMessage_Packet>();
+            auto recv_packet = std::make_shared<CMessage_Packet>();
+            auto send_packet = std::make_shared<CMessage_Packet>();
 
             recv_packet->command_id_ = LOGIC_THREAD_DEAD_LOCK;
             recv_packet->buffer_ = "{\"thread id\": " + std::to_string(module_logic->get_work_thread_id()) 
