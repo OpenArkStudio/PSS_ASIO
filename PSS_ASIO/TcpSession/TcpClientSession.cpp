@@ -243,6 +243,12 @@ void CTcpClientSession::handle_connect(const asio::error_code& ec, tcp::resolver
 
         packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip_, local_ip_, io_type_);
 
+#ifdef GCOV_TEST
+        //测试发送写入失败回调消息
+        std::string write_fail_text = "test write fail";
+        send_write_fail_to_logic(write_fail_text, write_fail_text.length());
+#endif
+
         //添加映射关系
         App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip_, remote_ip_);
 
