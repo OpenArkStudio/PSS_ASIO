@@ -123,7 +123,9 @@ void tcp_test_connect_synchronize_server(std::string strIP, unsigned short port,
         nPos += 200;
     }
 
-    asio::write(s, asio::buffer(send_buffer, 240 * packt_count));
+    std::size_t send_size = asio::write(s, asio::buffer(send_buffer, 240 * packt_count));
+	
+	std::cout << "[tcp_test_connect_synchronize_server]("<< command_id << ")send （" << send_size << ") OK" << std::endl;
 
     //接收数据
     char* recv_buffer = new char[240 * packt_count];
@@ -140,6 +142,7 @@ void tcp_test_connect_synchronize_server(std::string strIP, unsigned short port,
         }
     }
 
+	std::cout << "[tcp_test_connect_synchronize_server]("<< command_id << ")send OK" << std::endl;	
     delete[] send_buffer;
     delete[] recv_buffer;
 

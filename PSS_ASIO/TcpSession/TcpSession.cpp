@@ -40,7 +40,7 @@ void CTcpSession::close(uint32 connect_id)
     socket_.close();
 
     //输出接收发送字节数
-    PSS_LOGGER_DEBUG("[CTcpSession::Close]recv:{0}, send:{1} io_send_count:{2}", recv_data_size_, send_data_size_, io_send_count_);
+    PSS_LOGGER_DEBUG("[CTcpSession::Close]connect_id={0}, recv:{1}, send:{2} io_send_count:{3}", connect_id, recv_data_size_, send_data_size_, io_send_count_);
 
     //断开连接
     packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_);
