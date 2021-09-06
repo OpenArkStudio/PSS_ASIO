@@ -367,6 +367,10 @@ int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, c
     auto io_2_io_session_id = io_to_io_.get_to_session_id(connect_id);
     if (io_2_io_session_id > 0)
     {
+#ifdef GCOV_TEST
+        PSS_LOGGER_DEBUG("[CTcpSession::assignation_thread_module_logic]({0}) io to io).", connect_id);
+#endif	
+
         curr_thread_index = io_2_io_session_id % thread_count_;
         module_logic = thread_module_list_[curr_thread_index];
 
@@ -384,6 +388,9 @@ int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, c
     }
     else
     {
+#ifdef GCOV_TEST
+        PSS_LOGGER_DEBUG("[CTcpSession::assignation_thread_module_logic]({0}) curr_thread_index={1}).", connect_id, curr_thread_index);
+#endif
         //添加到数据队列处理
         App_tms::instance()->AddMessage(curr_thread_index, [this, session, connect_id, message_list, module_logic]() {
             do_work_thread_module_logic(session, connect_id, message_list, module_logic);

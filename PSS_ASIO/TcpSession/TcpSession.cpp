@@ -172,6 +172,10 @@ void CTcpSession::send_write_fail_to_logic(const std::string write_fail_buffer, 
 
     //写IO失败消息提交给逻辑插件
     App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id_, message_tcp_recv_list, shared_from_this());
+
+#ifdef GCOV_TEST
+    PSS_LOGGER_DEBUG("[CTcpSession::send_write_fail_to_logic]({0})write error OK({1}).", connect_id_, buffer_length);
+#endif
 }
 
 void CTcpSession::add_send_finish_size(uint32 connect_id, size_t send_length)
