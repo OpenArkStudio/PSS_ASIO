@@ -23,4 +23,5 @@ public:
     virtual std::chrono::steady_clock::time_point& get_recv_time() = 0;   //得到接收数据时间
     virtual bool format_send_packet(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, std::shared_ptr<CMessage_Packet> format_message) = 0;  //格式化发送数据
     virtual bool is_need_send_format() = 0;    //是否需要格式化发送
+    virtual bool is_connect() { return true; };  //当前链接状态是否是链接的
 };

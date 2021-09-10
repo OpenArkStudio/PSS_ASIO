@@ -139,7 +139,7 @@ void CCommunicationService::run_check_task()
 
     for (auto& client_info : communication_list_)
     {
-        if (client_info.second.session_ == nullptr)
+        if (client_info.second.session_ == nullptr || false == client_info.second.session_->is_connect())
         {
             //重新建立链接
             io_connect(client_info.second);

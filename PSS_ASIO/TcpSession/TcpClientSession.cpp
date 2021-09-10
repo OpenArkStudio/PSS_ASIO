@@ -27,6 +27,12 @@ bool CTcpClientSession::start(const CConnect_IO_Info& io_info)
         socket_.bind(localEndpoint, connect_error);
     }
 
+    //赋值对应的IP和端口信息
+    local_ip_.m_strClientIP = io_info.client_ip;
+    local_ip_.m_u2Port = io_info.client_port;
+    remote_ip_.m_strClientIP = io_info.server_ip;
+    remote_ip_.m_u2Port = io_info.server_port;
+
     //异步链接
     tcp::resolver::results_type::iterator endpoint_iter;
     socket_.async_connect(end_point, std::bind(&CTcpClientSession::handle_connect,
@@ -182,6 +188,11 @@ bool CTcpClientSession::is_need_send_format()
     return packet_parse_interface_->is_need_send_format_ptr_();
 }
 
+bool CTcpClientSession::is_connect()
+{
+    return is_connect_;
+}
+
 void CTcpClientSession::clear_write_buffer()
 {
     session_send_buffer_.move(session_send_buffer_.get_write_size());
@@ -260,8 +271,11 @@ void CTcpClientSession::handle_connect(const asio::error_code& ec, tcp::resolver
         is_connect_ = false;
 
         //连接建立失败
-        PSS_LOGGER_DEBUG("[CTcpClientSession::start]({0}:{1})error({2})", socket_.local_endpoint().address().to_string(),
-            socket_.local_endpoint().port(),
+        PSS_LOGGER_DEBUG("[CTcpClientSession::start]({0}:{1}  ==> {2}:{3})error({4})", 
+            local_ip_.m_strClientIP,
+            local_ip_.m_u2Port,
+            remote_ip_.m_strClientIP,
+            remote_ip_.m_u2Port,
             ec.message());
 
         //发送消息给逻辑块
