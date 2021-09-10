@@ -27,8 +27,19 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size)
 
 #ifdef GCOV_TEST
     //测试发送写入失败回调消息
-    std::string write_fail_text = "test write fail";
-    send_write_fail_to_logic(write_fail_text, write_fail_text.length());
+    if (connect_id_ == 1)
+    {
+        std::string write_fail_text = "test write fail";
+        send_write_fail_to_logic(write_fail_text, write_fail_text.length());
+
+        //测试发送点对点链接失败消息
+        vector<std::shared_ptr<CMessage_Packet>> message_list;
+
+        App_WorkThreadLogic::instance()->assignation_thread_module_logic_iotoio_error(
+            connect_id_,
+            message_list,
+            shared_from_this());
+    }
 #endif
 
     do_read();

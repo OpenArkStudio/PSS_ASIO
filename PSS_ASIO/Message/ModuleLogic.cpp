@@ -373,18 +373,24 @@ int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, c
 
         curr_thread_index = io_2_io_session_id % thread_count_;
         module_logic = thread_module_list_[curr_thread_index];
+        
+        auto session_io = module_logic->get_session_interface(io_2_io_session_id);
+        //发现对端不存在，丢到业务逻辑去处理
+        if (nullptr == session_io)
+        {
+            assignation_thread_module_logic_iotoio_error(connect_id, message_list, session);
+        }
+        else
+        {
+            //存在点对点透传，直接透传数据
+            App_tms::instance()->AddMessage(curr_thread_index, [io_2_io_session_id, message_list, module_logic, session_io]() {
 
-        //存在点对点透传，直接透传数据
-        App_tms::instance()->AddMessage(curr_thread_index, [io_2_io_session_id, message_list, module_logic]() {
-            auto session_io = module_logic->get_session_interface(io_2_io_session_id);
-            for (auto recv_packet : message_list)
-            {
-                if (nullptr != session_io)
+                for (const auto& recv_packet : message_list)
                 {
                     session_io->do_write_immediately(io_2_io_session_id, recv_packet->buffer_.c_str(), recv_packet->buffer_.size());
                 }
-            }
-        });
+                });
+        }
     }
     else
     {
@@ -402,6 +408,25 @@ int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, c
     uint32 check_timeout = 120;
     run_check_task(check_timeout);
 #endif
+    return 0;
+}
+
+int CWorkThreadLogic::assignation_thread_module_logic_iotoio_error(const uint32 connect_id, const vector<shared_ptr<CMessage_Packet>>& message_list, shared_ptr<ISession> session)
+{
+    uint16 curr_thread_index = connect_id % thread_count_;
+    auto module_logic = thread_module_list_[curr_thread_index];
+
+    vector<shared_ptr<CMessage_Packet>> message_list_iotoio;
+    for (auto& recv_packet : message_list)
+    {
+        recv_packet->command_id_ = LOGIC_IOTOIO_CONNECT_NO_EXIST;
+        message_list_iotoio.emplace_back(recv_packet);
+    }
+
+    App_tms::instance()->AddMessage(curr_thread_index, [this, session, connect_id, message_list_iotoio, module_logic]() {
+        do_work_thread_module_logic(session, connect_id, message_list_iotoio, module_logic);
+        });
+
     return 0;
 }
 
