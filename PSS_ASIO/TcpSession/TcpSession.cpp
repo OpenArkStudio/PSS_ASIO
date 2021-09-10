@@ -27,7 +27,7 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size)
 
 #ifdef GCOV_TEST
     //测试发送写入失败回调消息
-    if (connect_id_ == 1)
+    if (connect_id_ == 3)
     {
         std::string write_fail_text = "test write fail";
         send_write_fail_to_logic(write_fail_text, write_fail_text.length());
