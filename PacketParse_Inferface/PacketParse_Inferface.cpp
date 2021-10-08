@@ -46,7 +46,7 @@ bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, ve
     while (true)
     {
         //数据包头是2+2+4+32 结构
-        if (buff_length <= 40)
+        if (buff_length < 40)
         {
             //包头不完整，不做解析
             buffer->move(packet_pos);
