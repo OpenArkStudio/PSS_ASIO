@@ -21,10 +21,7 @@ public:
     {
         if (nullptr == _Myt::__single__.get())
         {
-            if (nullptr == _Myt::__single__.get())
-            {
-                _Myt::__single__.reset(new(std::nothrow) _Ty(args...));
-            }
+            _Myt::__single__.reset(new(std::nothrow) _Ty(args...));
         }
         return _Myt::__single__.get();
     }

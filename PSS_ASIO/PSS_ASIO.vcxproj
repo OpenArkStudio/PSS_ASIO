@@ -173,6 +173,7 @@
     <ClInclude Include="..\Common\ISessionService.h" />
     <ClInclude Include="..\Common\LoadLibrary.hpp" />
     <ClInclude Include="..\Common\ReadBuffer.hpp" />
+    <ClInclude Include="..\Common\ring_buffer.hpp" />
     <ClInclude Include="..\Common\SessionBuffer.hpp" />
     <ClInclude Include="..\Common\singleton.h" />
     <ClInclude Include="..\Common\ThreadQueue.h" />
