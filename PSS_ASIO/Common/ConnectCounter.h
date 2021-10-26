@@ -15,7 +15,7 @@ public:
 	uint32 CreateCounter();  //得到唯一的新ID
 	
 private:
-	std::atomic<uint32> count_index       = 1;
+	std::atomic<uint32> count_index{1};
 };
 
 using App_ConnectCounter = PSS_singleton<CConnectCounter>;
