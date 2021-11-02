@@ -39,14 +39,15 @@ bool CTcpSSLClientSession::start(const CConnect_IO_Info& io_info)
     auto endpoints = resolver.resolve(io_info.server_ip, std::to_string(io_info.server_port));
     asio::error_code connect_error;
 
+    auto self(shared_from_this());
     asio::async_connect(ssl_socket_.lowest_layer(), endpoints,
-        [this](const std::error_code& error,
+        [self](const std::error_code& error,
             const tcp::endpoint& /*endpoint*/)
         {
             if (!error)
             {
                 //连接远程SSL成功，进行异步握手
-                handshake();
+                self->handshake();
             }
             else
             {
@@ -55,10 +56,10 @@ bool CTcpSSLClientSession::start(const CConnect_IO_Info& io_info)
 
                 //发送消息给逻辑块
                 App_WorkThreadLogic::instance()->add_frame_events(LOGIC_CONNECT_SERVER_ERROR,
-                    server_id_,
-                    remote_ip_.m_strClientIP,
-                    remote_ip_.m_u2Port,
-                    io_type_);
+                    self->server_id_,
+                    self->remote_ip_.m_strClientIP,
+                    self->remote_ip_.m_u2Port,
+                    self->io_type_);
             }
         });
 
@@ -68,16 +69,26 @@ bool CTcpSSLClientSession::start(const CConnect_IO_Info& io_info)
 void CTcpSSLClientSession::close(uint32 connect_id)
 {
     auto self(shared_from_this());
-    ssl_socket_.lowest_layer().close();
 
-    //输出接收发送字节数
-    PSS_LOGGER_DEBUG("[CTcpSSLClientSession::Close]recv:{0}, send:{1}", recv_data_size_, send_data_size_);
+    auto recv_data_size = recv_data_size_;
+    auto send_data_size = send_data_size_;
 
-    //断开连接
-    packet_parse_interface_->packet_disconnect_ptr_(connect_id_, io_type_);
+    EM_CONNECT_IO_TYPE io_type = io_type_;
+    _ClientIPInfo remote_ip = remote_ip_;
 
-    //发送链接断开消息
-    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip_, self);
+    io_context_->dispatch([self, connect_id, io_type, remote_ip, recv_data_size, send_data_size]() 
+        {
+            self->ssl_socket_.lowest_layer().close();
+
+            //输出接收发送字节数
+            PSS_LOGGER_DEBUG("[CTcpSSLClientSession::Close]recv:{0}, send:{1}", recv_data_size, send_data_size);
+
+            //断开连接
+            self->packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type);
+
+            //发送链接断开消息
+            App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip, self);
+        });
 }
 
 void CTcpSSLClientSession::set_write_buffer(uint32 connect_id, const char* data, size_t length)
@@ -111,9 +122,9 @@ void CTcpSSLClientSession::do_read()
     }
 
     ssl_socket_.async_read_some(asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()),
-        [this, self](std::error_code ec, std::size_t length)
+        [self](std::error_code ec, std::size_t length)
         {
-            do_read_some(ec, length);
+            self->do_read_some(ec, length);
         });
 }
 
@@ -124,22 +135,25 @@ void CTcpSSLClientSession::do_write_immediately(uint32 connect_id, const char* d
     send_buffer->data_.append(data, length);
     send_buffer->buffer_length_ = length;
 
-    //异步发送
     auto self(shared_from_this());
-    asio::async_write(ssl_socket_, asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
-        [self, connect_id, send_buffer](std::error_code ec, std::size_t send_length)
+    io_context_->dispatch([self, send_buffer, connect_id]()
         {
-            if (ec)
-            {
-                //发送给逻辑线程处理
-                PSS_LOGGER_DEBUG("[CTcpSSLClientSession::do_write_immediately]({0}), message({1})", connect_id, ec.message());
+            //异步发送
+            asio::async_write(self->ssl_socket_, asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
+                [self, connect_id, send_buffer](std::error_code ec, std::size_t send_length)
+                {
+                    if (ec)
+                    {
+                        //发送给逻辑线程处理
+                        PSS_LOGGER_DEBUG("[CTcpSSLClientSession::do_write_immediately]({0}), message({1})", connect_id, ec.message());
 
-                self->send_write_fail_to_logic(send_buffer->data_, send_length);
-            }
-            else
-            {
-                self->add_send_finish_size(connect_id, send_length);
-            }
+                        self->send_write_fail_to_logic(send_buffer->data_, send_length);
+                    }
+                    else
+                    {
+                        self->add_send_finish_size(connect_id, send_length);
+                    }
+                });
         });
 }
 
@@ -269,33 +283,34 @@ bool CTcpSSLClientSession::verify_certificate(bool preverified, asio::ssl::verif
 
 void CTcpSSLClientSession::handshake()
 {
+    auto self(shared_from_this());
     ssl_socket_.async_handshake(asio::ssl::stream_base::client,
-        [this](const std::error_code& error)
+        [self](const std::error_code& error)
         {
             if (!error)
             {
                 //握手成功，开始准备接收数据
-                connect_id_ = App_ConnectCounter::instance()->CreateCounter();
+                self->connect_id_ = App_ConnectCounter::instance()->CreateCounter();
 
-                recv_data_time_ = std::chrono::steady_clock::now();
+                self->recv_data_time_ = std::chrono::steady_clock::now();
 
-                packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(packet_parse_id_);
+                self->packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(self->packet_parse_id_);
 
                 //处理链接建立消息
-                remote_ip_.m_strClientIP = ssl_socket_.lowest_layer().remote_endpoint().address().to_string();
-                remote_ip_.m_u2Port = ssl_socket_.lowest_layer().remote_endpoint().port();
-                local_ip_.m_strClientIP = ssl_socket_.lowest_layer().local_endpoint().address().to_string();
-                local_ip_.m_u2Port = ssl_socket_.lowest_layer().local_endpoint().port();
+                self->remote_ip_.m_strClientIP = self->ssl_socket_.lowest_layer().remote_endpoint().address().to_string();
+                self->remote_ip_.m_u2Port = self->ssl_socket_.lowest_layer().remote_endpoint().port();
+                self->local_ip_.m_strClientIP = self->ssl_socket_.lowest_layer().local_endpoint().address().to_string();
+                self->local_ip_.m_u2Port = self->ssl_socket_.lowest_layer().local_endpoint().port();
 
-                PSS_LOGGER_DEBUG("[CTcpSSLClientSession::start]remote({0}:{1})", remote_ip_.m_strClientIP, remote_ip_.m_u2Port);
-                PSS_LOGGER_DEBUG("[CTcpSSLClientSession::start]local({0}:{1})", local_ip_.m_strClientIP, local_ip_.m_u2Port);
+                PSS_LOGGER_DEBUG("[CTcpSSLClientSession::start]remote({0}:{1})", self->remote_ip_.m_strClientIP, self->remote_ip_.m_u2Port);
+                PSS_LOGGER_DEBUG("[CTcpSSLClientSession::start]local({0}:{1})", self->local_ip_.m_strClientIP, self->local_ip_.m_u2Port);
 
-                packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip_, local_ip_, io_type_);
+                self->packet_parse_interface_->packet_connect_ptr_(self->connect_id_, self->remote_ip_, self->local_ip_, self->io_type_);
 
                 //添加映射关系
-                App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip_, remote_ip_);
+                App_WorkThreadLogic::instance()->add_thread_session(self->connect_id_, self, self->local_ip_, self->remote_ip_);
 
-                do_read();
+                self->do_read();
             }
             else
             {

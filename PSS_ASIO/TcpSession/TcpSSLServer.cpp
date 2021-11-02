@@ -14,7 +14,8 @@ packet_parse_id_(packet_parse_id),
 max_recv_size_(max_recv_size),
 ssl_server_password_(ssl_server_password),
 ssl_server_pem_file_(ssl_server_pem_file),
-ssl_server_dh_file_(ssl_server_dh_file)
+ssl_server_dh_file_(ssl_server_dh_file),
+io_context_(&io_context)
 {
     try
     {
@@ -62,7 +63,7 @@ void CTcpSSLServer::do_accept()
             {
                 std::make_shared<CTcpSSLSession>(
                     asio::ssl::stream<tcp::socket>(
-                        std::move(socket), context_))->open(packet_parse_id_, max_recv_size_);
+                        std::move(socket), context_), io_context_)->open(packet_parse_id_, max_recv_size_);
             }
             else
             {

@@ -25,6 +25,7 @@ private:
 
     void send_accept_listen_fail(std::error_code ec) const;
 
+    asio::io_context* io_context_ = nullptr;
     std::shared_ptr<tcp::acceptor> acceptor_;
     asio::ssl::context context_;
     uint32 packet_parse_id_ = 0;

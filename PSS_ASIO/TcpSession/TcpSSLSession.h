@@ -20,7 +20,7 @@ using asio::ip::tcp;
 class CTcpSSLSession : public std::enable_shared_from_this<CTcpSSLSession>, public ISession
 {
 public:
-    CTcpSSLSession(asio::ssl::stream<tcp::socket> socket);
+    CTcpSSLSession(asio::ssl::stream<tcp::socket> socket, asio::io_context* io_context);
 
     void open(uint32 packet_parse_id, uint32 recv_size);
 
@@ -57,6 +57,7 @@ private:
 
 
 private:
+    asio::io_context* io_context_ = nullptr;
     asio::ssl::stream<tcp::socket> ssl_socket_;
     uint32 connect_id_ = 0;
     CSessionBuffer session_recv_buffer_;

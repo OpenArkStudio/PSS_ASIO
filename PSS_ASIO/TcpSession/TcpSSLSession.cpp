@@ -1,7 +1,8 @@
 #include "TcpSSLSession.h"
 #ifdef SSL_SUPPORT
 
-CTcpSSLSession::CTcpSSLSession(asio::ssl::stream<tcp::socket> socket) : ssl_socket_(std::move(socket))
+CTcpSSLSession::CTcpSSLSession(asio::ssl::stream<tcp::socket> socket, asio::io_context* io_context)
+    : ssl_socket_(std::move(socket)), io_context_(io_context)
 {
 }
 
@@ -32,15 +33,26 @@ void CTcpSSLSession::open(uint32 packet_parse_id, uint32 recv_size)
 void CTcpSSLSession::close(uint32 connect_id)
 {
     auto self(shared_from_this());
-    ssl_socket_.lowest_layer().close();
 
-    //输出接收发送字节数
-    PSS_LOGGER_DEBUG("[CTcpSession::Close]recv:{0}, send:{1} io_send_count:{2}", recv_data_size_, send_data_size_, io_send_count_);
+    auto recv_data_size = recv_data_size_;
+    auto send_data_size = send_data_size_;
+    auto io_send_count = io_send_count_;
 
-    //断开连接
-    packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_);
+    EM_CONNECT_IO_TYPE io_type = io_type_;
+    _ClientIPInfo remote_ip = remote_ip_;
 
-    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip_, self);
+    io_context_->dispatch([self, connect_id, io_type, remote_ip, recv_data_size, send_data_size, io_send_count]()
+        {
+            self->ssl_socket_.lowest_layer().close();
+
+            //输出接收发送字节数
+            PSS_LOGGER_DEBUG("[CTcpSession::Close]recv:{0}, send:{1} io_send_count:{2}", recv_data_size, send_data_size, io_send_count);
+
+            //断开连接
+            self->packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type);
+
+            App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip, self);
+        });
 }
 
 void CTcpSSLSession::set_write_buffer(uint32 connect_id, const char* data, size_t length)
@@ -60,10 +72,11 @@ void CTcpSSLSession::do_read()
         App_WorkThreadLogic::instance()->close_session_event(connect_id_);
     }
 
+    auto self(shared_from_this());
     ssl_socket_.async_read_some(asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()),
-        [this](std::error_code ec, std::size_t length)
+        [self](std::error_code ec, std::size_t length)
         {
-            do_read_some(ec, length);
+            self->do_read_some(ec, length);
         });
 }
 
@@ -139,25 +152,28 @@ void CTcpSSLSession::do_write(uint32 connect_id)
 
     clear_write_buffer();
 
-    //异步发送
     auto self(shared_from_this());
-    asio::async_write(ssl_socket_, asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
-        [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
+    io_context_->dispatch([self, send_buffer, connect_id]()
         {
-            if (ec)
-            {
-                //告诉业务逻辑发送失败
-                PSS_LOGGER_DEBUG("[CTcpSession::do_write]({0})write error({1}).", connect_id, ec.message());
+            //异步发送
+            asio::async_write(self->ssl_socket_, asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
+                [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
+                {
+                    if (ec)
+                    {
+                        //告诉业务逻辑发送失败
+                        PSS_LOGGER_DEBUG("[CTcpSession::do_write]({0})write error({1}).", connect_id, ec.message());
 
-                self->send_write_fail_to_logic(send_buffer->data_, length);
-            }
-            else
-            {
-                self->add_send_finish_size(connect_id, length);
+                        self->send_write_fail_to_logic(send_buffer->data_, length);
+                    }
+                    else
+                    {
+                        self->add_send_finish_size(connect_id, length);
 
-                //继续发送
-                self->do_write(connect_id);
-            }
+                        //继续发送
+                        self->do_write(connect_id);
+                    }
+                });
         });
 }
 

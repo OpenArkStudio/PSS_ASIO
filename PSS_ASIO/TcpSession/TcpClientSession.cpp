@@ -98,9 +98,9 @@ void CTcpClientSession::do_read()
     }
 
     socket_.async_read_some(asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()),
-        [this, self](std::error_code ec, std::size_t length)
+        [self](std::error_code ec, std::size_t length)
         {
-            do_read_some(ec, length);
+            self->do_read_some(ec, length);
         });
 }
 

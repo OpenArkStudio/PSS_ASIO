@@ -83,10 +83,11 @@ void CTcpSession::do_read()
         App_WorkThreadLogic::instance()->close_session_event(connect_id_);
     }
 
+    auto self(shared_from_this());
     socket_.async_read_some(asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()),
-        [this](std::error_code ec, std::size_t length)
+        [self](std::error_code ec, std::size_t length)
         {
-            do_read_some(ec, length);
+            self->do_read_some(ec, length);
         });
 }
 
