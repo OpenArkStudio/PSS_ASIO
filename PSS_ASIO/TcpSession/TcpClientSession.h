@@ -54,6 +54,7 @@ public:
     void send_write_fail_to_logic(const std::string& write_fail_buffer, std::size_t buffer_length);
 
 private:
+    asio::io_context* io_context_ = nullptr;
     tcp::socket socket_;
     uint32 server_id_  = 0;
     uint32 connect_id_ = 0;

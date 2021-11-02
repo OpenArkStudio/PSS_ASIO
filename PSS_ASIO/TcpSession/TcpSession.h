@@ -19,7 +19,7 @@ using asio::ip::tcp;
 class CTcpSession : public std::enable_shared_from_this<CTcpSession>, public ISession
 {
 public:
-    explicit CTcpSession(tcp::socket socket);
+    explicit CTcpSession(tcp::socket socket, asio::io_context* io_context);
 
     void open(uint32 packet_parse_id, uint32 recv_size);
 
@@ -52,6 +52,7 @@ public:
     void send_write_fail_to_logic(const std::string& write_fail_buffer, std::size_t buffer_length);
 
 private:
+    asio::io_context* io_context_ = nullptr;
     tcp::socket socket_;
     uint32 connect_id_ = 0;
     CSessionBuffer session_recv_buffer_;

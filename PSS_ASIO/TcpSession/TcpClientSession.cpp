@@ -3,7 +3,7 @@
 #include "TcpSession.h"
 
 CTcpClientSession::CTcpClientSession(asio::io_context* io_context)
-    : socket_(*io_context)
+    : socket_(*io_context), io_context_(io_context)
 {
 }
 
@@ -44,16 +44,28 @@ bool CTcpClientSession::start(const CConnect_IO_Info& io_info)
 void CTcpClientSession::close(uint32 connect_id)
 {
     auto self(shared_from_this());
-    socket_.close();
 
-    //输出接收发送字节数
-    PSS_LOGGER_DEBUG("[CTcpClientSession::Close]recv:{0}, send:{1}", recv_data_size_, send_data_size_);
+    auto connect_id = connect_id_;
+    auto recv_data_size = recv_data_size_;
+    auto send_data_size = send_data_size_;
 
-    //断开连接
-    packet_parse_interface_->packet_disconnect_ptr_(connect_id_, io_type_);
+    EM_CONNECT_IO_TYPE io_type = io_type_;
+    _ClientIPInfo remote_ip = remote_ip_;
 
-    //发送链接断开消息
-    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip_, self);
+    //放到收发线程去处理
+    io_context_->dispatch([self, connect_id, recv_data_size, send_data_size, io_type, remote_ip]() {
+        self->socket_.close();
+
+        //输出接收发送字节数
+        PSS_LOGGER_DEBUG("[CTcpClientSession::Close]recv:{0}, send:{1}", recv_data_size, send_data_size);
+
+        //断开连接
+        self->packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type);
+
+        //发送链接断开消息
+        App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip, self);
+        });
+
 }
 
 void CTcpClientSession::set_write_buffer(uint32 connect_id, const char* data, size_t length)
@@ -108,19 +120,22 @@ void CTcpClientSession::do_write_immediately(uint32 connect_id, const char* data
 
     //异步发送
     auto self(shared_from_this());
-    asio::async_write(socket_, asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
-        [self, connect_id, send_buffer](std::error_code ec, std::size_t send_length)
-        {
-            if (ec)
+
+    io_context_->dispatch([self, connect_id, send_buffer]() {
+        asio::async_write(self->socket_, asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
+            [self, connect_id, send_buffer](std::error_code ec, std::size_t send_length)
             {
-                //发送IO消息写入失败
-                PSS_LOGGER_DEBUG("[CTcpClientSession::do_write_immediately]({0}), message({1})", connect_id, ec.message());
-                self->send_write_fail_to_logic(send_buffer->data_, send_length);
-            }
-            else
-            {
-                self->add_send_finish_size(connect_id, send_length);
-            }
+                if (ec)
+                {
+                    //发送IO消息写入失败
+                    PSS_LOGGER_DEBUG("[CTcpClientSession::do_write_immediately]({0}), message({1})", connect_id, ec.message());
+                    self->send_write_fail_to_logic(send_buffer->data_, send_length);
+                }
+                else
+                {
+                    self->add_send_finish_size(connect_id, send_length);
+                }
+            });
         });
 }
 

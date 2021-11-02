@@ -17,5 +17,6 @@ private:
     std::shared_ptr<tcp::acceptor> acceptor_;
     uint32 packet_parse_id_ = 0;
     uint32 max_recv_size_ = 0;
+    asio::io_context* io_context_ = nullptr;
 };
 

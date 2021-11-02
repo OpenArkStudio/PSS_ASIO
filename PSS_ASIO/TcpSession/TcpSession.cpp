@@ -1,7 +1,7 @@
 ﻿#include "TcpSession.h"
 
-CTcpSession::CTcpSession(tcp::socket socket)
-    : socket_(std::move(socket))
+CTcpSession::CTcpSession(tcp::socket socket, asio::io_context* io_context)
+    : socket_(std::move(socket)), io_context_(io_context)
 {
 }
 
@@ -48,15 +48,29 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size)
 void CTcpSession::close(uint32 connect_id)
 {
     auto self(shared_from_this());
-    socket_.close();
 
-    //输出接收发送字节数
-    PSS_LOGGER_DEBUG("[CTcpSession::Close]connect_id={0}, recv:{1}, send:{2} io_send_count:{3}", connect_id, recv_data_size_, send_data_size_, io_send_count_);
+    auto recv_data_size = recv_data_size_;
+    auto send_data_size = send_data_size_;
+    auto io_send_count = io_send_count_;
 
-    //断开连接
-    packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_);
+    EM_CONNECT_IO_TYPE io_type = io_type_;
+    _ClientIPInfo remote_ip = remote_ip_;
 
-    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip_, self);
+    //关闭链接放到IO收发线程里去做
+    io_context_->dispatch([self, connect_id, io_type, remote_ip, recv_data_size, send_data_size, io_send_count]()
+        {
+            //输出接收发送字节数
+            PSS_LOGGER_DEBUG("[CTcpSession::Close]connect_id={0}, recv:{1}, send:{2} io_send_count:{3}",
+                connect_id, recv_data_size, send_data_size, io_send_count);
+
+            self->socket_.close();
+
+            //断开连接
+            self->packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type);
+
+            App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip, self);
+        });
+
 }
 
 void CTcpSession::do_read()
@@ -97,24 +111,26 @@ void CTcpSession::do_write(uint32 connect_id)
 
     //异步发送
     auto self(shared_from_this());
-    asio::async_write(socket_, asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
-        [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
-        {
-            if (ec)
+    io_context_->dispatch([self, send_buffer, connect_id]() {
+        asio::async_write(self->socket_, asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
+            [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
             {
-                //发送写入消息失败信息
-                PSS_LOGGER_DEBUG("[CTcpSession::do_write]({0})write error({1}).", connect_id, ec.message());
+                if (ec)
+                {
+                    //发送写入消息失败信息
+                    PSS_LOGGER_DEBUG("[CTcpSession::do_write]({0})write error({1}).", connect_id, ec.message());
 
-                self->send_write_fail_to_logic(send_buffer->data_, length);
-            }
-            else
-            {
-                self->add_send_finish_size(connect_id, length);
-                
-                //继续发送
-                self->do_write(connect_id);
-            }
-        });
+                    self->send_write_fail_to_logic(send_buffer->data_, length);
+                }
+                else
+                {
+                    self->add_send_finish_size(connect_id, length);
+
+                    //继续发送
+                    self->do_write(connect_id);
+                }
+            });
+    });
 }
 
 void CTcpSession::do_write_immediately(uint32 connect_id, const char* data, size_t length)
