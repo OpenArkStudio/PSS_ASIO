@@ -45,7 +45,6 @@ void CTcpClientSession::close(uint32 connect_id)
 {
     auto self(shared_from_this());
 
-    auto connect_id = connect_id_;
     auto recv_data_size = recv_data_size_;
     auto send_data_size = send_data_size_;
 
