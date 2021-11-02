@@ -50,6 +50,7 @@ private:
 
     bool add_serial_port(asio::io_context* io_context, const std::string& tty_name, uint16 tty_port, uint8 char_size);
 
+    asio::io_context* io_context_ = nullptr;
     std::string tty_name_;
     shared_ptr<asio::serial_port> serial_port_param_= nullptr;
     uint32 connect_id_ = 0;

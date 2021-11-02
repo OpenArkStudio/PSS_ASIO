@@ -1,7 +1,7 @@
 ﻿#include "UdpServer.h"
 
 CUdpServer::CUdpServer(asio::io_context& io_context, const std::string& server_ip, short port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size)
-    : socket_(io_context, udp::endpoint(asio::ip::address_v4::from_string(server_ip), port)), max_recv_size_(max_recv_size), max_send_size_(max_send_size)
+    : socket_(io_context, udp::endpoint(asio::ip::address_v4::from_string(server_ip), port)), max_recv_size_(max_recv_size), max_send_size_(max_send_size), io_context_(&io_context)
 {
     //处理链接建立消息
     PSS_LOGGER_DEBUG("[CUdpServer::do_accept]{0}:{1} Begin Accept.", server_ip, port);
@@ -15,11 +15,12 @@ CUdpServer::CUdpServer(asio::io_context& io_context, const std::string& server_i
 
 void CUdpServer::do_receive()
 {
+    auto self(shared_from_this());
     socket_.async_receive_from(
         asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()), recv_endpoint_,
-        [this](std::error_code ec, std::size_t length)
+        [self](std::error_code ec, std::size_t length)
         {
-            do_receive_from(ec, length);
+            self->do_receive_from(ec, length);
         });
 }
 
@@ -72,7 +73,12 @@ void CUdpServer::do_receive_from(std::error_code ec, std::size_t length)
 
 void CUdpServer::close(uint32 connect_id)
 {
-    close_udp_endpoint_by_id(connect_id);
+    auto self(shared_from_this());
+    io_context_->dispatch([self, connect_id]() 
+        {
+            self->close_udp_endpoint_by_id(connect_id);
+        });
+
 }
 
 void CUdpServer::set_write_buffer(uint32 connect_id, const char* data, size_t length)
@@ -121,20 +127,24 @@ void CUdpServer::do_write(uint32 connect_id)
     clear_write_buffer(session_info);
 
     auto self(shared_from_this());
-    socket_.async_send_to(
-        asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_), session_info->send_endpoint,
-        [self, send_buffer, connect_id](std::error_code ec, std::size_t send_length)
+
+    io_context_->dispatch([self, connect_id, send_buffer, session_info]()
         {
-            if (ec)
-            {
-                //暂时不处理
-                PSS_LOGGER_DEBUG("[CUdpServer::do_write]connect_id={0}, write error({1}).", connect_id, ec.message());
-            }
-            else
-            {
-                //这里记录发送字节数
-                self->add_send_finish_size(connect_id, send_length);
-            }
+            self->socket_.async_send_to(
+                asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_), session_info->send_endpoint,
+                [self, send_buffer, connect_id](std::error_code ec, std::size_t send_length)
+                {
+                    if (ec)
+                    {
+                        //暂时不处理
+                        PSS_LOGGER_DEBUG("[CUdpServer::do_write]connect_id={0}, write error({1}).", connect_id, ec.message());
+                    }
+                    else
+                    {
+                        //这里记录发送字节数
+                        self->add_send_finish_size(connect_id, send_length);
+                    }
+                });
         });
 }
 

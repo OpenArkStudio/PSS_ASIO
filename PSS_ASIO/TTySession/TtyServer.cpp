@@ -13,6 +13,7 @@ CTTyServer::CTTyServer(uint32 packet_parse_id, uint32 max_recv_size, uint32 max_
 
 void CTTyServer::start(asio::io_context* io_context, const std::string& tty_name, uint16 tty_port, uint8 char_size, uint32 server_id)
 {
+    io_context_ = io_context;
     if (false == add_serial_port(io_context, tty_name, tty_port, char_size))
     {
         return;
@@ -46,11 +47,12 @@ void CTTyServer::start(asio::io_context* io_context, const std::string& tty_name
 
 void CTTyServer::do_receive()
 {
+    auto self(shared_from_this());
     serial_port_param_->async_read_some(asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()),
-        [this](std::error_code ec, std::size_t length)
+        [self](std::error_code ec, std::size_t length)
         {
             //处理接收数据
-            do_read_some(ec, length);
+            self->do_read_some(ec, length);
         });
 }
 
@@ -147,21 +149,25 @@ void CTTyServer::do_write_immediately(uint32 connect_id, const char* data, size_
 
     //异步发送
     auto self(shared_from_this());
-    serial_port_param_->async_write_some(asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
-        [self, send_buffer, connect_id](std::error_code ec, std::size_t send_length)
-        {
-            if (ec)
-            {
-                //暂时不处理
-                PSS_LOGGER_DEBUG("[CTTyServer::do_write]write error({0}).", ec.message());
-            }
-            else
-            {
-                self->add_send_finish_size(connect_id, send_length);
-            }
-        });
 
-    clear_write_buffer();
+    io_context_->dispatch([self, connect_id, send_buffer]()
+        {
+            self->serial_port_param_->async_write_some(asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
+                [self, send_buffer, connect_id](std::error_code ec, std::size_t send_length)
+                {
+                    if (ec)
+                    {
+                        //暂时不处理
+                        PSS_LOGGER_DEBUG("[CTTyServer::do_write]write error({0}).", ec.message());
+                    }
+                    else
+                    {
+                        self->add_send_finish_size(connect_id, send_length);
+                    }
+                });
+
+            self->clear_write_buffer();
+        });
 }
 
 void CTTyServer::add_send_finish_size(uint32 connect_id, size_t send_length)
@@ -179,11 +185,17 @@ void CTTyServer::close(uint32 connect_id)
 {
     auto self(shared_from_this());
 
-    PSS_UNUSED_ARG(connect_id);
-    packet_parse_interface_->packet_disconnect_ptr_(connect_id_, io_type_);
+    auto io_type = io_type_;
+    _ClientIPInfo remote_ip = remote_ip_;
 
-    //删除映射关系
-    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip_, self);
+    io_context_->dispatch([self, connect_id, io_type, remote_ip]()
+        {
+            PSS_UNUSED_ARG(connect_id);
+            self->packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type);
+
+            //删除映射关系
+            App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip, self);
+        });
 }
 
 uint32 CTTyServer::get_mark_id(uint32 connect_id)

@@ -1,7 +1,7 @@
 ﻿#include "UdpClientSession.h"
 
 CUdpClientSession::CUdpClientSession(asio::io_context* io_context)
-    : socket_(*io_context)
+    : socket_(*io_context), io_context_(io_context)
 {
 }
 
@@ -54,19 +54,26 @@ void CUdpClientSession::close(uint32 connect_id)
 {
     auto self(shared_from_this());
 
-    socket_.close();
+    auto io_type = io_type_;
 
-    packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_);
+    io_context_->dispatch([self, connect_id, io_type]()
+        {
+            self->socket_.close();
 
-    //输出接收发送字节数
-    PSS_LOGGER_DEBUG("[CUdpClientSession::Close]recv:{0}, send:{1}", recv_data_size_, send_data_size_);
+            self->packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type);
 
-    //删除映射关系
-    _ClientIPInfo remote_ip;
-    remote_ip.m_strClientIP = send_endpoint_.address().to_string();
-    remote_ip.m_u2Port = send_endpoint_.port();
+            //输出接收发送字节数
+            PSS_LOGGER_DEBUG("[CUdpClientSession::Close]recv:{0}, send:{1}", 
+                self->recv_data_size_,
+                self->send_data_size_);
 
-    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip, self);
+            //删除映射关系
+            _ClientIPInfo remote_ip;
+            remote_ip.m_strClientIP = self->send_endpoint_.address().to_string();
+            remote_ip.m_u2Port = self->send_endpoint_.port();
+
+            App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip, self);
+        });
 }
 
 
@@ -81,10 +88,11 @@ void CUdpClientSession::do_receive()
         App_WorkThreadLogic::instance()->close_session_event(connect_id_);
     }
 
+    auto self(shared_from_this());
     socket_.async_receive_from(asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()), recv_endpoint_,
-        [this](std::error_code ec, std::size_t length)
+        [self](std::error_code ec, std::size_t length)
         {
-            do_receive_from(ec, length);
+            self->do_receive_from(ec, length);
         });
 }
 
@@ -156,18 +164,22 @@ void CUdpClientSession::send_io_data(uint32 connect_id, std::shared_ptr<CSendBuf
 
     //异步发送
     auto self(shared_from_this());
-    socket_.async_send_to(asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_), send_endpoint_,
-        [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
+
+    io_context_->dispatch([self, connect_id, send_buffer]()
         {
-            if (ec)
-            {
-                //暂时不处理
-                PSS_LOGGER_DEBUG("[CUdpClientSession::do_write]connect_id={0}, write error({1}).", connect_id, ec.message());
-            }
-            else
-            {
-                self->add_send_finish_size(connect_id, length);
-            }
+            self->socket_.async_send_to(asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_), self->send_endpoint_,
+                [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
+                {
+                    if (ec)
+                    {
+                        //暂时不处理
+                        PSS_LOGGER_DEBUG("[CUdpClientSession::do_write]connect_id={0}, write error({1}).", connect_id, ec.message());
+                    }
+                    else
+                    {
+                        self->add_send_finish_size(connect_id, length);
+                    }
+                });
         });
 }
 

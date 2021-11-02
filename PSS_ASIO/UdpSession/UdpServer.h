@@ -68,6 +68,7 @@ private:
    
     void close_udp_endpoint_by_id(uint32 connect_id);
 
+    asio::io_context* io_context_ = nullptr;
     udp::socket socket_;
     uint32 connect_client_id_ = 0;
     udp::endpoint recv_endpoint_;
