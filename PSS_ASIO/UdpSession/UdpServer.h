@@ -35,6 +35,8 @@ class CUdpServer : public std::enable_shared_from_this<CUdpServer>, public ISess
 public:
     CUdpServer(asio::io_context& io_context, const std::string& server_ip, short port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size);
 
+    void start();
+
     void close(uint32 connect_id) final;
 
     void set_write_buffer(uint32 connect_id, const char* data, size_t length) final;
@@ -68,7 +70,6 @@ private:
    
     void close_udp_endpoint_by_id(uint32 connect_id);
 
-    asio::io_context* io_context_ = nullptr;
     udp::socket socket_;
     uint32 connect_client_id_ = 0;
     udp::endpoint recv_endpoint_;
@@ -80,6 +81,7 @@ private:
 
     uint32 max_recv_size_ = 0;
     uint32 max_send_size_ = 0;
+    asio::io_context* io_context_ = nullptr;
     std::chrono::steady_clock::time_point recv_data_time_ = std::chrono::steady_clock::now();
 
     CSessionBuffer session_recv_buffer_;

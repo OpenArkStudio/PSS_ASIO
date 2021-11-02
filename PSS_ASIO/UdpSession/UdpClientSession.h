@@ -52,8 +52,8 @@ public:
     void do_receive_from(std::error_code ec, std::size_t length);
 
 private:
-    asio::io_context* io_context_;
     udp::socket socket_;
+    asio::io_context* io_context_;
     uint32 server_id_  = 0;
     uint32 connect_id_ = 0;
     CSessionBuffer session_recv_buffer_;

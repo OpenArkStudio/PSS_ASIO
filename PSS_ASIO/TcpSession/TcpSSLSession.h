@@ -57,8 +57,8 @@ private:
 
 
 private:
-    asio::io_context* io_context_ = nullptr;
     asio::ssl::stream<tcp::socket> ssl_socket_;
+    asio::io_context* io_context_ = nullptr;
     uint32 connect_id_ = 0;
     CSessionBuffer session_recv_buffer_;
     std::string session_send_buffer_;

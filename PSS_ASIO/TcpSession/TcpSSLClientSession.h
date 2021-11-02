@@ -60,9 +60,9 @@ private:
     bool verify_certificate(bool preverified, asio::ssl::verify_context& ctx);
     void handshake();
 
+    asio::io_context* io_context_ = nullptr;
     asio::ssl::stream<tcp::socket> ssl_socket_;
     asio::ssl::context ssl_ctx_;
-    asio::io_context* io_context_ = nullptr;
     uint32 packet_parse_id_ = 0;
 
     uint32 server_id_  = 0;
