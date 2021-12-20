@@ -78,7 +78,7 @@ void CModuleLogic::check_session_io_timeout(uint32 connect_timeout) const
     sessions_interface_.check_session_io_timeout(connect_timeout, session_list);
     for (const auto& session_io : session_list)
     {
-        session_io.session_->close(session_io.session_id_);
+        App_WorkThreadLogic::instance()->close_session_event(session_io.session_id_);
     }
 }
 
