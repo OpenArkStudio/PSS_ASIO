@@ -40,6 +40,8 @@ void CModuleLogic::delete_session_interface(uint32 connect_id)
 
 void CModuleLogic::close()
 {
+    vector<uint32> session_id_list = sessions_interface_.get_all_session_id();
+
     modules_interface_.close();
     sessions_interface_.close();
 }
@@ -86,6 +88,11 @@ uint16 CModuleLogic::get_last_dispose_command_id() const
 {
     //返回最后一个处理的命令ID
     return last_dispose_command_id_;
+}
+
+std::vector<uint32> CModuleLogic::get_all_session_id()
+{
+    return sessions_interface_.get_all_session_id();
 }
 
 void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_seconds, uint32 connect_timeout, const config_logic_list& logic_list, ISessionService* session_service)
@@ -216,11 +223,24 @@ void CWorkThreadLogic::init_communication_service(ICommunicationInterface* commu
 
 void CWorkThreadLogic::close()
 {
+    communicate_service_->close();
+
+    //关闭所有的客户端
+    for (auto f : thread_module_list_)
+    {
+        auto session_id_list = f->get_all_session_id();
+
+        for (const auto& session_id : session_id_list)
+        {
+            PSS_LOGGER_DEBUG("[CWorkThreadLogic::close]session_id ({0}) is close", session_id);
+            close_session_event(session_id);
+        }
+    }
+
     //关闭线程操作
     App_tms::instance()->Close();
 
-    communicate_service_->close();
-
+    //释放对应模块接口
     for (auto f : thread_module_list_)
     {
         f->close();

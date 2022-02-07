@@ -65,6 +65,8 @@ public:
 
     uint16 get_last_dispose_command_id() const;
 
+    vector<uint32> get_all_session_id();
+
 private:
     CSessionInterface sessions_interface_;
     CModuleInterface modules_interface_;

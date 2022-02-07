@@ -61,7 +61,7 @@ void CSessionInterface::delete_session_interface(uint32 connect_id)
 
 void CSessionInterface::close()
 {
-    sessions_list_.clear();
+    //sessions_list_.clear();
 }
 
 void CSessionInterface::check_session_io_timeout(uint32 connect_timeout, vector<CSessionIO_Cancel>& session_list) const
@@ -88,4 +88,16 @@ void CSessionInterface::check_session_io_timeout(uint32 connect_timeout, vector<
         }
     }
 
+}
+
+std::vector<uint32> CSessionInterface::get_all_session_id()
+{
+    vector<uint32> session_id_list;
+
+    for (const auto& session_info : sessions_list_)
+    {
+        session_id_list.push_back(session_info.first);
+    }
+
+    return session_id_list;
 }
