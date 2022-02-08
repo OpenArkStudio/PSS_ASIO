@@ -8,7 +8,10 @@ void CCommunicationService::init_communication_service(asio::io_context* io_serv
     //定时检查任务，检查服务器间链接的状态。
     App_TimerManager::instance()->GetTimerPtr()->addTimer_loop(chrono::seconds(0), chrono::seconds(timeout_seconds), [this]()
         {
-            run_check_task();
+            //添加到数据队列处理
+            App_tms::instance()->AddMessage(0, [this]() {
+                run_check_task();
+                });
         });
 }
 

@@ -211,7 +211,10 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
     //定时检查任务，定时检查服务器状态
     App_TimerManager::instance()->GetTimerPtr()->addTimer_loop(chrono::seconds(0), chrono::seconds(timeout_seconds), [this, timeout_seconds]()
         {
-            run_check_task(timeout_seconds);
+            //添加到数据队列处理
+            App_tms::instance()->AddMessage(0, [this, timeout_seconds]() {
+                run_check_task(timeout_seconds);
+                });
         });
     
 }
