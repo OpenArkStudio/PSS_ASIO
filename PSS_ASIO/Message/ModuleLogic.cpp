@@ -43,7 +43,6 @@ void CModuleLogic::close()
     vector<uint32> session_id_list = sessions_interface_.get_all_session_id();
 
     modules_interface_.close();
-    sessions_interface_.close();
 }
 
 int CModuleLogic::do_thread_module_logic(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)

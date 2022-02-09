@@ -59,10 +59,6 @@ void CSessionInterface::delete_session_interface(uint32 connect_id)
     sessions_list_.erase(connect_id);
 }
 
-void CSessionInterface::close() const
-{
-}
-
 void CSessionInterface::check_session_io_timeout(uint32 connect_timeout, vector<CSessionIO_Cancel>& session_list) const
 {
     auto check_connect_time_ = std::chrono::steady_clock::now();

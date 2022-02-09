@@ -37,8 +37,6 @@ public:
 
     void delete_session_interface(uint32 connect_id);
 
-    void close() const;
-
     void check_session_io_timeout(uint32 connect_timeout, vector<CSessionIO_Cancel>& session_list) const;
 
     vector<uint32> get_all_session_id() const;
