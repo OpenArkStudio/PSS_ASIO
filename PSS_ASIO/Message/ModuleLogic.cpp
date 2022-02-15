@@ -336,6 +336,7 @@ void CWorkThreadLogic::delete_thread_session(uint32 connect_id, const _ClientIPI
     //session 连接断开
     uint16 curr_thread_index = connect_id % thread_count_;
     auto module_logic = thread_module_list_[curr_thread_index];
+
     module_logic->delete_session_interface(connect_id);
 
     auto server_id = session->get_mark_id(connect_id);
@@ -377,7 +378,6 @@ void CWorkThreadLogic::close_session_event(uint32 connect_id)
         {
             session->close(connect_id);
         }
-        module_logic->delete_session_interface(connect_id);
         });
 }
 
