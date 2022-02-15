@@ -79,6 +79,7 @@ void CModuleLogic::check_session_io_timeout(uint32 connect_timeout) const
     sessions_interface_.check_session_io_timeout(connect_timeout, session_list);
     for (const auto& session_io : session_list)
     {
+        PSS_LOGGER_DEBUG("[CModuleLogic::check_session_io_timeout]work_thread_id_={0}, session_id={1} is timeout.", work_thread_id_, session_io.session_id_);
         App_WorkThreadLogic::instance()->close_session_event(session_io.session_id_);
     }
 }
@@ -761,9 +762,7 @@ void CWorkThreadLogic::run_check_task(uint32 timeout_seconds) const
         uint32 connect_timeout = connect_timeout_;
         for (auto module_logic : thread_module_list_)
         {
-            App_tms::instance()->AddMessage(module_logic->get_work_thread_id(), [connect_timeout, module_logic]() {
-                module_logic->check_session_io_timeout(connect_timeout);
-                });
+            module_logic->check_session_io_timeout(connect_timeout);
         }
     }
 
