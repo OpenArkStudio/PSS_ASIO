@@ -762,7 +762,9 @@ void CWorkThreadLogic::run_check_task(uint32 timeout_seconds) const
         uint32 connect_timeout = connect_timeout_;
         for (auto module_logic : thread_module_list_)
         {
-            module_logic->check_session_io_timeout(connect_timeout);
+            App_tms::instance()->AddMessage(module_logic->get_work_thread_id(), [connect_timeout, module_logic]() {
+                module_logic->check_session_io_timeout(connect_timeout);
+                });
         }
     }
 

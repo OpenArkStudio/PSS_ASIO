@@ -56,6 +56,7 @@ _ClientIPInfo CSessionInterface::get_session_remote_ip(uint32 connect_id)
 
 void CSessionInterface::delete_session_interface(uint32 connect_id)
 {
+    PSS_LOGGER_INFO("[CSessionInterface::delete_session_interface]connect_id={0}.", connect_id);
     sessions_list_.erase(connect_id);
 }
 
