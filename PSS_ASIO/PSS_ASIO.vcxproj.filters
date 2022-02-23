@@ -212,6 +212,12 @@
     <ClInclude Include="TcpSession\TcpSSLClientSession.h">
       <Filter>TcpSession</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\ring_buffer.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\PerformanceCheck.hpp">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Build\Windows\server_config.json">

@@ -3,6 +3,7 @@
 
 #include "IFrameObject.h"
 #include "define.h"
+#include "PerformanceCheck.hpp"
 
 #include <vector>
 
@@ -38,6 +39,8 @@ public:
 	void logic_io_write_error(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet);
 
 	std::string do_logic_api(std::string api_param);
+
+	void performace_check(const std::string name, const double time_cost_millsecond);
 
 	ISessionService* session_service_ = nullptr;
 };

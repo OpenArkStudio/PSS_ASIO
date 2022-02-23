@@ -259,3 +259,8 @@ std::string CBaseCommand::do_logic_api(std::string api_param)
     PSS_LOGGER_DEBUG("[CBaseCommand::do_logic_api]{0}.", api_param);
     return api_param;
 }
+
+void CBaseCommand::performace_check(const std::string name, const double time_cost_millsecond)
+{
+    PSS_LOGGER_DEBUG("[CBaseCommand::performace_check]name={0}, time cost={1} ms.", name, time_cost_millsecond);
+}
