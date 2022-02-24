@@ -46,8 +46,11 @@ int load_module(IFrame_Object* frame_object, string module_param)
 
     //初始化消息处理类
     base_command = std::make_shared<CBaseCommand>();
+
+    //测试添加性能探针
+    CRandom_Sample random_sample(100);
     auto time_cost_func = std::bind(&CBaseCommand::performace_check, base_command.get(), std::placeholders::_1, std::placeholders::_2);
-    CPerformace_Check performace_check("load_module", time_cost_func);
+    CPerformance_Check performance_check(random_sample, "load_module", time_cost_func);
 
     //注册插件
     frame_object->Regedit_command(LOGIC_COMMAND_CONNECT);
