@@ -12,8 +12,9 @@ bool CServerConfig::read_server_config_file(const std::string& file_name)
         config_work_thread_.work_thread_count_ = config_work_thread["work thread count"];
         config_work_thread_.work_timeout_seconds_ = config_work_thread["work time check"];
         config_work_thread_.s2s_timeout_seconds_ = config_work_thread["server to server time check"];
-        config_work_thread_.client_connect_timeout = config_work_thread["client connect timeout"];
-        config_work_thread_.linux_daemonize = config_work_thread["linux daemonize"];
+        config_work_thread_.client_connect_timeout_ = config_work_thread["client connect timeout"];
+        config_work_thread_.linux_daemonize_ = config_work_thread["linux daemonize"];
+        config_work_thread_.io_send_time_check_ = config_work_thread["IO send data check"];
 
         for (auto packet_parse : json_config["packet parse library"])
         {

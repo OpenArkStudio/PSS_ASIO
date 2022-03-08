@@ -73,7 +73,7 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
     PSS_LOGGER_DEBUG("[CServerService::init_servce]configure file {0} read ok.", pss_config_file_name);
 
 #if PSS_PLATFORM == PLATFORM_UNIX
-    if (App_ServerConfig::instance()->get_config_workthread().linux_daemonize != 0)
+    if (App_ServerConfig::instance()->get_config_workthread().linux_daemonize_ != 0)
     {
         //Linux 开启守护
         daemonize();
@@ -125,7 +125,8 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
     //初始化执行库
     App_WorkThreadLogic::instance()->init_work_thread_logic(App_ServerConfig::instance()->get_config_workthread().work_thread_count_,
         (uint16)App_ServerConfig::instance()->get_config_workthread().work_timeout_seconds_,
-        (uint32)App_ServerConfig::instance()->get_config_workthread().client_connect_timeout,
+        (uint32)App_ServerConfig::instance()->get_config_workthread().client_connect_timeout_,
+        (uint16)App_ServerConfig::instance()->get_config_workthread().io_send_time_check_,
         App_ServerConfig::instance()->get_config_logic_list(),
         App_SessionService::instance());
 

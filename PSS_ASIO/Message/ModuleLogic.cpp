@@ -95,11 +95,24 @@ std::vector<uint32> CModuleLogic::get_all_session_id()
     return sessions_interface_.get_all_session_id();
 }
 
-void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_seconds, uint32 connect_timeout, const config_logic_list& logic_list, ISessionService* session_service)
+void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_seconds, uint32 connect_timeout, uint16 io_send_time_check, const config_logic_list& logic_list, ISessionService* session_service)
 {
     //初始化线程数
     thread_count_ = (uint16)thread_count;
     connect_timeout_ = connect_timeout;
+    io_send_time_check_ = io_send_time_check;
+
+    //如果存在发送周期，则启动一个定时器，定时检测发送缓冲
+    if (io_send_time_check_ > 0)
+    {
+        auto timer_ptr_send_check = App_TimerManager::instance()->GetTimerPtr()->addTimer_loop(chrono::seconds(1), chrono::milliseconds(io_send_time_check_), [this]()
+            {
+                //发送检查和发送数据消息
+                App_tms::instance()->AddMessage(0, [this]() {
+                    send_io_buffer();
+                    });
+            });
+    }
 
     App_tms::instance()->Init();
 
@@ -529,7 +542,18 @@ void CWorkThreadLogic::do_io_message_delivery(uint32 connect_id, std::shared_ptr
         {
             //需要重新格式化数据
             auto format_packet = std::make_shared<CMessage_Packet>();
-            if (true == session->format_send_packet(connect_id, send_packet, format_packet))
+            if (false == session->format_send_packet(connect_id, send_packet, format_packet))
+            {
+                return;
+            }
+
+            if (io_send_time_check_ > 0)
+            {
+                session->set_write_buffer(connect_id,
+                    format_packet->buffer_.c_str(),
+                    format_packet->buffer_.size());
+            }
+            else
             {
                 session->do_write_immediately(connect_id,
                     format_packet->buffer_.c_str(),
@@ -538,10 +562,19 @@ void CWorkThreadLogic::do_io_message_delivery(uint32 connect_id, std::shared_ptr
         }
         else
         {
-            //不需要格式化数据，直接发送
-            session->do_write_immediately(connect_id,
-                send_packet->buffer_.c_str(),
-                send_packet->buffer_.size());
+            if (io_send_time_check_ > 0)
+            {
+                session->set_write_buffer(connect_id,
+                    send_packet->buffer_.c_str(),
+                    send_packet->buffer_.size());
+            }
+            else
+            {
+                //不需要格式化数据，直接发送
+                session->do_write_immediately(connect_id,
+                    send_packet->buffer_.c_str(),
+                    send_packet->buffer_.size());
+            }
         }
     }
     else
@@ -678,6 +711,21 @@ int CWorkThreadLogic::module_run(const std::string& module_name, std::shared_ptr
 uint32 CWorkThreadLogic::get_curr_thread_logic_id() const
 {
     return App_tms::instance()->GetLogicThreadID();
+}
+
+void CWorkThreadLogic::send_io_buffer()
+{
+    //到时间了，群发数据
+    for (auto module_logic : thread_module_list_)
+    {
+        auto session_id_list = module_logic->get_all_session_id();
+        for (auto session_id : session_id_list)
+        {
+            //将缓冲中的数据发送出去
+            auto session = module_logic->get_session_interface(session_id);
+            session->do_write(session_id);
+        }
+    }
 }
 
 void CWorkThreadLogic::send_io_message(uint32 connect_id, std::shared_ptr<CMessage_Packet> send_packet)

@@ -11,11 +11,12 @@
 class CConfigWorkThread
 {
 public:
-    int linux_daemonize = 0;       //0是不守护，前台执行，1是守护，后台执行
+    int linux_daemonize_ = 0;       //0是不守护，前台执行，1是守护，后台执行
     int work_thread_count_ = 1;
     int work_timeout_seconds_ = 60;
     int s2s_timeout_seconds_ = 60;
-    int client_connect_timeout = 0;
+    int client_connect_timeout_ = 0;
+    int io_send_time_check_ = 0;
 };
 
 class CConfigPacketParseInfo
