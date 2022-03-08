@@ -90,7 +90,7 @@ uint16 CModuleLogic::get_last_dispose_command_id() const
     return last_dispose_command_id_;
 }
 
-std::vector<uint32> CModuleLogic::get_all_session_id()
+std::vector<uint32> CModuleLogic::get_all_session_id() const
 {
     return sessions_interface_.get_all_session_id();
 }
@@ -713,7 +713,7 @@ uint32 CWorkThreadLogic::get_curr_thread_logic_id() const
     return App_tms::instance()->GetLogicThreadID();
 }
 
-void CWorkThreadLogic::send_io_buffer()
+void CWorkThreadLogic::send_io_buffer() const
 {
     //到时间了，群发数据
     for (auto module_logic : thread_module_list_)

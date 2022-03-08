@@ -65,7 +65,7 @@ public:
 
     uint16 get_last_dispose_command_id() const;
 
-    vector<uint32> get_all_session_id();
+    vector<uint32> get_all_session_id() const;
 
 private:
     CSessionInterface sessions_interface_;
@@ -142,8 +142,7 @@ public:
 
     uint32 get_curr_thread_logic_id() const;
 
-private:
-    void send_io_buffer();
+    void send_io_buffer() const;
 
 private:
     using hashmappluginworkthread = unordered_map<uint32, shared_ptr<CModuleLogic>>;
