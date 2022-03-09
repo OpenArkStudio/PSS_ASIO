@@ -33,6 +33,7 @@ Work thread
 | work time check | int | Deadlock check period of the worker thread, in seconds |  
 | server to server time check | int | The IO link check cycle between servers, in seconds |  
 | client connect timeout | int | The period for detecting client IO timeout, in seconds |  
+| IO send data check | int | You can set this item to decide the interval for sending packet data, if it is set to 0, this rule is not enabled, in millseconds |  
 
 packet parse library
 ====================
