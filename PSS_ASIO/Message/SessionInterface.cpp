@@ -86,14 +86,10 @@ void CSessionInterface::check_session_io_timeout(uint32 connect_timeout, vector<
 
 }
 
-std::vector<uint32> CSessionInterface::get_all_session_id() const
+void CSessionInterface::each_session_id(session_function session_fn) const
 {
-    vector<uint32> session_id_list;
-
     for (const auto& session_info : sessions_list_)
     {
-        session_id_list.push_back(session_info.first);
+        session_fn(session_info.first);
     }
-
-    return session_id_list;
 }

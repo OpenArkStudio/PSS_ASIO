@@ -40,8 +40,6 @@ void CModuleLogic::delete_session_interface(uint32 connect_id)
 
 void CModuleLogic::close()
 {
-    vector<uint32> session_id_list = sessions_interface_.get_all_session_id();
-
     modules_interface_.close();
 }
 
@@ -90,9 +88,9 @@ uint16 CModuleLogic::get_last_dispose_command_id() const
     return last_dispose_command_id_;
 }
 
-std::vector<uint32> CModuleLogic::get_all_session_id() const
+void CModuleLogic::each_session_id(session_function session_fn) const
 {
-    return sessions_interface_.get_all_session_id();
+    sessions_interface_.each_session_id(session_fn);
 }
 
 void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_seconds, uint32 connect_timeout, uint16 io_send_time_check, const config_logic_list& logic_list, ISessionService* session_service)
@@ -241,16 +239,15 @@ void CWorkThreadLogic::close()
 {
     communicate_service_->close();
 
-    //关闭所有的客户端
+    //关闭所有的客户端(异步)
     for (auto f : thread_module_list_)
     {
-        auto session_id_list = f->get_all_session_id();
-
-        for (const auto& session_id : session_id_list)
-        {
-            PSS_LOGGER_DEBUG("[CWorkThreadLogic::close]session_id ({0}) is close", session_id);
-            close_session_event(session_id);
-        }
+        App_tms::instance()->AddMessage(f->get_work_thread_id(), [this, f]() {
+            f->each_session_id([this, f](uint32 session_id) {
+                PSS_LOGGER_DEBUG("[CWorkThreadLogic::close]session_id ({0}) is close", session_id);
+                close_session_event(session_id);
+                });
+            });
     }
 
     //关闭线程操作
@@ -718,13 +715,11 @@ void CWorkThreadLogic::send_io_buffer() const
     //到时间了，群发数据
     for (auto module_logic : thread_module_list_)
     {
-        auto session_id_list = module_logic->get_all_session_id();
-        for (auto session_id : session_id_list)
-        {
+        module_logic->each_session_id([this, module_logic](uint32 session_id) {
             //将缓冲中的数据发送出去
             auto session = module_logic->get_session_interface(session_id);
             session->do_write(session_id);
-        }
+            });
     }
 }
 
