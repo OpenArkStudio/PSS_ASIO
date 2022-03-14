@@ -20,6 +20,8 @@ public:
     EM_CONNECT_IO_TYPE io_type_;
 };
 
+using Communication_funtion = std::function<void(CCommunicationIOInfo&)>;
+
 class CCommunicationService : public ICommunicationInterface
 {
 public:
@@ -46,6 +48,8 @@ public:
     void io_connect(CCommunicationIOInfo& connect_info);
 
     void run_server_to_server();
+
+    void each(Communication_funtion communication_funtion);
 
 private:
     using communication_list = unordered_map<uint32, CCommunicationIOInfo>;

@@ -135,19 +135,26 @@ bool CCommunicationService::is_exist(uint32 server_id)
     }
 }
 
+void CCommunicationService::each(Communication_funtion communication_funtion)
+{
+    for (auto& client_info : communication_list_)
+    {
+        communication_funtion(client_info.second);
+    }
+}
+
 void CCommunicationService::run_check_task()
 {
     std::lock_guard <std::recursive_mutex> lock(mutex_);
     PSS_LOGGER_DEBUG("[CCommunicationService::run_check_task]begin size={}.", communication_list_.size());
 
-    for (auto& client_info : communication_list_)
-    {
-        if (client_info.second.session_ == nullptr || false == client_info.second.session_->is_connect())
+    each([this](CCommunicationIOInfo& io_info) {
+        if (io_info.session_ == nullptr || false == io_info.session_->is_connect())
         {
             //重新建立链接
-            io_connect(client_info.second);
+            io_connect(io_info);
         }
-    }
+        });
 
     PSS_LOGGER_DEBUG("[CCommunicationService::run_check_task]end.");
 }
