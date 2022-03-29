@@ -6,6 +6,7 @@
 #include "ISessionService.h"
 #include "ModuleLogic.h"
 #include "serverconfig.h"
+#include "QueueService.h"
 
 class CSessionService : public ISessionService
 {
@@ -28,6 +29,13 @@ public:
     uint32 get_curr_thread_logic_id() final; 
     bool add_plugin_api(const std::string& api_name, const plugin_api_logic& func) final;
     std::string do_plugin_api(const std::string& api_name, const std::string& api_func_param) final;
+
+    bool create_queue(shm_queue::shm_key key, size_t message_size = shm_queue_list_size, int message_count = shm_queue_list_count) final;
+    bool close(shm_queue::shm_key key) final;
+    bool send_queue_message(shm_queue::shm_key key, const char* message_text, size_t len) final;
+    bool set_close_function(shm_queue::shm_key key, shm_queue::queue_close_func close_func) final;
+    bool set_error_function(shm_queue::shm_key key, shm_queue::queue_error_func error_func) final;
+    bool set_recv_function(shm_queue::shm_key key, shm_queue::queue_recv_message_func fn_logic) final;
 
     void close();
 

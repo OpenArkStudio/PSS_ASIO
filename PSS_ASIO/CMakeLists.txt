@@ -33,6 +33,9 @@ source_group("UdpSession" FILES ${UDPSESSION_FILES})
 file(GLOB TTYSESSION_FILES TTySession/*.h TTySession/*.cpp)
 source_group("TTySession" FILES ${TTYSESSION_FILES})
 
+file(GLOB QUEUESESSION_FILES QueueSession/*.h QueueSession/*.cpp)
+source_group("QueueSession" FILES ${QUEUESESSION_FILES})
+
 file(GLOB_RECURSE MAIN_FILES ${PROJECT_SOURCE_DIR}/PSS_ASIO.cpp)
 source_group("Main" FILES ${MAIN_FILES})
 
@@ -43,7 +46,8 @@ include_directories(
 	TcpSession
 	Common
 	UdpSession
-	TTySession)
+	TTySession
+	QueueSession)
 
 add_executable(pss_asio 
 	${MAIN_FILES}
@@ -54,6 +58,7 @@ add_executable(pss_asio
 	${TCPSESSION_FILES}
 	${UDPSESSION_FILES}
 	${TTYSESSION_FILES}
+	${QUEUESESSION_FILES}
 	)
 
 #ifwindows	

@@ -78,6 +78,35 @@ int load_module(IFrame_Object* frame_object, string module_param)
 
     PSS_LOGGER_DEBUG("[load_module]({0})finish.", module_param);
 
+    //测试服务器间通讯
+    shm_queue::shm_key key = 11111;
+    bool ret = session_service->create_queue(key, 100, 10);
+    if (ret)
+    {
+        session_service->set_recv_function(key, [](const char* message, size_t len) {
+            PSS_LOGGER_DEBUG("[shm que message]message={0},len={1}.", message, len);
+            });
+
+        session_service->set_close_function(key, [](shm_queue::shm_key key) {
+            PSS_LOGGER_DEBUG("[shm que message]close {0}.", key);
+            });
+
+        session_service->set_error_function(key, [](std::string error) {
+            PSS_LOGGER_DEBUG("[shm que message]error={0}.", error);
+            });
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+        char buffer[30] = { "hello queue!" };
+        if (!session_service->send_queue_message(key, buffer, strlen(buffer)))
+        {
+            PSS_LOGGER_DEBUG("[shm que message]put message error.");
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        session_service->close(key);
+    }
+
     return 0;
 }
 

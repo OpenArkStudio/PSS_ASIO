@@ -209,6 +209,9 @@ void CServerService::close_service()
     //关闭框架定时器
     App_TimerManager::instance()->Close();
 
+    //停止服务间消息队列数据接收
+    App_QueueSessionManager::instance()->close();
+
     //停止所有的TCP监听(TCP)
     for (const auto& tcp_service : tcp_service_list_)
     {

@@ -31,6 +31,9 @@
     <Filter Include="config">
       <UniqueIdentifier>{166dadcd-947f-4891-9682-fdd7d5eaba21}</UniqueIdentifier>
     </Filter>
+    <Filter Include="QueueSession">
+      <UniqueIdentifier>{26f16588-2b0c-4161-a067-7149048db0ab}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PSS_ASIO.cpp">
@@ -95,6 +98,9 @@
     </ClCompile>
     <ClCompile Include="TcpSession\TcpSSLClientSession.cpp">
       <Filter>TcpSession</Filter>
+    </ClCompile>
+    <ClCompile Include="QueueSession\Queueservice.cpp">
+      <Filter>QueueSession</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -217,6 +223,9 @@
     </ClInclude>
     <ClInclude Include="..\Common\PerformanceCheck.hpp">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="QueueSession\QueueService.h">
+      <Filter>QueueSession</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

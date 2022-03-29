@@ -148,8 +148,38 @@ std::string CSessionService::do_plugin_api(const std::string& api_name, const st
     }
 }
 
+bool CSessionService::create_queue(shm_queue::shm_key key, size_t message_size, int message_count)
+{
+    return App_QueueSessionManager::instance()->create_queue(key, message_size, message_count);
+}
+
 void CSessionService::close()
 {
     func_list_.clear();
+}
+
+bool CSessionService::close(shm_queue::shm_key key)
+{
+    return App_QueueSessionManager::instance()->close(key);
+}
+
+bool CSessionService::send_queue_message(shm_queue::shm_key key, const char* message_text, size_t len)
+{
+    return App_QueueSessionManager::instance()->send_queue_message(key, message_text, len);
+}
+
+bool CSessionService::set_close_function(shm_queue::shm_key key, shm_queue::queue_close_func close_func)
+{
+    return App_QueueSessionManager::instance()->set_close_function(key, close_func);
+}
+
+bool CSessionService::set_error_function(shm_queue::shm_key key, shm_queue::queue_error_func error_func)
+{
+    return App_QueueSessionManager::instance()->set_error_function(key, error_func);
+}
+
+bool CSessionService::set_recv_function(shm_queue::shm_key key, shm_queue::queue_recv_message_func fn_logic)
+{
+    return App_QueueSessionManager::instance()->set_recv_function(key, fn_logic);
 }
 

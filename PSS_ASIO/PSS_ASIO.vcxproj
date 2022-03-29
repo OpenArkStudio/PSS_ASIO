@@ -118,7 +118,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_WIN32_WINDOWS;_WINSOCK_DEPRECATED_NO_WARNINGS;ASIO_HAS_SERIAL_PORT;ASIO_HAS_IOCP;SSL_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../third_Include;../Common;./Message;./TcpSession;./Common;./UdpSession;./TTySession</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../third_Include;../Common;./Message;./TcpSession;./Common;./UdpSession;./TTySession;./QueueSession</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -135,7 +135,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_WIN32_WINDOWS;_WINSOCK_DEPRECATED_NO_WARNINGS;ASIO_HAS_SERIAL_PORT;ASIO_HAS_IOCP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../third_Include;../Common;./Message;./TcpSession;./Common;./UdpSession;./TTySession</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../third_Include;../Common;./Message;./TcpSession;./Common;./UdpSession;./TTySession;./QueueSession</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -157,6 +157,7 @@
     <ClCompile Include="Message\SessionInterface.cpp" />
     <ClCompile Include="Message\SessionService.cpp" />
     <ClCompile Include="PSS_ASIO.cpp" />
+    <ClCompile Include="QueueSession\Queueservice.cpp" />
     <ClCompile Include="TcpSession\TcpClientSession.cpp" />
     <ClCompile Include="TcpSession\TcpServer.cpp" />
     <ClCompile Include="TcpSession\TcpSession.cpp" />
@@ -199,6 +200,7 @@
     <ClInclude Include="Message\ModuleLogic.h" />
     <ClInclude Include="Message\SessionInterface.h" />
     <ClInclude Include="Message\SessionService.h" />
+    <ClInclude Include="QueueSession\QueueService.h" />
     <ClInclude Include="TcpSession\TcpClientSession.h" />
     <ClInclude Include="TcpSession\TcpServer.h" />
     <ClInclude Include="TcpSession\TcpSession.h" />

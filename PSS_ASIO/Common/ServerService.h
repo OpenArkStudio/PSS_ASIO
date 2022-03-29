@@ -7,6 +7,7 @@
 #include "TcpServer.h"
 #include "UdpServer.h"
 #include "TtyServer.h"
+#include "QueueService.h"
 #include "serverconfig.h"
 #include "CommunicationService.h"
 #include "SessionService.h"
