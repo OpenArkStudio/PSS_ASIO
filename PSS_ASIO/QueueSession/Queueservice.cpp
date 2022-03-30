@@ -26,7 +26,7 @@ bool CQueueSessionManager::create_queue(shm_queue::shm_key key, size_t message_s
 void CQueueSessionManager::close()
 {
     std::lock_guard <std::mutex> lock(mutex_);
-    for (auto& f : queue_list_)
+    for (const auto& f : queue_list_)
     {
         f.second->close();
     }

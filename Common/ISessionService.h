@@ -34,7 +34,7 @@ public:
     virtual bool create_queue(shm_queue::shm_key key, size_t message_size = shm_queue_list_size, int message_count = shm_queue_list_count) = 0;
     virtual bool close(shm_queue::shm_key key) = 0;
     virtual bool send_queue_message(shm_queue::shm_key key, const char* message_text, size_t len) = 0;
-    virtual bool set_close_function(shm_queue::shm_key key, shm_queue::queue_close_func close_func) = 0;
-    virtual bool set_error_function(shm_queue::shm_key key, shm_queue::queue_error_func error_func) = 0;
-    virtual bool set_recv_function(shm_queue::shm_key key, shm_queue::queue_recv_message_func fn_logic) = 0;
+    virtual bool set_close_function(shm_queue::shm_key key, const shm_queue::queue_close_func& close_func) = 0;
+    virtual bool set_error_function(shm_queue::shm_key key, const shm_queue::queue_error_func& error_func) = 0;
+    virtual bool set_recv_function(shm_queue::shm_key key, const shm_queue::queue_recv_message_func& fn_logic) = 0;
 };

@@ -88,7 +88,7 @@ uint16 CModuleLogic::get_last_dispose_command_id() const
     return last_dispose_command_id_;
 }
 
-void CModuleLogic::each_session_id(session_function session_fn) const
+void CModuleLogic::each_session_id(const session_function& session_fn) const
 {
     sessions_interface_.each_session_id(session_fn);
 }
@@ -715,7 +715,7 @@ void CWorkThreadLogic::send_io_buffer() const
     //到时间了，群发数据
     for (auto module_logic : thread_module_list_)
     {
-        module_logic->each_session_id([this, module_logic](uint32 session_id) {
+        module_logic->each_session_id([module_logic](uint32 session_id) {
             //将缓冲中的数据发送出去
             auto session = module_logic->get_session_interface(session_id);
             session->do_write(session_id);

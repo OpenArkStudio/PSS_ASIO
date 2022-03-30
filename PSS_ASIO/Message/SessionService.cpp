@@ -168,17 +168,17 @@ bool CSessionService::send_queue_message(shm_queue::shm_key key, const char* mes
     return App_QueueSessionManager::instance()->send_queue_message(key, message_text, len);
 }
 
-bool CSessionService::set_close_function(shm_queue::shm_key key, shm_queue::queue_close_func close_func)
+bool CSessionService::set_close_function(shm_queue::shm_key key, const shm_queue::queue_close_func& close_func)
 {
     return App_QueueSessionManager::instance()->set_close_function(key, close_func);
 }
 
-bool CSessionService::set_error_function(shm_queue::shm_key key, shm_queue::queue_error_func error_func)
+bool CSessionService::set_error_function(shm_queue::shm_key key, const shm_queue::queue_error_func& error_func)
 {
     return App_QueueSessionManager::instance()->set_error_function(key, error_func);
 }
 
-bool CSessionService::set_recv_function(shm_queue::shm_key key, shm_queue::queue_recv_message_func fn_logic)
+bool CSessionService::set_recv_function(shm_queue::shm_key key, const shm_queue::queue_recv_message_func& fn_logic)
 {
     return App_QueueSessionManager::instance()->set_recv_function(key, fn_logic);
 }
