@@ -24,23 +24,11 @@ source_group("proc_common" FILES ${PROC_COMMON})
 file(GLOB THIRD_INCLUDE ../third_Include/*.h ../third_Include/*.hpp)
 source_group("third_Include" FILES ${THIRD_INCLUDE})
 	
-file(GLOB COMMON_FILES ../PSS_ASIO/Common/*.h ../PSS_ASIO/Common/*.cpp)
+file(GLOB COMMON_FILES ../Common/*.h ../Common/*.cpp)
 source_group("Common" FILES ${COMMON_FILES})
 
-file(GLOB MESSAGE_FILES ../PSS_ASIO/Message/*.h ../PSS_ASIO/Message/*.cpp)
+file(GLOB MESSAGE_FILES ../PSS_ASIO/Message/IotoIo.h ../PSS_ASIO/Message/IotoIo.cpp)
 source_group("Message" FILES ${MESSAGE_FILES})	
-
-file(GLOB TCPSESSION_FILES ../PSS_ASIO/TcpSession/*.h ../PSS_ASIO/TcpSession/*.cpp)
-source_group("TcpSession" FILES ${TCPSESSION_FILES})
-
-file(GLOB UDPSESSION_FILES ../PSS_ASIO/UdpSession/*.h ../PSS_ASIO/UdpSession/*.cpp)
-source_group("UdpSession" FILES ${UDPSESSION_FILES})
-
-file(GLOB TTYSESSION_FILES ../PSS_ASIO/TTySession/*.h ../PSS_ASIO/TTySession/*.cpp)
-source_group("TTySession" FILES ${TTYSESSION_FILES})
-
-file(GLOB TTYSESSION_FILES ../PSS_ASIO/QueueSession/*.h ../PSS_ASIO/QueueSession/*.cpp)
-source_group("QueueSession" FILES ${QUEUESSEION_FILES})
 	
 file(GLOB MAIN_FILES ${PROJECT_SOURCE_DIR}/*.cpp)
 source_group("Main" FILES ${MAIN_FILES})
@@ -50,11 +38,7 @@ include_directories(
 	../Common
 	../PSS_ASIO/Common
 	../PSS_ASIO/Message
-	../PSS_ASIO/TcpSession
-	../PSS_ASIO/UdpSession
-	../PSS_ASIO/TTySession
-	../PSS_ASIO/QueueSession
-	${GTEST_INCLUDE_DIR})
+	/usr/include/gtest/)
 
 add_executable(test_pss_asio 
 	${MAIN_FILES}
@@ -62,10 +46,6 @@ add_executable(test_pss_asio
 	${THIRD_INCLUDE}
 	${COMMON_FILES}
 	${MESSAGE_FILES}
-	${TCPSESSION_FILES}
-	${UDPSESSION_FILES}
-	${TTYSESSION_FILES}
-	${QUEUESSEION_FILES}
 	)
 
 #ifwindows	
