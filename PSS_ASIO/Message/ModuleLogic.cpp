@@ -88,7 +88,7 @@ uint16 CModuleLogic::get_last_dispose_command_id() const
     return last_dispose_command_id_;
 }
 
-void CModuleLogic::each_session_id(const session_function& session_fn) const
+void CModuleLogic::each_session_id(const session_function& session_fn)
 {
     sessions_interface_.each_session_id(session_fn);
 }

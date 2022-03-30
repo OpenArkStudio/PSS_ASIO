@@ -63,7 +63,7 @@ bool CQueueSessionManager::send_queue_message(shm_queue::shm_key key, const char
     }
 }
 
-bool CQueueSessionManager::set_close_function(shm_queue::shm_key key, shm_queue::queue_close_func close_func)
+bool CQueueSessionManager::set_close_function(shm_queue::shm_key key, const shm_queue::queue_close_func& close_func)
 {
     std::lock_guard <std::mutex> lock(mutex_);
     auto f = queue_list_.find(key);
@@ -78,7 +78,7 @@ bool CQueueSessionManager::set_close_function(shm_queue::shm_key key, shm_queue:
     }
 }
 
-bool CQueueSessionManager::set_error_function(shm_queue::shm_key key, shm_queue::queue_error_func error_func)
+bool CQueueSessionManager::set_error_function(shm_queue::shm_key key, const shm_queue::queue_error_func& error_func)
 {
     std::lock_guard <std::mutex> lock(mutex_);
     auto f = queue_list_.find(key);
@@ -93,7 +93,7 @@ bool CQueueSessionManager::set_error_function(shm_queue::shm_key key, shm_queue:
     }
 }
 
-bool CQueueSessionManager::set_recv_function(shm_queue::shm_key key, shm_queue::queue_recv_message_func fn_logic)
+bool CQueueSessionManager::set_recv_function(shm_queue::shm_key key, const shm_queue::queue_recv_message_func& fn_logic)
 {
     std::lock_guard <std::mutex> lock(mutex_);
     auto f = queue_list_.find(key);
