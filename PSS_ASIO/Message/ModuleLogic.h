@@ -65,7 +65,7 @@ public:
 
     uint16 get_last_dispose_command_id() const;
 
-    void each_session_id(const session_function& session_fn);
+    void each_session_id(const session_func& session_fn);
 
 private:
     CSessionInterface sessions_interface_;

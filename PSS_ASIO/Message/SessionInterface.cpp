@@ -86,7 +86,7 @@ void CSessionInterface::check_session_io_timeout(uint32 connect_timeout, vector<
 
 }
 
-void CSessionInterface::each_session_id(const session_function& session_fn)
+void CSessionInterface::each_session_id(const session_func& session_fn) const
 {
     for (const auto& session_info : sessions_list_)
     {

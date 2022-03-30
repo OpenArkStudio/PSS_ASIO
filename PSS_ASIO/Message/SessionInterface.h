@@ -22,7 +22,7 @@ public:
     shared_ptr<ISession> session_;
 };
 
-using session_function = std::function<void(uint32)>;
+using session_func = std::function<void(uint32)>;
 
 class CSessionInterface
 {
@@ -41,7 +41,7 @@ public:
 
     void check_session_io_timeout(uint32 connect_timeout, vector<CSessionIO_Cancel>& session_list) const;
 
-    void each_session_id(const session_function& session_fn);
+    void each_session_id(const session_func& session_fn) const;
 private:
     using hashmapsessions = unordered_map<uint32, CSessionIOInfo>;
     hashmapsessions sessions_list_;
