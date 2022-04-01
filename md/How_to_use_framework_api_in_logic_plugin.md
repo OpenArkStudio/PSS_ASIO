@@ -13,7 +13,10 @@ Table of Contents
  - [How to transparently transmit data from one IO to another IO](#How-to-transparently-transmit-data-from-one-IO-to-another-IO)
  - [How to delete io to io](#How-to-delete-io-to-io)
  - [How to synchronously send inter-plugin message](#How-to-synchronously-send-inter-plugin-message)
- - [How to make api to other plgin module](#How-to-make-api-to-other-plgin-module)
+ - [How to make api to other plgin module](#How-to-make-api-to-other-plgin-module)  
+ - [How to create process queue(send)](#How-to-create-process-queue-send)
+ - [How to create process queue(recv)](#How-to-create-process-queue-recv)
+
 
 How to register a message event
 ===============================
@@ -268,3 +271,46 @@ other plugin use:
     //use api with the framework
     std::string return_data = session_service->do_plugin_api("test_logic", "hello free eyes");
 ```
+
+How to create process queue send
+================================  
+```c++
+    shm_queue::shm_key key = 11111;
+    session_service->create_queue(key, 100, 10);
+
+    session_service->set_close_function(key, [](shm_queue::shm_key key) {
+        PSS_LOGGER_DEBUG("[shm que message]close {0}.", key);
+        });
+
+    session_service->set_error_function(key, [](std::string error) {
+        PSS_LOGGER_DEBUG("[shm que message]error={0}.", error);
+        });
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    char buffer[30] = { "hello queue!" };
+    if (!session_service->send_queue_message(key, buffer, strlen(buffer)))
+    {
+        PSS_LOGGER_DEBUG("[shm que message]put message error.");
+    }    
+```
+
+How to create process queue recv
+================================  
+```c++
+    shm_queue::shm_key key = 11111;
+    session_service->create_queue(key, 100, 10);
+
+    session_service->set_close_function(key, [](shm_queue::shm_key key) {
+        PSS_LOGGER_DEBUG("[shm que message]close {0}.", key);
+        });
+
+    session_service->set_error_function(key, [](std::string error) {
+        PSS_LOGGER_DEBUG("[shm que message]error={0}.", error);
+        });     
+
+    session_service->set_recv_function(key, [](const char* message, size_t len) {
+        PSS_LOGGER_DEBUG("[shm que message]message={0},len={1}.", message, len);
+        });
+```
+
