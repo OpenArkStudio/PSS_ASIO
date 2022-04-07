@@ -41,7 +41,14 @@ public:
 
     void check_session_io_timeout(uint32 connect_timeout, vector<CSessionIO_Cancel>& session_list) const;
 
-    void each_session_id(const session_func& session_fn) const;
+    template<class session_function>
+    void each_session_id(const session_function& session_fn) const
+    {
+        for (const auto& session_info : sessions_list_)
+        {
+            session_fn(session_info.first);
+        }
+    };
 private:
     using hashmapsessions = unordered_map<uint32, CSessionIOInfo>;
     hashmapsessions sessions_list_;
