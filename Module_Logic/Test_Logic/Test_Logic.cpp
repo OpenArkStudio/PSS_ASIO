@@ -72,7 +72,7 @@ int load_module(IFrame_Object* frame_object, string module_param)
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3);
-    frame_object->Regedit_command(COMMAND_TEST_SYNC, command_asyn_api);
+    frame_object->Regedit_command(COMMAND_TEST_ASYN, command_asyn_api);
 
     auto command_sync_api = std::bind(&CBaseCommand::logic_test_sync,
         base_command.get(),

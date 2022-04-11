@@ -159,6 +159,14 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
     }
 #endif
 
+    //显示所有的注册消息以及对应的模块
+    PSS_LOGGER_DEBUG("[load_module_]>>>>>>>>>>>>>>>>>");
+    for (const auto& command_info : load_module_.get_module_function_list())
+    {
+        PSS_LOGGER_DEBUG("[load_module_]register command id={0}", command_info.first);
+    }
+    PSS_LOGGER_DEBUG("[load_module_]>>>>>>>>>>>>>>>>>");
+
     //执行线程对应创建
     for (int i = 0; i < thread_count; i++)
     {
