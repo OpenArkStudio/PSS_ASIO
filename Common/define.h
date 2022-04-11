@@ -199,3 +199,6 @@ inline std::chrono::seconds get_time_delay(std::string date)
     delete_seconds = std::chrono::seconds(duration.count());
     return delete_seconds;
 }
+
+//接口函数模板
+using Logic_message_dispose_fn = std::function<int(const CMessage_Source&, std::shared_ptr<CMessage_Packet>, std::shared_ptr<CMessage_Packet>)>;

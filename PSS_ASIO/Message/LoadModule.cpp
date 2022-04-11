@@ -62,17 +62,23 @@ bool CLoadModule::load_plugin_module(const string& module_file_path, const strin
     }
 
     //获得所有的注册指令(注册)
-    for (auto command_id : module_frame_object.module_command_list_)
+    for (const auto& command_info : module_frame_object.module_command_list_)
     {
-        command_to_module_function_[command_id] = module_info->do_message_;
+        if (command_info.type_ == ENUM_LOGIC_COMMAND_TYPE::COMMAND_TYPE_NO_FN)
+        {
+            command_to_module_function_[command_info.command_id_] = module_info->do_message_;
+        }
+        else
+        {
+            command_to_module_function_[command_info.command_id_] = command_info.logic_fn_;
+        }
+
+        //记录当前插件加载的命令信息
+        module_info->command_id_list_.emplace_back(command_info.command_id_);
     }
 
     //添加模块间调用的映射关系
     plugin_name_to_module_run_[module_file_name] = module_info->module_run_finction_ptr_;
-
-    //记录当前插件加载的命令信息
-    module_info->command_id_list_.assign(module_frame_object.module_command_list_.begin(), 
-        module_frame_object.module_command_list_.end());
 
     //将注册成功的模块，加入到Hash数组中
     module_list_[module_file_name] = module_info;

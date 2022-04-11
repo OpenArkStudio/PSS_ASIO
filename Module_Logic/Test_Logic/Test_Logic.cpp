@@ -57,14 +57,30 @@ int load_module(IFrame_Object* frame_object, string module_param)
     frame_object->Regedit_command(LOGIC_COMMAND_DISCONNECT);
     frame_object->Regedit_command(LOGIC_CONNECT_SERVER_ERROR);
     frame_object->Regedit_command(LOGIC_LISTEN_SERVER_ERROR);
-    frame_object->Regedit_command(COMMAND_TEST_SYNC);
-    frame_object->Regedit_command(COMMAND_TEST_ASYN);
+    //frame_object->Regedit_command(COMMAND_TEST_SYNC);
+    //frame_object->Regedit_command(COMMAND_TEST_ASYN);
     frame_object->Regedit_command(COMMAND_TEST_FRAME);
     frame_object->Regedit_command(COMMAND_TEST_HTTP_POST);
     frame_object->Regedit_command(COMMAND_WEBSOCKET_SHARK_HAND);
     frame_object->Regedit_command(COMMAND_WEBSOCKET_DATA);
     frame_object->Regedit_command(LOGIC_THREAD_DEAD_LOCK);
     frame_object->Regedit_command(LOGIC_THREAD_WRITE_IO_ERROR);
+
+    //测试直接调用回调函数
+    auto command_asyn_api = std::bind(&CBaseCommand::logic_test_asyn, 
+        base_command.get(), 
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3);
+    frame_object->Regedit_command(COMMAND_TEST_SYNC, command_asyn_api);
+
+    auto command_sync_api = std::bind(&CBaseCommand::logic_test_sync,
+        base_command.get(),
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3);
+    frame_object->Regedit_command(COMMAND_TEST_SYNC, command_sync_api);
+
 
     session_service = frame_object->get_session_service();
 
@@ -127,8 +143,8 @@ int do_module_message(const CMessage_Source& source, std::shared_ptr<CMessage_Pa
     MESSAGE_FUNCTION(LOGIC_COMMAND_DISCONNECT, base_command->logic_disconnect, source, recv_packet, send_packet);
     MESSAGE_FUNCTION(LOGIC_CONNECT_SERVER_ERROR, base_command->logic_test_connect_error, source, recv_packet, send_packet);
     MESSAGE_FUNCTION(LOGIC_LISTEN_SERVER_ERROR, base_command->logic_test_listen_error, source, recv_packet, send_packet);
-    MESSAGE_FUNCTION(COMMAND_TEST_SYNC, base_command->logic_test_sync, source, recv_packet, send_packet);
-    MESSAGE_FUNCTION(COMMAND_TEST_ASYN, base_command->logic_test_asyn, source, recv_packet, send_packet);
+    //MESSAGE_FUNCTION(COMMAND_TEST_SYNC, base_command->logic_test_sync, source, recv_packet, send_packet);
+    //MESSAGE_FUNCTION(COMMAND_TEST_ASYN, base_command->logic_test_asyn, source, recv_packet, send_packet);
     MESSAGE_FUNCTION(COMMAND_TEST_FRAME, base_command->logic_test_frame, source, recv_packet, send_packet);
     MESSAGE_FUNCTION(COMMAND_TEST_HTTP_POST, base_command->logic_http_post, source, recv_packet, send_packet);
     MESSAGE_FUNCTION(COMMAND_WEBSOCKET_SHARK_HAND, base_command->logic_http_websocket_shark_hand, source, recv_packet, send_packet);

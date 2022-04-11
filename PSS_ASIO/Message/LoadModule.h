@@ -19,7 +19,7 @@ using set_output_function_ptr = void(*)(shared_ptr<spdlog::logger>);
 using module_run_finction_ptr = int(*)(std::shared_ptr<CMessage_Packet>, std::shared_ptr<CMessage_Packet>);
 
 //定义map版本的数据结构
-using command_to_module_function = unordered_map<uint16, do_message_function_ptr>;
+using command_to_module_function = unordered_map<uint16, Logic_message_dispose_fn>;
 
 //定义模块间调用的信息
 using plugin_name_to_module_run = unordered_map<std::string, module_run_finction_ptr>;

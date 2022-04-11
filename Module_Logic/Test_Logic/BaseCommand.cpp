@@ -147,7 +147,7 @@ void CBaseCommand::logic_disconnect(const CMessage_Source& source, std::shared_p
     PSS_LOGGER_DEBUG("[do_module_message]connand={}, disconnect", source.connect_id_);
 }
 
-void CBaseCommand::logic_test_sync(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
+int CBaseCommand::logic_test_sync(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
 {
     //处理发送数据(同步)
     send_packet->buffer_.append(recv_packet->buffer_.c_str(), recv_packet->buffer_.size());
@@ -158,15 +158,19 @@ void CBaseCommand::logic_test_sync(const CMessage_Source& source, std::shared_pt
         session_service_->close_io_session(source.connect_id_);
     }
 #endif
+
+    return 0;
 }
 
-void CBaseCommand::logic_test_asyn(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
+int CBaseCommand::logic_test_asyn(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
 {
     //处理发送数据(异步)
     auto send_asyn_packet = std::make_shared<CMessage_Packet>();
     send_asyn_packet->buffer_.append(recv_packet->buffer_.c_str(), recv_packet->buffer_.size());
 
     session_service_->send_io_message(source.connect_id_, send_asyn_packet);
+
+    return 0;
 }
 
 void CBaseCommand::logic_test_frame(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
