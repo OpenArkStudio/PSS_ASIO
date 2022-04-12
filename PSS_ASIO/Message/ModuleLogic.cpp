@@ -100,6 +100,8 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
     connect_timeout_ = connect_timeout;
     io_send_time_check_ = io_send_time_check;
 
+    App_tms::instance()->Init();
+
     //如果存在发送周期，则启动一个定时器，定时检测发送缓冲
     if (io_send_time_check_ > 0)
     {
@@ -111,8 +113,6 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
                     });
             });
     }
-
-    App_tms::instance()->Init();
 
     load_module_.set_session_service(session_service);
 
@@ -355,8 +355,6 @@ void CWorkThreadLogic::delete_thread_session(uint32 connect_id, const _ClientIPI
     uint16 curr_thread_index = connect_id % thread_count_;
     auto module_logic = thread_module_list_[curr_thread_index];
 
-    module_logic->delete_session_interface(connect_id);
-
     auto server_id = session->get_mark_id(connect_id);
     if (server_id > 0)
     {
@@ -381,6 +379,9 @@ void CWorkThreadLogic::delete_thread_session(uint32 connect_id, const _ClientIPI
         source.connect_mark_id_ = session->get_mark_id(connect_id);
 
         module_logic->do_thread_module_logic(source, recv_packet, send_packet);
+
+        //回收链接
+        module_logic->delete_session_interface(connect_id);
         });
 }
 
