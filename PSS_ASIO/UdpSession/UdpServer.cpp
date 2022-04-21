@@ -19,7 +19,6 @@ void CUdpServer::start()
 void CUdpServer::do_receive()
 {
     auto self(shared_from_this());
-    PSS_LOGGER_DEBUG("CUdpServer::do_receive]{0}:{1} begin receive.");
     socket_.async_receive_from(
         asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()), recv_endpoint_,
         [self](std::error_code ec, std::size_t length)
