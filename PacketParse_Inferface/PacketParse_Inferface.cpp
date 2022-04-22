@@ -36,7 +36,7 @@ bool is_need_send_format()
 }
 
 //处理TCP流数据
-bool parse_packet_from_recv_buffer_tcp(uint32 connect_id, CSessionBuffer* buffer, vector<std::shared_ptr<CMessage_Packet>>& message_list, EM_CONNECT_IO_TYPE emIOType)
+bool parse_packet_from_recv_buffer_stream(uint32 connect_id, CSessionBuffer* buffer, vector<std::shared_ptr<CMessage_Packet>>& message_list, EM_CONNECT_IO_TYPE emIOType)
 {
     uint32 packet_pos = 0;
     auto buff_length = buffer->get_write_size();
@@ -121,7 +121,7 @@ bool parse_packet_from_recv_buffer_tcp(uint32 connect_id, CSessionBuffer* buffer
 }
 
 //处理UDP数据流
-bool parse_packet_from_recv_buffer_udp(uint32 connect_id, CSessionBuffer* buffer, vector<std::shared_ptr<CMessage_Packet>>& message_list, EM_CONNECT_IO_TYPE emIOType)
+bool parse_packet_from_recv_buffer_single(uint32 connect_id, CSessionBuffer* buffer, vector<std::shared_ptr<CMessage_Packet>>& message_list, EM_CONNECT_IO_TYPE emIOType)
 {
     uint32 packet_pos = 0;
     auto buff_length = buffer->get_write_size();
@@ -131,6 +131,7 @@ bool parse_packet_from_recv_buffer_udp(uint32 connect_id, CSessionBuffer* buffer
     if (buff_length < 40)
     {
         //包头不完整，不做解析
+        buffer->move(buff_length);
         return false;
     }
 
@@ -159,6 +160,7 @@ bool parse_packet_from_recv_buffer_udp(uint32 connect_id, CSessionBuffer* buffer
     if (packet_body_length >= 1024000)
     {
         //非法数据包，返回失败，断开连接
+        buffer->move(buff_length);
         return false;
     }
 
@@ -180,6 +182,7 @@ bool parse_packet_from_recv_buffer_udp(uint32 connect_id, CSessionBuffer* buffer
         if (buff_length < packet_body_length)
         {
             //收包不完整，继续接收
+            buffer->move(buff_length);
             return false;
         }
         else
@@ -196,6 +199,7 @@ bool parse_packet_from_recv_buffer_udp(uint32 connect_id, CSessionBuffer* buffer
         }
     }
 
+    buffer->move(buff_length);
     return true;
 }
 
@@ -204,15 +208,15 @@ bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, ve
 {
     if (emIOType == EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_TCP || emIOType == EM_CONNECT_IO_TYPE::CONNECT_IO_TCP)
     {
-        return parse_packet_from_recv_buffer_tcp(connect_id, buffer, message_list, emIOType);
+        return parse_packet_from_recv_buffer_stream(connect_id, buffer, message_list, emIOType);
     }
     else if(emIOType == EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_UDP || emIOType == EM_CONNECT_IO_TYPE::CONNECT_IO_UDP)
     {
-        return parse_packet_from_recv_buffer_udp(connect_id, buffer, message_list, emIOType);
+        return parse_packet_from_recv_buffer_single(connect_id, buffer, message_list, emIOType);
     }
     else
     {
-        return parse_packet_from_recv_buffer_tcp(connect_id, buffer, message_list, emIOType);
+        return parse_packet_from_recv_buffer_stream(connect_id, buffer, message_list, emIOType);
     }
 }
 
