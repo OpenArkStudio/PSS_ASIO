@@ -11,6 +11,7 @@
 #include "spdlog/sinks/stdout_sinks.h"
 #include "spdlog/sinks/rotating_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/fmt/bin_to_hex.h"
 
 #include "singleton.h"
 
@@ -21,6 +22,12 @@ namespace spd = spdlog;
 #define PSS_LOGGER_INFO(...) SPDLOG_LOGGER_INFO(spdlog::default_logger(), __VA_ARGS__)
 #define PSS_LOGGER_WARN(...) SPDLOG_LOGGER_WARN(spdlog::default_logger(), __VA_ARGS__)
 #define PSS_LOGGER_ERROR(...) SPDLOG_LOGGER_ERROR(spdlog::default_logger(), __VA_ARGS__)
+
+//输出指定长度的二进制数据
+inline void pss_output_binary(const char* buffer, int begin, int end)
+{
+    spdlog::default_logger()->info("[data]{:n}.", spdlog::to_hex(buffer + begin, buffer + end));
+}
 
 //输出配置结构
 class Console_Output_Info

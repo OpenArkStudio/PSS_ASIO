@@ -112,6 +112,12 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
             PSS_LOGGER_DEBUG("[signals] server is error({0}).", ec.message());
             io_context_.stop();
         });
+
+    //测试记录二进制
+#ifdef GCOV_TEST
+    char test_buffer[20] = { "freeeyes" };
+    pss_output_binary(test_buffer, 0, 3);
+#endif
     
     //初始化框架定时器
     App_TimerManager::instance()->Start();
