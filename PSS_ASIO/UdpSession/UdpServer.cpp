@@ -43,7 +43,6 @@ void CUdpServer::do_receive_from(std::error_code ec, std::size_t length)
             //链接断开(缓冲撑满了)
             session_recv_buffer_.move(length);
             App_WorkThreadLogic::instance()->close_session_event(connect_id);
-            do_receive();
         }
 
         session_recv_buffer_.set_write_data(length);
@@ -56,7 +55,6 @@ void CUdpServer::do_receive_from(std::error_code ec, std::size_t length)
             //链接断开(解析包不正确)
             session_recv_buffer_.move(length);
             App_WorkThreadLogic::instance()->close_session_event(connect_id);
-            do_receive();
         }
         else
         {
@@ -64,7 +62,6 @@ void CUdpServer::do_receive_from(std::error_code ec, std::size_t length)
             //添加到数据队列处理
             App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id, message_list, self);
         }
-
 
         do_receive();
     }
