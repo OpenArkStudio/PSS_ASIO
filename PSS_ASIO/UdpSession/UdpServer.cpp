@@ -43,6 +43,7 @@ void CUdpServer::do_receive_from(std::error_code ec, std::size_t length)
             //链接断开(缓冲撑满了)
             session_recv_buffer_.move(length);
             App_WorkThreadLogic::instance()->close_session_event(connect_id);
+            do_receive();
         }
 
         session_recv_buffer_.set_write_data(length);
