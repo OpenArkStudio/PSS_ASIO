@@ -292,7 +292,8 @@ namespace shm_queue {
 
             //获取或者创建当前共享内存一个进程间的互斥量
             //如果process_mutext不存在则创建，有则直接读取
-            process_mutext_ = CreateMutex(NULL, false, _T("process_mutext"));
+            std::string process_metex_name = "lock-" + shm_file_name;
+            process_mutext_ = CreateMutexA(NULL, false, process_metex_name.c_str());
             queue_size_ = shm_size;
             shm_key_ = shm_key;
             return shm_ptr_;
