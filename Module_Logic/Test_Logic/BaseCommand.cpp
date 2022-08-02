@@ -108,6 +108,7 @@ void CBaseCommand::logic_connect(const CMessage_Source& source, std::shared_ptr<
     }
     else if (source.type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_UDP)
     {
+        PSS_LOGGER_DEBUG("[logic_connect]connand={}, thread id", source.work_thread_id_);
         PSS_LOGGER_DEBUG("[logic_connect]connand={}, CONNECT_IO_UDP", source.connect_id_);
     }
     else if (source.type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_TTY)

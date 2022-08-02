@@ -44,6 +44,7 @@ void CUdpServer::do_receive_from(std::error_code ec, std::size_t length)
             session_recv_buffer_.move(length);
             App_WorkThreadLogic::instance()->close_session_event(connect_id);
             do_receive();
+            return;
         }
 
         session_recv_buffer_.set_write_data(length);
@@ -63,13 +64,10 @@ void CUdpServer::do_receive_from(std::error_code ec, std::size_t length)
             //添加到数据队列处理
             App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id, message_list, self);
         }
+    }
 
-        do_receive();
-    }
-    else
-    {
-        do_receive();
-    }
+    //持续接收数据
+    do_receive();
 }
 
 void CUdpServer::close(uint32 connect_id)
