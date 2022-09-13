@@ -177,7 +177,8 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
             udp_server.port_,
             udp_server.packet_parse_id_,
             udp_server.recv_buff_size_,
-            udp_server.send_buff_size_);
+            udp_server.send_buff_size_,
+            udp_server.em_net_type_);
         udp_service->start();
         udp_service_list_.emplace_back(udp_service);
     }

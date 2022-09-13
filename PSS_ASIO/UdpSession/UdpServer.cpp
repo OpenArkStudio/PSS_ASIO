@@ -1,10 +1,22 @@
 ﻿#include "UdpServer.h"
 
-CUdpServer::CUdpServer(asio::io_context& io_context, const std::string& server_ip, short port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size)
+CUdpServer::CUdpServer(asio::io_context& io_context, const std::string& server_ip, short port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size, EM_NET_TYPE em_net_type)
     : socket_(io_context, udp::endpoint(asio::ip::address_v4::from_string(server_ip), port)), max_recv_size_(max_recv_size), max_send_size_(max_send_size), io_context_(&io_context)
 {
     //处理链接建立消息
     PSS_LOGGER_DEBUG("[CUdpServer::do_accept]{0}:{1} Begin Accept.", server_ip, port);
+
+    if (em_net_type == EM_NET_TYPE::NET_TYPE_BROADCAST)
+    {
+        //处理UDP的广播监听
+        asio::error_code ec;
+        asio::socket_base::broadcast option(true);
+        socket_.set_option(option, ec);
+        if (ec)
+        {
+            PSS_LOGGER_DEBUG("[CUdpServer::do_accept]{0}:{1} error bind Accept{2}.", server_ip, port, ec.message());
+        }
+    }
 
     session_recv_buffer_.Init(max_recv_size_);
 

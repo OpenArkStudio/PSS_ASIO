@@ -70,6 +70,11 @@ bool CServerConfig::read_server_config_file(const std::string& file_name)
             config_netio.packet_parse_id_ = udp["packet parse id"];
             config_netio.recv_buff_size_ = udp["recv buff size"];
             config_netio.send_buff_size_ = udp["send buff size"];
+            if (udp["udp type"] == "BROADCAST")
+            {
+                config_netio.em_net_type_ = EM_NET_TYPE::NET_TYPE_BROADCAST;
+            }
+
             config_udp_list_.emplace_back(config_netio);
         }
 

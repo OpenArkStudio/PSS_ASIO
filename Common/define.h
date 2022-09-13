@@ -60,6 +60,13 @@ enum class EM_CONNECT_IO_TYPE
     WORKTHREAD_CLOSE         //关闭当前工作线程
 };
 
+//连接类型(目前只包括UDP的点对点和广播)
+enum class EM_NET_TYPE
+{
+    NET_TYPE_POINT_TO_POINT = 0,  //正常点对点网络 
+    NET_TYPE_BROADCAST,           //UDP广播网络
+};
+
 //监听服务的IO接口信息
 class CConfigNetIO
 {
@@ -72,6 +79,7 @@ public:
     std::string ssl_server_password_;
     std::string ssl_server_pem_file_;
     std::string ssl_dh_pem_file_;
+    EM_NET_TYPE em_net_type_ = EM_NET_TYPE::NET_TYPE_POINT_TO_POINT;
 };
 
 //客户端IP信息
