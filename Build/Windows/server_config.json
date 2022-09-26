@@ -68,6 +68,17 @@
     }
   ],
 
+  "kcp server": [
+    {
+      "udp ip": "127.0.0.1",
+      "udp port": 10100,
+      "packet parse id": 1,
+      "recv buff size": 102400,
+      "send buff size": 102400,
+      "kcp id": 1
+    }
+  ],
+
   "tty server": [
     {
       "port name" : "COM2", 

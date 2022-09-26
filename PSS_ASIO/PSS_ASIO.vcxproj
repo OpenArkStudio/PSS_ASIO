@@ -145,6 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\third_include\kcp\ikcp.c" />
     <ClCompile Include="Common\CommunicationService.cpp" />
     <ClCompile Include="Common\ConnectCounter.cpp" />
     <ClCompile Include="Common\serverconfig.cpp" />
@@ -165,6 +166,7 @@
     <ClCompile Include="TcpSession\TcpSSLServer.cpp" />
     <ClCompile Include="TcpSession\TcpSSLSession.cpp" />
     <ClCompile Include="TTySession\TtyServer.cpp" />
+    <ClCompile Include="UdpSession\KcpServer.cpp" />
     <ClCompile Include="UdpSession\UdpClientSession.cpp" />
     <ClCompile Include="UdpSession\UdpServer.cpp" />
   </ItemGroup>
@@ -183,6 +185,7 @@
     <ClInclude Include="..\Common\TimeStamp.hpp" />
     <ClInclude Include="..\Common\tms.hpp" />
     <ClInclude Include="..\Common\WriteBuffer.hpp" />
+    <ClInclude Include="..\third_include\kcp\ikcp.h" />
     <ClInclude Include="Common\CommunicationService.h" />
     <ClInclude Include="Common\ConnectCounter.h" />
     <ClInclude Include="Common\CoreTimer.hpp" />
@@ -208,6 +211,7 @@
     <ClInclude Include="TcpSession\TcpSSLServer.h" />
     <ClInclude Include="TcpSession\TcpSSLSession.h" />
     <ClInclude Include="TTySession\TtyServer.h" />
+    <ClInclude Include="UdpSession\KcpServer.h" />
     <ClInclude Include="UdpSession\UdpClientSession.h" />
     <ClInclude Include="UdpSession\UdpServer.h" />
   </ItemGroup>

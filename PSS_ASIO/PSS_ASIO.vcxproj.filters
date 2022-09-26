@@ -102,6 +102,12 @@
     <ClCompile Include="QueueSession\Queueservice.cpp">
       <Filter>QueueSession</Filter>
     </ClCompile>
+    <ClCompile Include="UdpSession\KcpServer.cpp">
+      <Filter>UdpSession</Filter>
+    </ClCompile>
+    <ClCompile Include="..\third_include\kcp\ikcp.c">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TcpSession\TcpServer.h">
@@ -226,6 +232,12 @@
     </ClInclude>
     <ClInclude Include="QueueSession\QueueService.h">
       <Filter>QueueSession</Filter>
+    </ClInclude>
+    <ClInclude Include="UdpSession\KcpServer.h">
+      <Filter>UdpSession</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_include\kcp\ikcp.h">
+      <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

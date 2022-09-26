@@ -78,6 +78,19 @@ bool CServerConfig::read_server_config_file(const std::string& file_name)
             config_udp_list_.emplace_back(config_netio);
         }
 
+        for (auto udp : json_config["kcp server"])
+        {
+            CConfigNetIO config_netio;
+            config_netio.ip_ = udp["udp ip"];
+            config_netio.port_ = udp["udp port"];
+            config_netio.packet_parse_id_ = udp["packet parse id"];
+            config_netio.recv_buff_size_ = udp["recv buff size"];
+            config_netio.send_buff_size_ = udp["send buff size"];
+            config_netio.io_number_ = udp["kcp id"];
+
+            config_kcp_list_.emplace_back(config_netio);
+        }
+
         for (auto tty : json_config["tty server"])
         {
             CTTyIO config_tty;
@@ -125,6 +138,11 @@ config_tcp_list& CServerConfig::get_config_tcp_list()
 config_udp_list& CServerConfig::get_config_udp_list()
 {
     return config_udp_list_;
+}
+
+config_kcp_list& CServerConfig::get_config_kcp_list()
+{
+    return config_kcp_list_;
 }
 
 config_tty_list& CServerConfig::get_config_tty_list()

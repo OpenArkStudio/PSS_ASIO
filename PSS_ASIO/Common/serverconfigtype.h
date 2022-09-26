@@ -41,6 +41,7 @@ using config_logic_list = std::vector<CConfigLogicInfo>;
 
 using config_tcp_list = std::vector<CConfigNetIO>;
 using config_udp_list = std::vector<CConfigNetIO>;
+using config_kcp_list = std::vector<CConfigNetIO>;
 
 class CTTyIO
 {

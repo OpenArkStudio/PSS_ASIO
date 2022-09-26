@@ -18,6 +18,12 @@ void CBaseCommand::Init(ISessionService* session_service)
         PSS_LOGGER_DEBUG("[CBaseCommand::Init]udp listen {0}:{1}", io_type.ip_, io_type.port_);
     }
 
+    session_service_->get_server_listen_info(io_list, EM_CONNECT_IO_TYPE::CONNECT_IO_KCP);
+    for (const auto& io_type : io_list)
+    {
+        PSS_LOGGER_DEBUG("[CBaseCommand::Init]kcp listen {0}:{1}", io_type.ip_, io_type.port_);
+    }
+
     session_service_->get_server_listen_info(io_list, EM_CONNECT_IO_TYPE::CONNECT_IO_TTY);
     for (const auto& io_type : io_list)
     {

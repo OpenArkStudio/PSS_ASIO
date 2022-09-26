@@ -6,6 +6,7 @@
 #include "TcpSSLServer.h"
 #include "TcpServer.h"
 #include "UdpServer.h"
+#include "KcpServer.h"
 #include "TtyServer.h"
 #include "QueueService.h"
 #include "serverconfig.h"
@@ -28,6 +29,7 @@ public:
 private:
     vector<shared_ptr<CTcpServer>> tcp_service_list_;
     vector<shared_ptr<CUdpServer>> udp_service_list_;
+    vector<shared_ptr<CKcpServer>> kcp_service_list_;
     vector<shared_ptr<CTTyServer>> tty_service_list_;
 
 #ifdef SSL_SUPPORT

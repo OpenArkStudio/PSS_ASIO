@@ -15,6 +15,11 @@ void CSessionService::get_server_listen_info(std::vector<CConfigNetIO>& io_list,
         const auto& udp_list = App_ServerConfig::instance()->get_config_udp_list();
         io_list.assign(udp_list.begin(), udp_list.end());
     }
+    else if (io_type == EM_CONNECT_IO_TYPE::CONNECT_IO_KCP)
+    {
+        const auto& udp_list = App_ServerConfig::instance()->get_config_kcp_list();
+        io_list.assign(udp_list.begin(), udp_list.end());
+    }
     else if (io_type == EM_CONNECT_IO_TYPE::CONNECT_IO_TTY)
     {
         auto tty_list = App_ServerConfig::instance()->get_config_tty_list();

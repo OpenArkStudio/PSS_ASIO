@@ -51,6 +51,7 @@ enum class EM_CONNECT_IO_TYPE
 {
     CONNECT_IO_TCP = 0,      //IO是TCP
     CONNECT_IO_UDP,          //IO是UDP
+    CONNECT_IO_KCP,          //IO是UDP的KCP
     CONNECT_IO_TTY,          //IO是TTY
     CONNECT_IO_SSL,          //IO是SSL
     CONNECT_IO_SERVER_TCP,   //IO是服务期间连接TCP
@@ -80,6 +81,7 @@ public:
     std::string ssl_server_pem_file_;
     std::string ssl_dh_pem_file_;
     EM_NET_TYPE em_net_type_ = EM_NET_TYPE::NET_TYPE_POINT_TO_POINT;
+    unsigned int io_number_ = 0;
 };
 
 //客户端IP信息

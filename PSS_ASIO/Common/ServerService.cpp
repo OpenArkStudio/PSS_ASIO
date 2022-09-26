@@ -183,6 +183,20 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
         udp_service_list_.emplace_back(udp_service);
     }
 
+    //加载KCP监听
+    for (auto kcp_server : App_ServerConfig::instance()->get_config_kcp_list())
+    {
+        auto kcp_service = make_shared<CKcpServer>(io_context_,
+            kcp_server.ip_,
+            kcp_server.port_,
+            kcp_server.packet_parse_id_,
+            kcp_server.recv_buff_size_,
+            kcp_server.send_buff_size_,
+            kcp_server.io_number_);
+        kcp_service->start();
+        kcp_service_list_.emplace_back(kcp_service);
+    }
+
     //加载tty监听
     for (auto tty_server : App_ServerConfig::instance()->get_config_tty_list())
     {
@@ -224,6 +238,8 @@ void CServerService::close_service()
     {
         tcp_service->close();
     }
+
+    //udp和kcp不需要停止监听
 
 #ifdef SSL_SUPPORT
     //停止所有的SSL监听
