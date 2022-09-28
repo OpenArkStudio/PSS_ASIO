@@ -15,8 +15,14 @@ endif()
 file(GLOB PROC_COMMON ${PROJECT_SOURCE_DIR}/COMMON/*.h ${PROJECT_SOURCE_DIR}/COMMON/*.hpp)
 source_group("proc_common" FILES ${PROC_COMMON})
 
-file(GLOB THIRD_INCLUDE ${PROJECT_SOURCE_DIR}/third_Include/*.h ${PROJECT_SOURCE_DIR}/third_Include/*.hpp)
+file(GLOB THIRD_INCLUDE ${PROJECT_SOURCE_DIR}/third_include/*.h ${PROJECT_SOURCE_DIR}/third_include/*.hpp ${PROJECT_SOURCE_DIR}/third_include/*.c)
 source_group("third_Include" FILES ${THIRD_INCLUDE})
+
+message("----------${PROJECT_SOURCE_DIR}")
+message("kcp is set...begin")
+file(GLOB KCP_FILES ${PROJECT_SOURCE_DIR}/third_include/kcp/*.h ${PROJECT_SOURCE_DIR}/third_include/kcp/*.cpp)
+source_group("kcp" FILES ${KCP_FILES})
+message("kcp is set...end")
 
 file(GLOB COMMON_FILES Common/*.h Common/*.cpp)
 source_group("Common" FILES ${COMMON_FILES})
@@ -51,6 +57,7 @@ include_directories(
 
 add_executable(pss_asio 
 	${MAIN_FILES}
+	${KCP_FILES}
 	${PROC_COMMON}
 	${THIRD_INCLUDE}
 	${COMMON_FILES}

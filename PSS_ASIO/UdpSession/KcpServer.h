@@ -111,6 +111,3 @@ private:
     CKcp_send_info kcp_send_info_;
 };
 
-//kcp的默认回调静态函数
-static int kcp_udpOutPut(const char* buf, int len, ikcpcb* kcp, void* user);
-

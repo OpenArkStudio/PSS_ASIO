@@ -1,5 +1,8 @@
 ﻿#include "KcpServer.h"
 
+//kcp的默认回调静态函数
+static int kcp_udpOutPut(const char* buf, int len, ikcpcb* kcp, void* user);
+
 CKcpServer::CKcpServer(asio::io_context& io_context, const std::string& server_ip, short port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size, uint32 kcp_id)
     : socket_(io_context, udp::endpoint(asio::ip::address_v4::from_string(server_ip), port)), max_recv_size_(max_recv_size), max_send_size_(max_send_size), io_context_(&io_context), kcp_id_(kcp_id)
 {
