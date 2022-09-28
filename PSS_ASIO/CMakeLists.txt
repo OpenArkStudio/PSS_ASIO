@@ -15,12 +15,12 @@ endif()
 file(GLOB PROC_COMMON ${PROJECT_SOURCE_DIR}/COMMON/*.h ${PROJECT_SOURCE_DIR}/COMMON/*.hpp)
 source_group("proc_common" FILES ${PROC_COMMON})
 
-file(GLOB THIRD_INCLUDE ${PROJECT_SOURCE_DIR}/third_include/*.h ${PROJECT_SOURCE_DIR}/third_include/*.hpp ${PROJECT_SOURCE_DIR}/third_include/*.c)
+file(GLOB THIRD_INCLUDE ${PROJECT_SOURCE_DIR}/third_include/*.h ${PROJECT_SOURCE_DIR}/third_include/*.hpp)
 source_group("third_Include" FILES ${THIRD_INCLUDE})
 
 message("----------${PROJECT_SOURCE_DIR}")
 message("kcp is set...begin")
-file(GLOB KCP_FILES ${PROJECT_SOURCE_DIR}/third_include/kcp/*.h ${PROJECT_SOURCE_DIR}/third_include/kcp/*.cpp)
+file(GLOB KCP_FILES ${PROJECT_SOURCE_DIR}/third_include/kcp/*.h ${PROJECT_SOURCE_DIR}/third_include/kcp/*.c)
 source_group("kcp" FILES ${KCP_FILES})
 message("kcp is set...end")
 
