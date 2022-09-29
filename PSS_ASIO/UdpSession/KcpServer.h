@@ -13,6 +13,10 @@
 #include "ModuleLogic.h"
 #include "kcp/ikcp.h"
 
+#if PSS_PLATFORM == PLATFORM_UNIX
+#include <sys/time.h>
+#endif
+
 using asio::ip::udp;
 
 //实现KCP的服务端代码

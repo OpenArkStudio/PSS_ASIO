@@ -180,6 +180,9 @@ void CKcpServer::do_write(uint32 connect_id)
         PSS_LOGGER_DEBUG("[CKcpServer::do_write]({}) send error ret={}.", connect_id, ret);
     }
 
+    //回复udp确认信息
+    set_kcp_send_info(connect_id, session_info->send_endpoint);
+
     //刷新kcp循环
     ikcp_update(kcpcb_, iclock());
 
