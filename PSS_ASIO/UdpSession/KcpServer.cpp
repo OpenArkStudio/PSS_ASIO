@@ -38,6 +38,10 @@ void CKcpServer::start()
 void CKcpServer::do_receive()
 {
     auto self(shared_from_this());
+
+    //刷新kcp循环
+    ikcp_update(kcpcb_, iclock());
+
     socket_.async_receive_from(
         asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()), recv_endpoint_,
         [self](std::error_code ec, std::size_t length)
@@ -176,6 +180,9 @@ void CKcpServer::do_write(uint32 connect_id)
         PSS_LOGGER_DEBUG("[CKcpServer::do_write]({}) send error ret={}.", connect_id, ret);
     }
 
+    //刷新kcp循环
+    ikcp_update(kcpcb_, iclock());
+
     clear_write_buffer(session_info);
 }
 
@@ -198,6 +205,9 @@ void CKcpServer::do_write_immediately(uint32 connect_id, const char* data, size_
             PSS_LOGGER_DEBUG("[CKcpServer::do_write]({}) send error ret={}.", connect_id, ret);
         }
     }
+
+    //刷新kcp循环
+    ikcp_update(kcpcb_, iclock());
 
     clear_write_buffer(session_info);
 
@@ -290,13 +300,21 @@ void CKcpServer::add_send_finish_size(uint32 connect_id, size_t length)
 
 void CKcpServer::send_io_data_to_point(const char* data, size_t length)
 {
-    uint32 connect_id = kcp_send_info_.connecy_id_;
+    uint32 connect_id = kcp_send_info_.connect_id_;
     udp::endpoint send_endpoint = kcp_send_info_.send_endpoint;
+
+    if (connect_id == 0)
+    {
+        return;
+    }
 
     //组装发送数据
     auto send_buffer = make_shared<CSendBuffer>();
     send_buffer->data_.append(data, length);
     send_buffer->buffer_length_ = length;
+
+    //设置connect_id无效
+    kcp_send_info_.connect_id_ = 0;
 
     auto self(shared_from_this());
     socket_.async_send_to(
@@ -344,11 +362,53 @@ bool CKcpServer::is_need_send_format()
 
 void CKcpServer::set_kcp_send_info(uint32 connect_id, udp::endpoint kcp_send_endpoint)
 {
-    kcp_send_info_.connecy_id_   = connect_id;
+    kcp_send_info_.connect_id_   = connect_id;
     kcp_send_info_.send_endpoint = kcp_send_endpoint;
 }
 
-int kcp_udpOutPut(const char* buf, int len, ikcpcb* kcp, void* user)
+void CKcpServer::itimeofday(long* sec, long* usec)
+{
+#if defined(__unix)
+    struct timeval time;
+    gettimeofday(&time, NULL);
+    if (sec) *sec = time.tv_sec;
+    if (usec) *usec = time.tv_usec;
+#else
+    static long mode = 0, addsec = 0;
+    BOOL retval;
+    static IINT64 freq = 1;
+    IINT64 qpc;
+    if (mode == 0) {
+        retval = QueryPerformanceFrequency((LARGE_INTEGER*)&freq);
+        freq = (freq == 0) ? 1 : freq;
+        retval = QueryPerformanceCounter((LARGE_INTEGER*)&qpc);
+        addsec = (long)time(NULL);
+        addsec = addsec - (long)((qpc / freq) & 0x7fffffff);
+        mode = 1;
+    }
+    retval = QueryPerformanceCounter((LARGE_INTEGER*)&qpc);
+    retval = retval * 2;
+    if (sec) *sec = (long)(qpc / freq) + addsec;
+    if (usec) *usec = (long)((qpc % freq) * 1000000 / freq);
+#endif
+}
+
+/* get clock in millisecond 64 */
+IINT64 CKcpServer::iclock64(void)
+{
+    long s, u;
+    IINT64 value;
+    itimeofday(&s, &u);
+    value = ((IINT64)s) * 1000 + (u / 1000);
+    return value;
+}
+
+IUINT32 CKcpServer::iclock()
+{
+    return (IUINT32)(iclock64() & 0xfffffffful);
+}
+
+static int kcp_udpOutPut(const char* buf, int len, ikcpcb* kcp, void* user)
 {
     //发送kcp数据
     CKcpServer* kcp_server = (CKcpServer*)user;

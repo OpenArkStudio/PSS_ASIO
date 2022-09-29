@@ -28,7 +28,7 @@ enum class EM_KCP_VALID
 class CKcp_send_info
 {
 public:
-    uint32 connecy_id_;
+    uint32 connect_id_ = 0;
     udp::endpoint send_endpoint;
 };
 
@@ -85,6 +85,12 @@ private:
     void close_udp_endpoint_by_id(uint32 connect_id);
 
     void set_kcp_send_info(uint32 connect_id, udp::endpoint kcp_send_endpoint);
+
+    void itimeofday(long* sec, long* usec);
+
+    IINT64 iclock64(void);
+
+    IUINT32 iclock();
 
     udp::socket socket_;
     uint32 connect_client_id_ = 0;

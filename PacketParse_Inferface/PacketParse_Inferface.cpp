@@ -214,6 +214,10 @@ bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, ve
     {
         return parse_packet_from_recv_buffer_single(connect_id, buffer, message_list, emIOType);
     }
+    else if (emIOType == EM_CONNECT_IO_TYPE::CONNECT_IO_KCP)
+    {
+        return parse_packet_from_recv_buffer_single(connect_id, buffer, message_list, emIOType);
+    }
     else
     {
         return parse_packet_from_recv_buffer_stream(connect_id, buffer, message_list, emIOType);
