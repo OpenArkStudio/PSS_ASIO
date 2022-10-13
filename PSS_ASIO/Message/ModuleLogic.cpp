@@ -245,7 +245,10 @@ void CWorkThreadLogic::init_communication_service(ICommunicationInterface* commu
 
 void CWorkThreadLogic::close()
 {
-    communicate_service_->close();
+    if (nullptr != communicate_service_)
+    {
+        communicate_service_->close();
+    }
 
     //关闭所有的客户端(异步)
     for (auto f : thread_module_list_)

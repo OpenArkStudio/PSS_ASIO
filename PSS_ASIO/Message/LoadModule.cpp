@@ -8,6 +8,8 @@
 void CLoadModule::Close()
 {
     //关闭当前活跃模块
+    command_to_module_function_.clear();
+
     for_each(module_list_.begin(), module_list_.end(), [](const std::pair<string, shared_ptr<_ModuleInfo>>& iter) {
         //关闭模块接口
         iter.second->unload_module_();

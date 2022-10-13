@@ -1,10 +1,9 @@
 ﻿#include "KcpServer.h"
 
-//kcp的默认回调静态函数
 static int kcp_udpOutPut(const char* buf, int len, ikcpcb* kcp, void* user);
 
 CKcpServer::CKcpServer(asio::io_context& io_context, const std::string& server_ip, short port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size, uint32 kcp_id)
-    : socket_(io_context, udp::endpoint(asio::ip::address_v4::from_string(server_ip), port)), max_recv_size_(max_recv_size), max_send_size_(max_send_size), io_context_(&io_context), kcp_id_(kcp_id)
+    : socket_(io_context, udp::endpoint(asio::ip::address_v4::from_string(server_ip), port)), max_recv_size_(max_recv_size), max_send_size_(max_send_size), kcp_id_(kcp_id), io_context_(&io_context)
 {
     //处理链接建立消息
     PSS_LOGGER_DEBUG("[CKcpServer::do_accept]{0}:{1} Begin Accept.", server_ip, port);
@@ -14,20 +13,6 @@ CKcpServer::CKcpServer(asio::io_context& io_context, const std::string& server_i
 
     packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(packet_parse_id);
 
-    //建立kcp
-    kcpcb_ = ikcp_create(kcp_id_, this);
-    if (nullptr == kcpcb_)
-    {
-        PSS_LOGGER_DEBUG("[CKcpServer::do_accept]{0}:{1} kcp is null.", server_ip, port);
-    }
-    else
-    {
-        //绑定回调函数
-        kcpcb_->output = kcp_udpOutPut;
-
-        ikcp_nodelay(kcpcb_, 0, 10, 0, 0);
-        ikcp_wndsize(kcpcb_, max_send_size, max_recv_size);
-    }
 }
 
 void CKcpServer::start()
@@ -38,9 +23,6 @@ void CKcpServer::start()
 void CKcpServer::do_receive()
 {
     auto self(shared_from_this());
-
-    //刷新kcp循环
-    ikcp_update(kcpcb_, iclock());
 
     socket_.async_receive_from(
         asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()), recv_endpoint_,
@@ -54,6 +36,8 @@ void CKcpServer::do_receive_from(std::error_code ec, std::size_t length)
 {
     //查询当前的connect_id
     auto connect_id = add_udp_endpoint(recv_endpoint_, length, max_send_size_);
+
+    auto session_kcp = find_udp_endpoint_by_id(connect_id);
 
     if (!ec && length > 0)
     {
@@ -72,20 +56,18 @@ void CKcpServer::do_receive_from(std::error_code ec, std::size_t length)
 
         session_recv_buffer_.set_write_data(length);
 
-        //处理kcp的数据解析
-        auto kcp_recv_length = ikcp_input(kcpcb_, session_recv_buffer_.read(), (long)length);
-        if (kcp_recv_length < 0)//检测ikcp_input对 buf 是否提取到真正的数据	
-        {
-            session_recv_buffer_.set_write_data(length);
-            do_receive();
-            return;
-        }
+        kcp_mutex_.lock();
+        //刷新kcp循环
+        ikcp_update(session_kcp->kcpcb_, iclock());
 
+        //处理kcp的数据解析
+        ikcp_input(session_kcp->kcpcb_, session_recv_buffer_.read(), (long)length);
+        
         //将kcp中的数据解析出来
         int logic_data_length = 0;
         while (1)
         {
-            auto kcp_data_recv_length = ikcp_recv(kcpcb_, session_recv_data_buffer_.read(), (long)length);
+            auto kcp_data_recv_length = ikcp_recv(session_kcp->kcpcb_, session_recv_data_buffer_.read(), (long)length);
             if (kcp_data_recv_length < 0)
             {
                 break;
@@ -97,9 +79,17 @@ void CKcpServer::do_receive_from(std::error_code ec, std::size_t length)
                 session_recv_data_buffer_.set_write_data(kcp_data_recv_length);
             }
         }
+        kcp_mutex_.unlock();
 
         //清理原始数据
-        session_recv_buffer_.set_write_data(length);
+        session_recv_buffer_.move(length);
+
+        if (logic_data_length == 0)
+        {
+            //kcp 回应帧数据包不处理
+            do_receive();
+            return;
+        }
 
         //处理数据拆包
         vector<std::shared_ptr<CMessage_Packet>> message_list;
@@ -116,6 +106,14 @@ void CKcpServer::do_receive_from(std::error_code ec, std::size_t length)
             //添加到数据队列处理
             App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id, message_list, self);
         }
+
+        kcp_mutex_.lock();
+        //回复udp确认信息
+        set_kcp_send_info(connect_id, recv_endpoint_);
+
+        //刷新kcp循环
+        ikcp_update(session_kcp->kcpcb_, iclock());
+        kcp_mutex_.unlock();
     }
 
     //持续接收数据
@@ -125,13 +123,26 @@ void CKcpServer::do_receive_from(std::error_code ec, std::size_t length)
 void CKcpServer::close(uint32 connect_id)
 {
     auto self(shared_from_this());
+
     io_context_->dispatch([self, connect_id]() 
         {
+            //释放kcp资源
+            auto session_info = self->find_udp_endpoint_by_id(connect_id);
+            session_info->close_kcp();
+
             self->close_udp_endpoint_by_id(connect_id);
         });
+}
 
-    ikcp_release(kcpcb_); 
-    kcpcb_ = nullptr;
+void CKcpServer::close_all()
+{
+    //释放所有kcp资源
+    for (auto session_info : udp_id_2_endpoint_list_)
+    {
+        session_info.second->close_kcp();
+    }
+
+    udp_id_2_endpoint_list_.clear();
 }
 
 void CKcpServer::set_write_buffer(uint32 connect_id, const char* data, size_t length)
@@ -166,25 +177,27 @@ void CKcpServer::do_write(uint32 connect_id)
         return;
     }
 
-    if (session_info->udp_state == EM_KCP_VALID::KCP_INVALUD)
+    if (session_info->udp_state_ == EM_KCP_VALID::KCP_INVALUD)
     {
+        PSS_LOGGER_DEBUG("[CKcpServer::do_write]({}) is udp_state is KCP_INVALUD.", connect_id);
         clear_write_buffer(session_info);
         return;
     }
 
-    //将要处理的数据封装为kcp数据包再发送出去
+    kcp_mutex_.lock();
+    //回复udp确认信息
     set_kcp_send_info(connect_id, session_info->send_endpoint);
-    int	ret = ikcp_send(kcpcb_, session_info->session_send_buffer_.read(), (long)session_info->session_send_buffer_.get_write_size());
+
+    //将要处理的数据封装为kcp数据包再发送出去
+    int	ret = ikcp_send(session_info->kcpcb_, session_info->session_send_buffer_.read(), (long)session_info->session_send_buffer_.get_write_size());
     if (ret != 0)
     {
         PSS_LOGGER_DEBUG("[CKcpServer::do_write]({}) send error ret={}.", connect_id, ret);
     }
 
-    //回复udp确认信息
-    set_kcp_send_info(connect_id, session_info->send_endpoint);
-
     //刷新kcp循环
-    ikcp_update(kcpcb_, iclock());
+    ikcp_update(session_info->kcpcb_, iclock());
+    kcp_mutex_.unlock();
 
     clear_write_buffer(session_info);
 }
@@ -199,10 +212,11 @@ void CKcpServer::do_write_immediately(uint32 connect_id, const char* data, size_
         return;
     }
 
-    if (session_info->udp_state != EM_KCP_VALID::KCP_INVALUD)
+    kcp_mutex_.lock();
+    if (session_info->udp_state_ != EM_KCP_VALID::KCP_INVALUD)
     {
         set_kcp_send_info(connect_id, session_info->send_endpoint);
-        int	ret = ikcp_send(kcpcb_, data, (long)length);
+        int	ret = ikcp_send(session_info->kcpcb_, data, (long)length);
         if (ret != 0)
         {
             PSS_LOGGER_DEBUG("[CKcpServer::do_write]({}) send error ret={}.", connect_id, ret);
@@ -210,7 +224,8 @@ void CKcpServer::do_write_immediately(uint32 connect_id, const char* data, size_
     }
 
     //刷新kcp循环
-    ikcp_update(kcpcb_, iclock());
+    ikcp_update(session_info->kcpcb_, iclock());
+    kcp_mutex_.unlock();
 
     clear_write_buffer(session_info);
 
@@ -232,11 +247,17 @@ uint32 CKcpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t l
         auto session_info = make_shared<CKcp_Session_Info>();
         session_info->send_endpoint = recv_endpoint;
         session_info->recv_data_size_ += length;
-        session_info->udp_state = EM_KCP_VALID::KCP_VALUD;
+        session_info->udp_state_ = EM_KCP_VALID::KCP_VALUD;
         session_info->session_send_buffer_.Init(max_buffer_length);
 
         udp_endpoint_2_id_list_[recv_endpoint] = connect_id;
         udp_id_2_endpoint_list_[connect_id] = session_info;
+
+        //创建KCP
+        session_info->init_kcp(kcp_id_, max_recv_size_, max_send_size_, kcp_udpOutPut, this);
+
+        //刷新一下时间
+        ikcp_update(session_info->kcpcb_, iclock());
 
         //调用packet parse 链接建立
         _ClientIPInfo remote_ip;

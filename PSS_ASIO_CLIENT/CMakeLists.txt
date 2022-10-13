@@ -18,6 +18,9 @@ source_group("proc_common" FILES ${PROC_COMMON})
 file(GLOB THIRD_INCLUDE ${PROJECT_SOURCE_DIR}/third_Include/*.h ${PROJECT_SOURCE_DIR}/third_Include/*.hpp)
 source_group("third_Include" FILES ${THIRD_INCLUDE})
 
+file(GLOB KCP_FILES ${PROJECT_SOURCE_DIR}/PSS_ASIO_CLIENT/kcp/*.h ${PROJECT_SOURCE_DIR}/PSS_ASIO_CLIENT/kcp/*.c)
+source_group("kcp" FILES ${KCP_FILES})
+
 file(GLOB COMMON_FILES Common/*.h Common/*.cpp)
 source_group("Common" FILES ${COMMON_FILES})
 
@@ -27,7 +30,7 @@ source_group("udpsession" FILES ${MESSAGE_FILES})
 file(GLOB TCPSESSION_FILES TcpSession/*.h TcpSession/*.cpp)
 source_group("tcpsession" FILES ${MESSAGE_FILES})
 
-file(GLOB_RECURSE MAIN_FILES ${PROJECT_SOURCE_DIR}/PSS_ASIO_CLIENT.cpp)
+file(GLOB_RECURSE MAIN_FILES ${PROJECT_SOURCE_DIR}/PSS_ASIO_CLIENT.cpp ${PROJECT_SOURCE_DIR}/kcp_client.cpp)
 source_group("Main" FILES ${MAIN_FILES})
 
 include_directories(
@@ -42,6 +45,7 @@ add_executable(pss_asio_test_client
 	${PROC_COMMON}
 	${THIRD_INCLUDE}
 	${COMMON_FILES}
+	${KCP_FILES}
 	${TCPSESSION_FILES}
 	${UDPSESSION_FILES}
 	)

@@ -685,7 +685,7 @@ void ikcp_parse_data(ikcpcb *kcp, IKCPSEG *newseg)
 	struct IQUEUEHEAD *p, *prev;
 	IUINT32 sn = newseg->sn;
 	int repeat = 0;
-
+	
 	if (_itimediff(sn, kcp->rcv_nxt + kcp->rcv_wnd) >= 0 ||
 		_itimediff(sn, kcp->rcv_nxt) < 0) {
 		ikcp_segment_delete(kcp, newseg);
@@ -824,17 +824,8 @@ int ikcp_input(ikcpcb *kcp, const char *data, long size)
 				ikcp_log(kcp, IKCP_LOG_IN_DATA, 
 					"input psh: sn=%lu ts=%lu", (unsigned long)sn, (unsigned long)ts);
 			}
-			long time_cost = _itimediff(sn, kcp->rcv_nxt + kcp->rcv_wnd);
-			if (time_cost < 0) {
+			if (_itimediff(sn, kcp->rcv_nxt + kcp->rcv_wnd) < 0) {
 				ikcp_ack_push(kcp, sn, ts);
-
-				long data11 = _itimediff(sn, kcp->rcv_nxt);
-				if (data11 < 0)
-				{
-					printf("[kcp]*******kcp->sn(%d)*********\n", sn);
-					printf("[kcp]*******kcp->rcv_nxt(%d)*********\n", kcp->rcv_nxt);
-				}
-				
 				if (_itimediff(sn, kcp->rcv_nxt) >= 0) {
 					seg = ikcp_segment_new(kcp, len);
 					seg->conv = conv;
@@ -1165,7 +1156,6 @@ void ikcp_update(ikcpcb *kcp, IUINT32 current)
 
 	slap = _itimediff(kcp->current, kcp->ts_flush);
 
-	//update by freeeyes
 	if (slap >= 10000 || slap < 0) {
 		kcp->ts_flush = kcp->current;
 		slap = 0;

@@ -141,12 +141,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="kcp\ikcp.c" />
+    <ClCompile Include="kcp_client.cpp" />
     <ClCompile Include="PSS_ASIO_CLIENT.cpp" />
     <ClCompile Include="TcpSession\TcpSession.cpp" />
     <ClCompile Include="UdpSession\UdpSession.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\SendBuffer.h" />
+    <ClInclude Include="kcp\ikcp.h" />
+    <ClInclude Include="kcp_client.h" />
     <ClInclude Include="TcpSession\TcpSession.h" />
     <ClInclude Include="UdpSession\UdpSession.h" />
   </ItemGroup>

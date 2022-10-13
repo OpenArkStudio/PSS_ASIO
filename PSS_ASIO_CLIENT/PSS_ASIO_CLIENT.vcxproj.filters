@@ -33,6 +33,12 @@
     <ClCompile Include="UdpSession\UdpSession.cpp">
       <Filter>UdpSession</Filter>
     </ClCompile>
+    <ClCompile Include="kcp\ikcp.c">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="kcp_client.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TcpSession\TcpSession.h">
@@ -42,6 +48,12 @@
       <Filter>UdpSession</Filter>
     </ClInclude>
     <ClInclude Include="Common\SendBuffer.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="kcp\ikcp.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="kcp_client.h">
       <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>

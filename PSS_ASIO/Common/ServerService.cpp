@@ -239,8 +239,6 @@ void CServerService::close_service()
         tcp_service->close();
     }
 
-    //udp和kcp不需要停止监听
-
 #ifdef SSL_SUPPORT
     //停止所有的SSL监听
     for (const auto& tcp_ssl_service : tcp_ssl_service_list_)
@@ -248,6 +246,12 @@ void CServerService::close_service()
         tcp_ssl_service->close();
     }
 #endif
+
+    //清理所有kcp资源
+    for (const auto& kcp_service : kcp_service_list_)
+    {
+        kcp_service->close_all();
+    }
 
     tcp_service_list_.clear();
 

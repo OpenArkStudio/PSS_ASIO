@@ -36,6 +36,8 @@ public:
     udp::endpoint send_endpoint;
 };
 
+typedef int (*kcp_output_func)(const char* buf, int len, ikcpcb* kcp, void* user);
+
 class CKcp_Session_Info
 {
 public:
@@ -43,7 +45,33 @@ public:
     size_t recv_data_size_ = 0;
     size_t send_data_size_ = 0;
     CSessionBuffer session_send_buffer_;
-    EM_KCP_VALID udp_state = EM_KCP_VALID::KCP_INVALUD;
+    EM_KCP_VALID udp_state_ = EM_KCP_VALID::KCP_INVALUD;
+    uint32 kcp_id_ = 0;
+    ikcpcb* kcpcb_ = nullptr;
+
+    void init_kcp(uint32 kcp_id, uint32 max_send_size, uint32 max_recv_size, kcp_output_func output_func, void* run_class)
+    {
+        //建立kcp
+        kcp_id_ = kcp_id;
+        kcpcb_ = ikcp_create(kcp_id_, run_class);
+        if (nullptr == kcpcb_)
+        {
+            PSS_LOGGER_DEBUG("[init_kcp]connect_id={0} kcp is null.", kcp_id_);
+        }
+        else
+        {
+            //绑定回调函数
+            kcpcb_->output = output_func;
+
+            ikcp_nodelay(kcpcb_, 0, 10, 0, 0);
+            ikcp_wndsize(kcpcb_, max_send_size, max_recv_size);
+        }
+    }
+
+    void close_kcp()
+    {
+        ikcp_release(kcpcb_);
+    }
 };
 
 class CKcpServer : public std::enable_shared_from_this<CKcpServer>, public ISession
@@ -54,6 +82,8 @@ public:
     void start();
 
     void close(uint32 connect_id) final;
+
+    void close_all();
 
     void set_write_buffer(uint32 connect_id, const char* data, size_t length) final;
 
@@ -107,17 +137,19 @@ private:
 
     uint32 max_recv_size_ = 0;
     uint32 max_send_size_ = 0;
+    uint32 kcp_id_ = 0;
     asio::io_context* io_context_ = nullptr;
+
     std::chrono::steady_clock::time_point recv_data_time_ = std::chrono::steady_clock::now();
 
     CSessionBuffer session_recv_buffer_;       //存储kcp原始包
     CSessionBuffer session_recv_data_buffer_;  //解析出来的kcp内容包
     shared_ptr<_Packet_Parse_Info> packet_parse_interface_ = nullptr;
 
+    std::recursive_mutex kcp_mutex_;
+
     EM_CONNECT_IO_TYPE io_type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_KCP;
 
-    uint32 kcp_id_ = 0;
-    ikcpcb* kcpcb_ = nullptr;
     CKcp_send_info kcp_send_info_;
 };
 
