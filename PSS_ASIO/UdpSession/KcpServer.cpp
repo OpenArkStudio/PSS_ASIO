@@ -27,7 +27,7 @@ void CKcpServer::do_receive()
     socket_.async_receive_from(
         asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()), recv_endpoint_,
         [self](std::error_code ec, std::size_t length)
-        {
+        { 
             self->do_receive_from(ec, length);
         });
 }
@@ -53,8 +53,26 @@ void CKcpServer::do_receive_from(std::error_code ec, std::size_t length)
             do_receive();
             return;
         }
-
+        
         session_recv_buffer_.set_write_data(length);
+
+        //如果是第一次链接KCP，需要协商kcp_id，然后返回给客户端，再让客户端带着kcp_id请求过来
+        if (true == is_kcp_id_create(session_recv_buffer_.read(), (uint32)length))
+        {
+            //发送kcp_id数据
+            session_recv_buffer_.move(length);
+            
+            char send_kcp_id[20] = { '\0' };
+            uint32 send_kcp_id_size = (uint32)sizeof(uint32);
+            std::memcpy(send_kcp_id, &connect_id, send_kcp_id_size);
+            kcp_send_info_.connect_id_ = connect_id;
+            send_io_data_to_point(send_kcp_id, send_kcp_id_size, recv_endpoint_);
+            session_kcp->udp_state_ = EM_KCP_VALID::KCP_ID_VALID;
+            do_receive();
+            return;
+        }
+
+        //如果是第一次链接KCP，需要协商kcp_id，然后返回给客户端，再让客户端带着kcp_id请求过来
 
         kcp_mutex_.lock();
         //刷新kcp循环
@@ -177,7 +195,7 @@ void CKcpServer::do_write(uint32 connect_id)
         return;
     }
 
-    if (session_info->udp_state_ == EM_KCP_VALID::KCP_INVALUD)
+    if (session_info->udp_state_ != EM_KCP_VALID::KCP_ID_VALID)
     {
         PSS_LOGGER_DEBUG("[CKcpServer::do_write]({}) is udp_state is KCP_INVALUD.", connect_id);
         clear_write_buffer(session_info);
@@ -212,20 +230,28 @@ void CKcpServer::do_write_immediately(uint32 connect_id, const char* data, size_
         return;
     }
 
-    kcp_mutex_.lock();
-    if (session_info->udp_state_ != EM_KCP_VALID::KCP_INVALUD)
+    
+    if (session_info->udp_state_ == EM_KCP_VALID::KCP_ID_VALID)
     {
+        kcp_mutex_.lock();
+
         set_kcp_send_info(connect_id, session_info->send_endpoint);
         int	ret = ikcp_send(session_info->kcpcb_, data, (long)length);
         if (ret != 0)
         {
             PSS_LOGGER_DEBUG("[CKcpServer::do_write]({}) send error ret={}.", connect_id, ret);
         }
+
+
+        //刷新kcp循环
+        ikcp_update(session_info->kcpcb_, iclock());
+        kcp_mutex_.unlock();
+    }
+    else
+    {
+        PSS_LOGGER_DEBUG("[CKcpServer::do_write](connect_id={}) session is over .", connect_id);
     }
 
-    //刷新kcp循环
-    ikcp_update(session_info->kcpcb_, iclock());
-    kcp_mutex_.unlock();
 
     clear_write_buffer(session_info);
 
@@ -254,7 +280,7 @@ uint32 CKcpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t l
         udp_id_2_endpoint_list_[connect_id] = session_info;
 
         //创建KCP
-        session_info->init_kcp(kcp_id_, max_recv_size_, max_send_size_, kcp_udpOutPut, this);
+        session_info->init_kcp(connect_id, max_recv_size_, max_send_size_, kcp_udpOutPut, this);
 
         //刷新一下时间
         ikcp_update(session_info->kcpcb_, iclock());
@@ -322,10 +348,9 @@ void CKcpServer::add_send_finish_size(uint32 connect_id, size_t length)
     }
 }
 
-void CKcpServer::send_io_data_to_point(const char* data, size_t length)
+void CKcpServer::send_io_data_to_point(const char* data, size_t length, udp::endpoint send_endpoint)
 {
     uint32 connect_id = kcp_send_info_.connect_id_;
-    udp::endpoint send_endpoint = kcp_send_info_.send_endpoint;
 
     if (connect_id == 0)
     {
@@ -384,6 +409,30 @@ bool CKcpServer::is_need_send_format()
     return packet_parse_interface_->is_need_send_format_ptr_();
 }
 
+bool CKcpServer::is_kcp_id_create(const char* kcp_data, uint32 kcp_size)
+{
+    if (kcp_size >= 24)
+    {
+        return false;
+    }
+
+    std::string kcp_client_data;
+    kcp_client_data.append(kcp_data, kcp_size);
+    if (kcp_size == kcp_key_id_create.length() && kcp_key_id_create == kcp_client_data)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+udp::endpoint CKcpServer::get_kcp_send_endpoint()
+{
+    return kcp_send_info_.send_endpoint;
+}
+
 void CKcpServer::set_kcp_send_info(uint32 connect_id, udp::endpoint kcp_send_endpoint)
 {
     kcp_send_info_.connect_id_   = connect_id;
@@ -436,6 +485,6 @@ static int kcp_udpOutPut(const char* buf, int len, ikcpcb* kcp, void* user)
 {
     //发送kcp数据
     CKcpServer* kcp_server = (CKcpServer*)user;
-    kcp_server->send_io_data_to_point(buf, len);
+    kcp_server->send_io_data_to_point(buf, len, kcp_server->get_kcp_send_endpoint());
     return 0;
 }

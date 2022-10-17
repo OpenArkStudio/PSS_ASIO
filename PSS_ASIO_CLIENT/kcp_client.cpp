@@ -64,7 +64,7 @@ int udpOutPut(const char* buf, int len, ikcpcb* kcp, void* user) {
     printf("[udpOutPut]send len=%d.\n", len);
 
     //发送信息
-    int n = sendto(send->sockfd, buf, len, 0, (struct sockaddr*)&send->addr, sizeof(struct sockaddr_in));//【】
+    int n = sendto(send->sockfd, buf, len, 0, (struct sockaddr*)&send->addr, sizeof(struct sockaddr_in));
     if (n >= 0)
     {
         //会重复发送，因此牺牲带宽

@@ -8,15 +8,9 @@
 #include "UdpSession.h"
 #include "kcp_client.h"
 
-void kcp_test_connect_server(std::string strIP, unsigned short port)
+void kcp_test_connect_server(int kcp_id, kcpObj& send)
 {
-    kcpObj send;
-    send.ipstr = strIP;
-    send.port = port;
-
-    init(&send);//初始化send,主要是设置与服务器通信的套接字对象
-
-    ikcpcb* kcp = ikcp_create(0x1, (void*)&send);//创建kcp对象把send传给kcp的user变量
+    ikcpcb* kcp = ikcp_create(kcp_id, (void*)&send);//创建kcp对象把send传给kcp的user变量
     kcp->output = udpOutPut;//设置kcp对象的回调函数
     ikcp_nodelay(kcp, 0, 10, 0, 0);//(kcp1, 0, 10, 0, 0); 1, 10, 2, 1
     ikcp_wndsize(kcp, 128, 128);
@@ -45,6 +39,39 @@ void kcp_test_connect_server(std::string strIP, unsigned short port)
     loop(&send);//循环处理
 
     ikcp_release(send.pkcp);
+}
+
+
+void from_server_get_kcp_id(std::string strIP, unsigned short port)
+{
+    kcpObj send;
+#if defined(WIN32)
+    int recvlen = sizeof(struct sockaddr_in);
+#else
+    unsigned int recvlen = sizeof(struct sockaddr_in);
+#endif
+    int kcp_id = 0;
+
+    send.ipstr = strIP;
+    send.port = port;
+
+    init(&send);//初始化send,主要是设置与服务器通信的套接字对象
+
+    std::string kcp_key_id_create = "kcp key id create";
+    sendto(send.sockfd, kcp_key_id_create.c_str(), kcp_key_id_create.length(), 0, (struct sockaddr*)&send.addr, sizeof(struct sockaddr_in));
+
+    //接收对应的key
+    char buf[512] = { '\0' };
+    auto recv_size = recvfrom(send.sockfd, buf, 512, 0, (struct sockaddr*)&send.addr, &recvlen);
+    if (recv_size > 0)//检测是否有UDP数据包
+    {
+        if (recv_size == 4)
+        {
+            std::memcpy(&kcp_id, &buf[0], (int)sizeof(int));
+        }
+    }
+
+    kcp_test_connect_server(kcp_id, send);
 }
 
 //异步客户端(udp)
@@ -252,13 +279,14 @@ int main()
             io_context.run();
         });
 
-
+    /*
     tcp_test_connect_synchronize_server("127.0.0.1", 10002, 10010, 0x2101, 1, io_context);
     tcp_test_connect_synchronize_server("127.0.0.1", 10002, 10011, 0x2102, 1, io_context);
 
     udp_test_connect_synchronize_server("127.0.0.1", 10005, 10012, 0x2101, io_context);
     udp_test_connect_synchronize_server("127.0.0.1", 10005, 10012, 0x2102, io_context);
-    kcp_test_connect_server("127.0.0.1", 10100);
+    */
+    from_server_get_kcp_id("127.0.0.1", 10100);
 
     io_context.stop();
     tt.join();

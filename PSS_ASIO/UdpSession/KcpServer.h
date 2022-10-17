@@ -22,10 +22,15 @@ using asio::ip::udp;
 //实现KCP的服务端代码
 //add by freeeyes
 
+
+//客户端kcp协商内容
+const std::string kcp_key_id_create = "kcp key id create";
+
 enum class EM_KCP_VALID
 {
     KCP_INVALUD = 0,
     KCP_VALUD,
+    KCP_ID_VALID,
 };
 
 //kcp的发送数据对象，回调参数
@@ -36,7 +41,7 @@ public:
     udp::endpoint send_endpoint;
 };
 
-typedef int (*kcp_output_func)(const char* buf, int len, ikcpcb* kcp, void* user);
+using kcp_output_func = int (*)(const char* buf, int len, ikcpcb* kcp, void* user);
 
 class CKcp_Session_Info
 {
@@ -93,7 +98,7 @@ public:
 
     void add_send_finish_size(uint32 connect_id, size_t length) final;
 
-    void send_io_data_to_point(const char* data, size_t length);
+    void send_io_data_to_point(const char* data, size_t length, udp::endpoint send_endpoint);
 
     EM_CONNECT_IO_TYPE get_io_type() final;
 
@@ -104,6 +109,10 @@ public:
     bool format_send_packet(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, std::shared_ptr<CMessage_Packet> format_message) final;
 
     bool is_need_send_format() final;
+
+    bool is_kcp_id_create(const char* kcp_data, uint32 kcp_size);
+
+    udp::endpoint get_kcp_send_endpoint();
 
 private:
     void do_receive();
