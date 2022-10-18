@@ -86,7 +86,6 @@ bool CServerConfig::read_server_config_file(const std::string& file_name)
             config_netio.packet_parse_id_ = udp["packet parse id"];
             config_netio.recv_buff_size_ = udp["recv buff size"];
             config_netio.send_buff_size_ = udp["send buff size"];
-            config_netio.io_number_ = udp["kcp id"];
 
             config_kcp_list_.emplace_back(config_netio);
         }

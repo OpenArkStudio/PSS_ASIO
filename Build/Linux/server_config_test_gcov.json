@@ -12,7 +12,7 @@
     {
       "packet parse id": 1,
       "packet parse path": "./",
-      "packet parse file": "libPacketParse_Inferface.so"
+      "packet parse file": "libPacketParse_Interface.so"
     }
   ],
 
@@ -65,8 +65,7 @@
       "udp port": 10100,
       "packet parse id": 1,
       "recv buff size": 128,
-      "send buff size": 128,
-      "kcp id": 1
+      "send buff size": 128
     }
   ],  
   

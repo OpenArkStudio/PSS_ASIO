@@ -12,7 +12,7 @@
     {
       "packet parse id": 1,
       "packet parse path": "./",
-      "packet parse file": "PacketParse_Inferface.dll"
+      "packet parse file": "PacketParse_Interface.dll"
     },
     {
       "packet parse id": 2,
@@ -74,8 +74,7 @@
       "udp port": 10100,
       "packet parse id": 1,
       "recv buff size": 128,
-      "send buff size": 128,
-      "kcp id": 1
+      "send buff size": 128
     }
   ],
 

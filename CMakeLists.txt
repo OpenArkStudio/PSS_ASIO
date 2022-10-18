@@ -43,6 +43,6 @@ endif()
 #add your own sub dirs
 add_subdirectory(PSS_ASIO)
 add_subdirectory(Module_Logic/Test_Logic)
-add_subdirectory(PacketParse_Inferface)
+add_subdirectory(PacketParse_Interface)
 add_subdirectory(PSS_ASIO_CLIENT)
 #TODO:add other dirs

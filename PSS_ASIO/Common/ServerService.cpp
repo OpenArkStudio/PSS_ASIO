@@ -191,8 +191,7 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
             kcp_server.port_,
             kcp_server.packet_parse_id_,
             kcp_server.recv_buff_size_,
-            kcp_server.send_buff_size_,
-            kcp_server.io_number_);
+            kcp_server.send_buff_size_);
         kcp_service->start();
         kcp_service_list_.emplace_back(kcp_service);
     }
