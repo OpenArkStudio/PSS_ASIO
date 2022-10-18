@@ -111,7 +111,7 @@ void CKcpServer::do_receive_from(std::error_code ec, std::size_t length)
 
         //处理数据拆包
         vector<std::shared_ptr<CMessage_Packet>> message_list;
-        bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_client_id_, &session_recv_data_buffer_, message_list, io_type_);
+        bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id, &session_recv_data_buffer_, message_list, io_type_);
         if (!ret)
         {
             //链接断开(解析包不正确)

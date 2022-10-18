@@ -7,7 +7,7 @@ Main server compilation path:
 \PSS_ASIO\PSS_ASIO.sln  
 
 Packet parsing plugin compilation:  
-PacketParse_Inferface\PacketParse_Inferface.sln  
+PacketParse_Inferface\PacketParse_Interface.sln  
 
 Logic plugin compilation path:  
 Module_Logic\Test_Logic\Test_Logic.sln  

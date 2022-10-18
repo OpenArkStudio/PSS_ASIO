@@ -1,4 +1,4 @@
-PROJECT(PacketParse_Inferface)
+PROJECT(PacketParse_Interface)
 
 if(UNIX)
 	set(BIN_OUTPUT_DIR ${ROOT_DIR}/Build/Linux/)
