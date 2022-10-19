@@ -54,8 +54,12 @@ jobs:
         killall pss_asio
         sleep 5
         echo "close pss_asio"
-        ls ./PSS_ASIO/CMakeFiles/pss_asio.dir/
+        pwd
         echo "gcov pss_asio code"
+        ls ./PSS_ASIO/CMakeFiles/pss_asio.dir/*.cpp.gcda
+        echo "gcov gcda"
+        ls ../../PSS_ASIO/*.cpp
+        echo "gcov cpp" 
         gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/*.cpp.gcda ../../PSS_ASIO/*.cpp > /dev/null
         gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/TcpSession/*.cpp.gcda ../../PSS_ASIO/TcpSession/*.cpp > /dev/null
         gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/UdpSession/*.cpp.gcda ../../PSS_ASIO/UdpSession/*.cpp > /dev/null
