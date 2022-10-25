@@ -210,7 +210,7 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
     //加载插件投递事件
     for (const auto& plugin_events : plugin_work_thread_buffer_message_list_)
     {
-        send_frame_message(plugin_events.tag_thread_id_,
+        do_frame_message(plugin_events.tag_thread_id_,
             plugin_events.message_tag_,
             plugin_events.send_packet_,
             plugin_events.delay_timer_);
@@ -221,7 +221,7 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
     //加载插件逻辑
     for (const auto& plugin_logic : plugin_work_thread_buffer_Func_list_)
     {
-        run_work_thread_logic(plugin_logic->tag_thread_id_,
+        do_work_thread_logic(plugin_logic->tag_thread_id_,
             plugin_logic->delay_timer_,
             plugin_logic->func_);
     }
@@ -542,11 +542,10 @@ void CWorkThreadLogic::do_work_thread_module_logic(shared_ptr<ISession> session,
 
 void CWorkThreadLogic::do_io_message_delivery(uint32 connect_id, std::shared_ptr<CMessage_Packet> send_packet, shared_ptr<CModuleLogic> module_logic)
 {
-    if (nullptr != module_logic->get_session_interface(connect_id))
+    auto session = module_logic->get_session_interface(connect_id);
+    if (nullptr != session)
     {
         //这里调用格式化发送过程
-        auto session = module_logic->get_session_interface(connect_id);
-
         if (session->is_need_send_format() == true)
         {
             //需要重新格式化数据
@@ -840,6 +839,11 @@ bool CWorkThreadLogic::send_frame_message(uint16 tag_thread_id, const std::strin
         return true;
     }
 
+    return do_frame_message(tag_thread_id, message_tag, send_packet, delay_timer);
+}
+
+bool CWorkThreadLogic::do_frame_message(uint16 tag_thread_id, const std::string& message_tag, std::shared_ptr<CMessage_Packet> send_packet, CFrame_Message_Delay delay_timer)
+{
     auto f = plugin_work_thread_list_.find(tag_thread_id);
     if (f == plugin_work_thread_list_.end())
     {
@@ -868,7 +872,7 @@ bool CWorkThreadLogic::send_frame_message(uint16 tag_thread_id, const std::strin
             });
 
         //添加映射关系(只有在定时器ID > 0的时候才能删除)
-        if(delay_timer.timer_id_ > 0)
+        if (delay_timer.timer_id_ > 0)
         {
             std::lock_guard <std::recursive_mutex> lock(plugin_timer_mutex_);
             plgin_timer_list_[delay_timer.timer_id_] = timer_ptr;
@@ -878,18 +882,8 @@ bool CWorkThreadLogic::send_frame_message(uint16 tag_thread_id, const std::strin
     return true;
 }
 
-bool CWorkThreadLogic::run_work_thread_logic(uint16 tag_thread_id, CFrame_Message_Delay delay_timer, const task_function& func)
+bool CWorkThreadLogic::do_work_thread_logic(uint16 tag_thread_id, CFrame_Message_Delay delay_timer, const task_function& func)
 {
-    if (false == module_init_finish_)
-    {
-        auto plugin_func = std::make_shared<CDelayPluginFunc>();
-        plugin_func->tag_thread_id_ = tag_thread_id;
-        plugin_func->func_          = func;
-        plugin_func->delay_timer_   = delay_timer;
-        plugin_work_thread_buffer_Func_list_.emplace_back(plugin_func);
-        return true;
-    }
-
     auto f = plugin_work_thread_list_.find(tag_thread_id);
     if (f == plugin_work_thread_list_.end())
     {
@@ -923,5 +917,20 @@ bool CWorkThreadLogic::run_work_thread_logic(uint16 tag_thread_id, CFrame_Messag
         }
     }
     return true;
+}
+
+bool CWorkThreadLogic::run_work_thread_logic(uint16 tag_thread_id, CFrame_Message_Delay delay_timer, const task_function& func)
+{
+    if (false == module_init_finish_)
+    {
+        auto plugin_func = std::make_shared<CDelayPluginFunc>();
+        plugin_func->tag_thread_id_ = tag_thread_id;
+        plugin_func->func_          = func;
+        plugin_func->delay_timer_   = delay_timer;
+        plugin_work_thread_buffer_Func_list_.emplace_back(plugin_func);
+        return true;
+    }
+
+    return do_work_thread_logic(tag_thread_id, delay_timer, func);
 }
 
