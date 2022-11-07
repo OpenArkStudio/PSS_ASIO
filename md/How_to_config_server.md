@@ -78,6 +78,17 @@ NOTE: You can monitor multiple UDP ports at the same time. And for each port, pl
 | recv buff size | int | The maximum size of the received data packet. The unit is byte  |  
 | send buff size | int | The maximum size of the send data packet. The unit is byte |  
 
+udp server(kcp)
+==========
+NOTE: You can monitor kcp server and ports(use udp) at the same time. And for each port, please configure "packet parse id".  
+| name | type | Description |  
+| ------ | ------ | ------ |  
+| udp ip | string | IP address monitored by udp |  
+| udp port | int |  IP port monitored by udp |  
+| packet parse id | int | ID of a data parser |  
+| recv buff size | int | The maximum size of the received data packet. The unit is byte  |  
+| send buff size | int | The maximum size of the send data packet. The unit is byte |  
+
 tty server
 ==========
 NOTE: You can monitor multiple tty ports at the same time. And for each port, please configure "packet parse id".  
