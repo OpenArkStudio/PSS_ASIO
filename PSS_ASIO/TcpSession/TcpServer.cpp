@@ -1,6 +1,6 @@
 ﻿#include "TcpServer.h"
 
-CTcpServer::CTcpServer(asio::io_context& io_context, const std::string& server_ip, unsigned short port, uint32 packet_parse_id, uint32 max_buffer_size)
+CTcpServer::CTcpServer(asio::io_context& io_context, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_buffer_size)
     : packet_parse_id_(packet_parse_id), max_recv_size_(max_buffer_size)
 {
     try

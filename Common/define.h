@@ -39,6 +39,7 @@ using int32 = int32_t;
 using int64 = int64_t;
 using float32 = float;
 using float64 = double;
+using io_port_type = uint16_t;
 
 enum class ENUM_WHILE_STATE
 {
@@ -73,7 +74,7 @@ class CConfigNetIO
 {
 public:
     std::string ip_;
-    unsigned short port_ = 0;
+    io_port_type port_ = 0;
     unsigned int packet_parse_id_ = 0;
     unsigned int recv_buff_size_ = 1024;
     unsigned int send_buff_size_ = 1024;
@@ -124,15 +125,15 @@ public:
 class CConnect_IO_Info
 {
 public:
-    uint32 server_id = 0;         //服务器ID
-    std::string server_ip;        //远程服务器的IP
-    uint16 server_port = 0;       //远程服务器的端口
-    std::string client_ip;        //发起端的IP(默认可以设置)
-    uint16 client_port = 0;       //发起端绑定的IP(默认可以不设置)
-    uint32 packet_parse_id = 1;   //解码的PacketParse插件ID
-    uint32 recv_size = 1024;      //接收数据最大缓冲
-    uint32 send_size = 1024;      //发送数据最大缓冲
-    std::string client_pem_file;  //对应客户端的pem文件
+    uint32 server_id = 0;            //服务器ID
+    std::string server_ip;           //远程服务器的IP
+    io_port_type server_port = 0;    //远程服务器的端口
+    std::string client_ip;           //发起端的IP(默认可以设置)
+    io_port_type client_port = 0;    //发起端绑定的IP(默认可以不设置)
+    uint32 packet_parse_id = 1;      //解码的PacketParse插件ID
+    uint32 recv_size = 1024;         //接收数据最大缓冲
+    uint32 send_size = 1024;         //发送数据最大缓冲
+    std::string client_pem_file;     //对应客户端的pem文件
 };
 
 //定义输出屏幕函数接口

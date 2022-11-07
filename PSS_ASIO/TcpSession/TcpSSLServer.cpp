@@ -3,7 +3,7 @@
 
 CTcpSSLServer::CTcpSSLServer(asio::io_context& io_context, 
     std::string server_ip, 
-    uint16 port, 
+    io_port_type port,
     uint32 packet_parse_id, 
     uint32 max_recv_size, 
     std::string ssl_server_password,
