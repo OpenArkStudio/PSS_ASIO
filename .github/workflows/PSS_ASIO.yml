@@ -62,6 +62,7 @@ jobs:
         gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/Common/*.cpp.gcda ../../PSS_ASIO/Common/*.cpp > /dev/null
         gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/Message/*.cpp.gcda ../../PSS_ASIO/Message/*.cpp > /dev/null
         gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/QueueSession/*.cpp.gcda ../../PSS_ASIO/QueueSession/*.cpp > /dev/null
+        pwd
         cat ServerService.cpp.gcov
 
     - name: SonarCloud Scan make report
