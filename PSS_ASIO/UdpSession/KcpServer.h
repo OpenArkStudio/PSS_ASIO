@@ -110,9 +110,9 @@ public:
 
     bool is_need_send_format() final;
 
-    bool is_kcp_id_create(const char* kcp_data, uint32 kcp_size);
+    bool is_kcp_id_create(const char* kcp_data, uint32 kcp_size) const;
 
-    udp::endpoint get_kcp_send_endpoint();
+    udp::endpoint get_kcp_send_endpoint() const;
 
 private:
     void do_receive();

@@ -63,7 +63,7 @@ void CKcpServer::do_receive_from(std::error_code ec, std::size_t length)
             session_recv_buffer_.move(length);
             
             char send_kcp_id[20] = { '\0' };
-            uint32 send_kcp_id_size = (uint32)sizeof(uint32);
+            auto send_kcp_id_size = (uint32)sizeof(uint32);
             std::memcpy(send_kcp_id, &connect_id, send_kcp_id_size);
             kcp_send_info_.connect_id_ = connect_id;
             send_io_data_to_point(send_kcp_id, send_kcp_id_size, recv_endpoint_);
@@ -79,13 +79,13 @@ void CKcpServer::do_receive_from(std::error_code ec, std::size_t length)
         ikcp_update(session_kcp->kcpcb_, iclock());
 
         //处理kcp的数据解析
-        ikcp_input(session_kcp->kcpcb_, session_recv_buffer_.read(), (long)length);
+        ikcp_input(session_kcp->kcpcb_, session_recv_buffer_.read(), length);
         
         //将kcp中的数据解析出来
         int logic_data_length = 0;
-        while (1)
+        while (true)
         {
-            auto kcp_data_recv_length = ikcp_recv(session_kcp->kcpcb_, session_recv_data_buffer_.read(), (long)length);
+            auto kcp_data_recv_length = ikcp_recv(session_kcp->kcpcb_, session_recv_data_buffer_.read(), (int)length);
             if (kcp_data_recv_length < 0)
             {
                 break;
@@ -155,7 +155,7 @@ void CKcpServer::close(uint32 connect_id)
 void CKcpServer::close_all()
 {
     //释放所有kcp资源
-    for (auto session_info : udp_id_2_endpoint_list_)
+    for (const auto& session_info : udp_id_2_endpoint_list_)
     {
         session_info.second->close_kcp();
     }
@@ -236,7 +236,7 @@ void CKcpServer::do_write_immediately(uint32 connect_id, const char* data, size_
         kcp_mutex_.lock();
 
         set_kcp_send_info(connect_id, session_info->send_endpoint);
-        int	ret = ikcp_send(session_info->kcpcb_, data, (long)length);
+        int	ret = ikcp_send(session_info->kcpcb_, data, (int)length);
         if (ret != 0)
         {
             PSS_LOGGER_DEBUG("[CKcpServer::do_write]({}) send error ret={}.", connect_id, ret);
@@ -409,7 +409,7 @@ bool CKcpServer::is_need_send_format()
     return packet_parse_interface_->is_need_send_format_ptr_();
 }
 
-bool CKcpServer::is_kcp_id_create(const char* kcp_data, uint32 kcp_size)
+bool CKcpServer::is_kcp_id_create(const char* kcp_data, uint32 kcp_size) const
 {
     if (kcp_size >= 24)
     {
@@ -428,7 +428,7 @@ bool CKcpServer::is_kcp_id_create(const char* kcp_data, uint32 kcp_size)
     }
 }
 
-udp::endpoint CKcpServer::get_kcp_send_endpoint()
+udp::endpoint CKcpServer::get_kcp_send_endpoint() const
 {
     return kcp_send_info_.send_endpoint;
 }
