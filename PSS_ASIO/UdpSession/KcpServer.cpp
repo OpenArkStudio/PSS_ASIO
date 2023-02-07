@@ -316,6 +316,8 @@ void CKcpServer::close_udp_endpoint_by_id(uint32 connect_id)
 {
     auto self(shared_from_this());
 
+    _ClientIPInfo remote_ip;
+
     auto f = udp_id_2_endpoint_list_.find(connect_id);
     if (f != udp_id_2_endpoint_list_.end())
     {
@@ -323,19 +325,15 @@ void CKcpServer::close_udp_endpoint_by_id(uint32 connect_id)
         packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_);
 
         auto session_endpoint = f->second->send_endpoint;
+
+        remote_ip.m_strClientIP = f->second->send_endpoint.address().to_string();
+        remote_ip.m_u2Port = f->second->send_endpoint.port();
+
         udp_id_2_endpoint_list_.erase(f);
         udp_endpoint_2_id_list_.erase(session_endpoint);
     }
 
-    //删除映射关系、
-    _ClientIPInfo remote_ip;
-    auto end_f = udp_id_2_endpoint_list_.find(connect_id);
-    if (end_f != udp_id_2_endpoint_list_.end())
-    {
-        remote_ip.m_strClientIP = end_f->second->send_endpoint.address().to_string();
-        remote_ip.m_u2Port = end_f->second->send_endpoint.port();
-    }
-
+    //删除映射关系
     App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip, self);
 }
 
