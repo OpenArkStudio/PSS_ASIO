@@ -1,6 +1,5 @@
 [![Github Action](https://github.com/freeeyes/PSS_alpha_test/workflows/PSS_ASIO_CMake/badge.svg)](https://github.com/freeeyes/PSS_alpha_test/actions)
 [![C++11need](https://img.shields.io/badge/language-C%2B%2B11-blue.svg)](https://isocpp.org)
-[![Apache-2.0](https://img.shields.io/apm/l/vim-mode.svg)](https://opensource.org/licenses/Apache-2.0)
 [![License](https://img.shields.io/github/license/OpenArkStudio/PSS_ASIO.svg?colorB=f48041&style=flat-square)](https://opensource.org/licenses/gpl-license)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ArkNX_PSS_ASIO&metric=alert_status)](https://sonarcloud.io/dashboard?id=ArkNX_PSS_ASIO)  
 
