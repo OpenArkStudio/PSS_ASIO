@@ -19,6 +19,9 @@ jobs:
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{github.workspace}}/Build/Linux
+      
+    - name: update gcov software
+      run: pip install gcovr==5.0
 
     - name: Configure CMake
       shell: bash
@@ -55,15 +58,9 @@ jobs:
         sleep 5
         echo "close pss_asio"
         echo "gcov cpp" 
-        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/*.cpp.gcda ../../PSS_ASIO/*.cpp > /dev/null
-        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/TcpSession/*.cpp.gcda ../../PSS_ASIO/TcpSession/*.cpp > /dev/null
-        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/UdpSession/*.cpp.gcda ../../PSS_ASIO/UdpSession/*.cpp > /dev/null
-        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/TTySession/*.cpp.gcda ../../PSS_ASIO/TTySession/*.cpp > /dev/null
-        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/Common/*.cpp.gcda ../../PSS_ASIO/Common/*.cpp > /dev/null
-        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/Message/*.cpp.gcda ../../PSS_ASIO/Message/*.cpp > /dev/null
-        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/QueueSession/*.cpp.gcda ../../PSS_ASIO/QueueSession/*.cpp > /dev/null
-        pwd
-        cat ServerService.cpp.gcov
+        cd ${{github.workspace}}/PSS_ASIO
+        gcovr --sonarqube > coverage.xml
+        ls -l coverage.xml
 
     - name: SonarCloud Scan make report
       working-directory: ${{github.workspace}}
