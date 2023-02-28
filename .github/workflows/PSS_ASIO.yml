@@ -57,10 +57,16 @@ jobs:
         killall pss_asio
         sleep 5
         echo "close pss_asio"
-        echo "gcov cpp" 
+        echo "gcov********************" 
         cd ${{github.workspace}}/PSS_ASIO
+        pwd
         gcovr --sonarqube > coverage.xml
-        ls -l coverage.xml
+        cat coverage.xml
+        echo "link***********************"
+        cd ${{github.workspace}}
+        cd ../Build/Linux/PSS_ASIO/CMakeFiles/pss_asio.dir/
+        cat link.txt
+        echo "end***********************"
 
     - name: SonarCloud Scan make report
       working-directory: ${{github.workspace}}
