@@ -64,7 +64,8 @@ jobs:
         cat coverage.xml
         echo "link***********************"
         cd ${{github.workspace}}
-        cd ../Build/Linux/PSS_ASIO/CMakeFiles/pss_asio.dir/
+        pwd
+        cd ./Build/Linux/PSS_ASIO/CMakeFiles/pss_asio.dir
         cat link.txt
         echo "end***********************"
 
