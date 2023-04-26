@@ -24,6 +24,7 @@ bool CTcpClientSession::start(const CConnect_IO_Info& io_info)
     {
         asio::ip::tcp::endpoint localEndpoint(asio::ip::address::from_string(io_info.client_ip), io_info.client_port);
         socket_.open(asio::ip::tcp::v4(), connect_error);
+        socket_.set_option(asio::ip::tcp::socket::reuse_address(true));
         socket_.bind(localEndpoint, connect_error);
     }
 

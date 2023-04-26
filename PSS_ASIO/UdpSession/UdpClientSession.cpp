@@ -16,6 +16,7 @@ void CUdpClientSession::start(const CConnect_IO_Info& io_type)
     udp::endpoint end_point(asio::ip::address::from_string(io_type.server_ip.c_str()), io_type.server_port);
     send_endpoint_ = end_point;
     asio::error_code connect_error;
+    socket_.set_option(asio::ip::udp::socket::reuse_address(true));
     socket_.connect(end_point, connect_error);
 
     if (connect_error)

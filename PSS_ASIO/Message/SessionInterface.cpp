@@ -58,6 +58,7 @@ void CSessionInterface::delete_session_interface(uint32 connect_id)
 {
     PSS_LOGGER_INFO("[CSessionInterface::delete_session_interface]connect_id={0}.", connect_id);
     sessions_list_.erase(connect_id);
+    PSS_LOGGER_INFO("[CSessionInterface::delete_session_interface]connect_id={0} OK.", connect_id);
 }
 
 void CSessionInterface::check_session_io_timeout(uint32 connect_timeout, vector<CSessionIO_Cancel>& session_list) const
