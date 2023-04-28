@@ -19,6 +19,8 @@ public:
 
     void start(asio::io_context* io_context, const std::string& tty_name, uint16 tty_port, uint8 char_size, uint32 server_id);
 
+    _ClientIPInfo get_remote_ip(uint32 connect_id) final;
+
     void set_write_buffer(uint32 connect_id, const char* data, size_t length) final;
 
     void do_write(uint32 connect_id) final;

@@ -27,6 +27,8 @@ public:
 
     void clear_write_buffer(size_t length);
 
+    _ClientIPInfo get_remote_ip(uint32 connect_id) final;
+
     void close(uint32 connect_id) final;
 
     void do_write(uint32 connect_id) final;

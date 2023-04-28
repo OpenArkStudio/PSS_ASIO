@@ -15,7 +15,10 @@ void CUdpClientSession::start(const CConnect_IO_Info& io_type)
     //建立连接
     udp::endpoint end_point(asio::ip::address::from_string(io_type.server_ip.c_str()), io_type.server_port);
     send_endpoint_ = end_point;
+    udp::endpoint local_endpoint(asio::ip::address::from_string(io_type.client_ip.c_str()), io_type.client_port); // 本地地址和端口，0.0.0.0表示任意地址
+    recv_endpoint_ = local_endpoint;
     asio::error_code connect_error;
+    socket_.bind(local_endpoint);    // 将套接字绑定到本地地址和端口
     socket_.set_option(asio::ip::udp::socket::reuse_address(true));
     socket_.connect(end_point, connect_error);
 
@@ -119,6 +122,14 @@ void CUdpClientSession::set_write_buffer(uint32 connect_id, const char* data, si
 void CUdpClientSession::clear_write_buffer(size_t length)
 {
     session_send_buffer_.move(length);
+}
+
+_ClientIPInfo CUdpClientSession::get_remote_ip(uint32 connect_id)
+{
+    _ClientIPInfo recv_ip_info;
+    recv_ip_info.m_strClientIP = socket_.remote_endpoint().address().to_string();
+    recv_ip_info.m_u2Port = socket_.remote_endpoint().port();
+    return recv_ip_info;
 }
 
 void CUdpClientSession::add_send_finish_size(uint32 connect_id, size_t send_length)

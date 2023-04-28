@@ -128,6 +128,11 @@ void CTcpSSLClientSession::do_read()
         });
 }
 
+_ClientIPInfo CTcpSSLClientSession::get_remote_ip(uint32 connect_id)
+{
+    return remote_ip_;
+}
+
 void CTcpSSLClientSession::do_write_immediately(uint32 connect_id, const char* data, size_t length)
 {
     //组装发送数据

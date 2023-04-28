@@ -41,6 +41,14 @@ using float32 = float;
 using float64 = double;
 using io_port_type = uint16_t;
 
+//IO桥接类型
+enum class ENUM_IO_BRIDGE_TYPE
+{
+    IO_BRIDGE_BATH = 0,    //双向桥接
+    IO_BRIDGE_FROM,        //从from到to
+    IO_BRIDGE_TO,          //从to到from
+};
+
 enum class ENUM_WHILE_STATE
 {
     WHILE_STATE_CONTINUE = 0,
@@ -91,6 +99,33 @@ class _ClientIPInfo
 public:
     string  m_strClientIP = "unset ip";      //客户端的IP地址
     uint16 m_u2Port = 0;        //客户端的端口
+
+    bool operator ==(const _ClientIPInfo& p) const
+    {
+        return m_strClientIP == p.m_strClientIP && m_u2Port == p.m_u2Port;
+    }
+
+    bool operator <(const _ClientIPInfo& p) const 
+    {
+        if (this->m_strClientIP < p.m_strClientIP)return true;
+        if (this->m_strClientIP > p.m_strClientIP)return false;
+        if (this->m_u2Port < p.m_u2Port)return true;
+        return false;
+    }
+
+    // 赋值运算符重载函数
+    _ClientIPInfo& operator =(const _ClientIPInfo& other)
+    {
+        // 避免自赋值
+        if (this != &other)
+        {
+            m_strClientIP = other.m_strClientIP;
+            m_u2Port = other.m_u2Port;
+        }
+
+        return *this;
+    }
+        
 };
 
 class CMessage_Source

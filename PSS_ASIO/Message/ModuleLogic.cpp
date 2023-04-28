@@ -421,7 +421,7 @@ int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, c
         //添加到数据队列处理
         App_tms::instance()->AddMessage(curr_thread_index, [this, session, connect_id, message_list, module_logic]() {
             //判定是否是需要透传的数据（这里一定要保持线程处理时序一致）
-            auto io_2_io_session_id = io_to_io_.get_to_session_id(connect_id);
+            auto io_2_io_session_id = io_to_io_.get_to_session_id(connect_id, session->get_remote_ip(connect_id));
             if (io_2_io_session_id > 0)
             {
 #ifdef GCOV_TEST
@@ -776,9 +776,9 @@ uint32 CWorkThreadLogic::get_io_server_id(uint32 connect_id)
     return communicate_service_->get_server_id(connect_id);
 }
 
-bool CWorkThreadLogic::add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type, const _ClientIPInfo& to_io, EM_CONNECT_IO_TYPE to_io_type)
+bool CWorkThreadLogic::add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type, const _ClientIPInfo& to_io, EM_CONNECT_IO_TYPE to_io_type, ENUM_IO_BRIDGE_TYPE bridge_type)
 {
-    return io_to_io_.add_session_io_mapping(from_io, from_io_type, to_io, to_io_type);
+    return io_to_io_.add_session_io_mapping(from_io, from_io_type, to_io, to_io_type, bridge_type);
 }
 
 bool CWorkThreadLogic::delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type)

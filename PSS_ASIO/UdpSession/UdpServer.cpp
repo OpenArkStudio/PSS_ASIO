@@ -28,6 +28,20 @@ void CUdpServer::start()
     do_receive();
 }
 
+_ClientIPInfo CUdpServer::get_remote_ip(uint32 connect_id)
+{
+    _ClientIPInfo remote_ip_info;
+    auto f = udp_id_2_endpoint_list_.find(connect_id);
+    if (f != udp_id_2_endpoint_list_.end())
+    {
+        //找到了
+        remote_ip_info.m_strClientIP = f->second->send_endpoint.address().to_string();
+        remote_ip_info.m_u2Port = f->second->send_endpoint.port();
+    }
+
+    return remote_ip_info;
+}
+
 void CUdpServer::do_receive()
 {
     auto self(shared_from_this());

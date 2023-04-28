@@ -105,6 +105,11 @@ void CTcpClientSession::do_read()
         });
 }
 
+_ClientIPInfo CTcpClientSession::get_remote_ip(uint32 connect_id)
+{
+    return remote_ip_;
+}
+
 void CTcpClientSession::do_write_immediately(uint32 connect_id, const char* data, size_t length)
 {
     if (is_connect_ == false)

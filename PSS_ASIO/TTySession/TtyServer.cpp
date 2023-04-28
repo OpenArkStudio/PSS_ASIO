@@ -45,6 +45,11 @@ void CTTyServer::start(asio::io_context* io_context, const std::string& tty_name
     }
 }
 
+_ClientIPInfo CTTyServer::get_remote_ip(uint32 connect_id)
+{
+    return remote_ip_;
+}
+
 void CTTyServer::do_receive()
 {
     auto self(shared_from_this());

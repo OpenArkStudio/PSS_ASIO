@@ -30,6 +30,8 @@ public:
 
     void do_read();
 
+    _ClientIPInfo get_remote_ip(uint32 connect_id) final;
+
     void close(uint32 connect_id) final;
 
     void set_write_buffer(uint32 connect_id, const char* data, size_t length) final; //写入些缓冲

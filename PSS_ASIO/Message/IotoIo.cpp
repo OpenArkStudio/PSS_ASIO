@@ -1,6 +1,6 @@
 ﻿#include "IotoIo.h"
 
-bool CIotoIo::add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type, const _ClientIPInfo& to_io, EM_CONNECT_IO_TYPE to_io_type)
+bool CIotoIo::add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type, const _ClientIPInfo& to_io, EM_CONNECT_IO_TYPE to_io_type, ENUM_IO_BRIDGE_TYPE bridge_type)
 {
     std::lock_guard <std::mutex> lock(mutex_);
     for (const auto& Connect_Info : io_2_io_list_)
@@ -19,6 +19,7 @@ bool CIotoIo::add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO
     connect_info.from_io_type_ = from_io_type;
     connect_info.to_io_ = to_io;
     connect_info.to_io_type_ = to_io_type;
+    connect_info.bridge_type_ = bridge_type;
 
     io_2_io_list_.emplace_back(connect_info);
 
@@ -32,6 +33,9 @@ bool CIotoIo::add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO
         CIo_Session_to_Session s_2_s;
         s_2_s.from_session_id_ = from_session_id;
         s_2_s.to_session_id_ = to_session_id;
+        s_2_s.bridge_type_ = connect_info.bridge_type_;
+        s_2_s.from_io_ = connect_info.from_io_;
+        s_2_s.to_io_ = connect_info.to_io_;
         session_to_session_list_.emplace_back(s_2_s);
     }
 
@@ -107,6 +111,9 @@ void CIotoIo::regedit_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYP
             CIo_Session_to_Session s_2_s;
             s_2_s.from_session_id_ = io_connect.from_session_id_;
             s_2_s.to_session_id_ = io_connect.to_session_id_;
+            s_2_s.bridge_type_ = io_connect.bridge_type_;
+            s_2_s.from_io_ = io_connect.from_io_;
+            s_2_s.to_io_ = io_connect.to_io_;
             session_to_session_list_.emplace_back(s_2_s);
             break;
         }
@@ -154,19 +161,45 @@ void CIotoIo::unregedit_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_T
 
 }
 
-uint32 CIotoIo::get_to_session_id(uint32 session_id)
+uint32 CIotoIo::get_to_session_id(uint32 session_id, const _ClientIPInfo& from_io)
 {
     std::lock_guard <std::mutex> lock(mutex_);
     for (auto s_2_s : session_to_session_list_)
     {
         if (s_2_s.from_session_id_ == session_id)
         {
-            return s_2_s.to_session_id_;
+            return get_endpoint_session_id(from_io, s_2_s);
         }
         
         if (s_2_s.to_session_id_ == session_id)
         {
-            return s_2_s.from_session_id_;
+            return get_endpoint_session_id(from_io, s_2_s);
+        }
+    }
+
+    return 0;
+}
+
+uint32 CIotoIo::get_endpoint_session_id(const _ClientIPInfo& from_io, const CIo_Session_to_Session& s_2_s)
+{
+    if (s_2_s.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH)
+    {
+        return s_2_s.to_session_id_;
+    }
+    else if (s_2_s.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_FROM)
+    {
+        //判断两个IP是否相等
+        if (from_io == s_2_s.from_io_)
+        {
+            return s_2_s.to_session_id_;
+        }
+    }
+    else
+    {
+        //判断两个IP是否相等
+        if (from_io == s_2_s.to_io_)
+        {
+            return s_2_s.to_session_id_;
         }
     }
 

@@ -30,6 +30,11 @@ void CTcpSSLSession::open(uint32 packet_parse_id, uint32 recv_size)
     do_handshake();
 }
 
+_ClientIPInfo CTcpSSLSession::get_remote_ip(uint32 connect_id)
+{
+    return remote_ip_;
+}
+
 void CTcpSSLSession::close(uint32 connect_id)
 {
     auto self(shared_from_this());

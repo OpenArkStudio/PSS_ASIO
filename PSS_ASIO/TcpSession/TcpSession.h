@@ -23,6 +23,8 @@ public:
 
     void open(uint32 packet_parse_id, uint32 recv_size);
 
+    _ClientIPInfo get_remote_ip(uint32 connect_id) final;
+
     void close(uint32 connect_id) final;
 
     void set_write_buffer(uint32 connect_id, const char* data, size_t length) final;

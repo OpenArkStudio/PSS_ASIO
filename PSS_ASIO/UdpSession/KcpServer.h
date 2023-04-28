@@ -86,6 +86,8 @@ public:
 
     void start();
 
+    _ClientIPInfo get_remote_ip(uint32 connect_id) final;
+
     void close(uint32 connect_id) final;
 
     void close_all();
