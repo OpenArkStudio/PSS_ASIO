@@ -164,14 +164,16 @@ void CIotoIo::unregedit_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_T
 uint32 CIotoIo::get_to_session_id(uint32 session_id, const _ClientIPInfo& from_io)
 {
     std::lock_guard <std::mutex> lock(mutex_);
-    for (auto s_2_s : session_to_session_list_)
+    for (const auto& s_2_s : session_to_session_list_)
     {
-        if (s_2_s.from_session_id_ == session_id)
+        if (s_2_s.from_session_id_ == session_id 
+            && (s_2_s.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_FROM || s_2_s.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH))
         {
             return get_endpoint_session_id(from_io, s_2_s);
         }
         
-        if (s_2_s.to_session_id_ == session_id)
+        if (s_2_s.to_session_id_ == session_id
+            &&(s_2_s.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_TO || s_2_s.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH))
         {
             return get_endpoint_session_id(from_io, s_2_s);
         }

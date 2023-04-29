@@ -20,6 +20,7 @@ void CUdpClientSession::start(const CConnect_IO_Info& io_type)
     asio::error_code connect_error;
     socket_.bind(local_endpoint);    // 将套接字绑定到本地地址和端口
     socket_.set_option(asio::ip::udp::socket::reuse_address(true));
+    socket_.open(udp::v4());
     socket_.connect(end_point, connect_error);
 
     if (connect_error)
