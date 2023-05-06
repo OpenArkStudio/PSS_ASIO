@@ -18,9 +18,11 @@ void CUdpClientSession::start(const CConnect_IO_Info& io_type)
     udp::endpoint local_endpoint(asio::ip::address::from_string(io_type.client_ip.c_str()), io_type.client_port); // 本地地址和端口，0.0.0.0表示任意地址
     recv_endpoint_ = local_endpoint;
     asio::error_code connect_error;
+    
+    socket_.open(udp::v4());
     socket_.bind(local_endpoint);    // 将套接字绑定到本地地址和端口
     socket_.set_option(asio::ip::udp::socket::reuse_address(true));
-    socket_.open(udp::v4());
+    
     socket_.connect(end_point, connect_error);
 
     if (connect_error)
@@ -63,6 +65,11 @@ void CUdpClientSession::close(uint32 connect_id)
 
     io_context_->dispatch([self, connect_id, io_type]()
         {
+            //删除映射关系
+            _ClientIPInfo remote_ip;
+            remote_ip.m_strClientIP = self->send_endpoint_.address().to_string();
+            remote_ip.m_u2Port = self->send_endpoint_.port();
+
             self->socket_.close();
 
             self->packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type);
@@ -71,11 +78,6 @@ void CUdpClientSession::close(uint32 connect_id)
             PSS_LOGGER_DEBUG("[CUdpClientSession::Close]recv:{0}, send:{1}", 
                 self->recv_data_size_,
                 self->send_data_size_);
-
-            //删除映射关系
-            _ClientIPInfo remote_ip;
-            remote_ip.m_strClientIP = self->send_endpoint_.address().to_string();
-            remote_ip.m_u2Port = self->send_endpoint_.port();
 
             App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip, self);
         });
