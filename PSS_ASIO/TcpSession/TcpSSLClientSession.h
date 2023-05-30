@@ -16,6 +16,7 @@
 #include "ConnectCounter.h"
 #include "ISession.h"
 #include "ModuleLogic.h"
+#include "Iobridge.h"
 
 using namespace asio::ip;
 using std::placeholders::_1;
@@ -48,6 +49,8 @@ public:
 
     std::chrono::steady_clock::time_point& get_recv_time() final;
 
+    void set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id) final;
+
     bool format_send_packet(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, std::shared_ptr<CMessage_Packet> format_message) final;
 
     bool is_need_send_format() final;
@@ -69,6 +72,7 @@ private:
 
     uint32 server_id_  = 0;
     uint32 connect_id_ = 0;
+    uint32 io_bradge_connect_id_ = 0;
     CSessionBuffer session_recv_buffer_;
     CSessionBuffer session_send_buffer_;
 
@@ -82,5 +86,6 @@ private:
     std::chrono::steady_clock::time_point recv_data_time_ = std::chrono::steady_clock::now();
 
     EM_CONNECT_IO_TYPE io_type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_SSL;
+    EM_SESSION_STATE io_state_ = EM_SESSION_STATE::SESSION_IO_LOGIC;
 };
 #endif

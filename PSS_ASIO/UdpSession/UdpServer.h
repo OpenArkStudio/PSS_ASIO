@@ -11,6 +11,7 @@
 #include "ConnectCounter.h"
 #include "ISession.h"
 #include "ModuleLogic.h"
+#include "Iobridge.h"
 
 using asio::ip::udp;
 
@@ -23,6 +24,9 @@ enum class EM_UDP_VALID
 class CUdp_Session_Info
 {
 public:
+    uint32 connect_id_ = 0;
+    uint32 io_bradge_connect_id_ = 0;
+    EM_SESSION_STATE io_state_ = EM_SESSION_STATE::SESSION_IO_LOGIC;
     udp::endpoint send_endpoint;
     size_t recv_data_size_ = 0;
     size_t send_data_size_ = 0;
@@ -58,6 +62,8 @@ public:
     bool format_send_packet(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, std::shared_ptr<CMessage_Packet> format_message) final;
 
     bool is_need_send_format() final;
+
+    void set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id) final;
 
 private:
     void do_receive();

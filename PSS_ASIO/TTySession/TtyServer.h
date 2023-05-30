@@ -11,6 +11,7 @@
 #include "ConnectCounter.h"
 #include "ISession.h"
 #include "ModuleLogic.h"
+#include "Iobridge.h"
 
 class CTTyServer : public std::enable_shared_from_this<CTTyServer>, public ISession
 {
@@ -41,6 +42,8 @@ public:
 
     bool is_need_send_format() final;
 
+    void set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id) final;
+
     void do_read_some(std::error_code ec, std::size_t length);
 
     void send_write_fail_to_logic(const std::string write_fail_buffer, std::size_t buffer_length);
@@ -57,6 +60,7 @@ private:
     shared_ptr<asio::serial_port> serial_port_param_= nullptr;
     uint32 connect_id_ = 0;
     uint32 server_id_ = 0;
+    uint32 io_bradge_connect_id_ = 0;
 
     _ClientIPInfo remote_ip_;
     _ClientIPInfo local_ip_;
@@ -70,5 +74,6 @@ private:
     shared_ptr<_Packet_Parse_Info> packet_parse_interface_ = nullptr;
 
     EM_CONNECT_IO_TYPE io_type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_TTY;
+    EM_SESSION_STATE io_state_ = EM_SESSION_STATE::SESSION_IO_LOGIC;
 };
 

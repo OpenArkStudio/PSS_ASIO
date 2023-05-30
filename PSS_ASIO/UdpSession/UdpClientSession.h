@@ -13,6 +13,7 @@
 #include "ConnectCounter.h"
 #include "ISession.h"
 #include "ModuleLogic.h"
+#include "Iobridge.h"
 
 using asio::ip::udp;
 
@@ -51,6 +52,8 @@ public:
 
     uint32 get_mark_id(uint32 connect_id) final;
 
+    void set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id) final;
+
     void do_receive_from(std::error_code ec, std::size_t length);
 
 private:
@@ -58,6 +61,7 @@ private:
     asio::io_context* io_context_;
     uint32 server_id_  = 0;
     uint32 connect_id_ = 0;
+    uint32 io_bradge_connect_id_ = 0;
     CSessionBuffer session_recv_buffer_;
     CSessionBuffer session_send_buffer_;
     udp::endpoint recv_endpoint_;
@@ -70,5 +74,6 @@ private:
     std::chrono::steady_clock::time_point recv_data_time_ = std::chrono::steady_clock::now();
 
     EM_CONNECT_IO_TYPE io_type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_UDP;
+    EM_SESSION_STATE io_state_ = EM_SESSION_STATE::SESSION_IO_LOGIC;
 };
 

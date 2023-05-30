@@ -75,20 +75,35 @@ void CUdpServer::do_receive_from(std::error_code ec, std::size_t length)
 
         session_recv_buffer_.set_write_data(length);
 
-        //处理数据拆包
-        vector<std::shared_ptr<CMessage_Packet>> message_list;
-        bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_client_id_, &session_recv_buffer_, message_list, io_type_);
-        if (!ret)
+        auto session_info = find_udp_endpoint_by_id(connect_id);
+
+        if (nullptr != session_info && EM_SESSION_STATE::SESSION_IO_BRIDGE == session_info->io_state_)
         {
-            //链接断开(解析包不正确)
-            session_recv_buffer_.move(length);
-            App_WorkThreadLogic::instance()->close_session_event(connect_id);
+            //将数据转发给桥接接口
+            auto ret = App_WorkThreadLogic::instance()->do_io_bridge_data(session_info->connect_id_, session_info->io_bradge_connect_id_, session_recv_buffer_, length, shared_from_this());
+            if (1 == ret)
+            {
+                //远程IO链接已断开
+                session_info->io_bradge_connect_id_ = 0;
+            }
         }
         else
         {
-            recv_data_time_ = std::chrono::steady_clock::now();
-            //添加到数据队列处理
-            App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id, message_list, self);
+            //处理数据拆包
+            vector<std::shared_ptr<CMessage_Packet>> message_list;
+            bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_client_id_, &session_recv_buffer_, message_list, io_type_);
+            if (!ret)
+            {
+                //链接断开(解析包不正确)
+                session_recv_buffer_.move(length);
+                App_WorkThreadLogic::instance()->close_session_event(connect_id);
+            }
+            else
+            {
+                recv_data_time_ = std::chrono::steady_clock::now();
+                //添加到数据队列处理
+                App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id, message_list, self);
+            }
         }
     }
 
@@ -230,6 +245,7 @@ uint32 CUdpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t l
         auto session_info = make_shared<CUdp_Session_Info>();
         session_info->send_endpoint = recv_endpoint;
         session_info->recv_data_size_ += length;
+        session_info->connect_id_ = connect_id;
         session_info->udp_state = EM_UDP_VALID::UDP_VALUD;
         session_info->session_send_buffer_.Init(max_buffer_length);
 
@@ -243,7 +259,21 @@ uint32 CUdpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t l
         remote_ip.m_u2Port = recv_endpoint.port();
         local_ip.m_strClientIP = socket_.local_endpoint().address().to_string();
         local_ip.m_u2Port = socket_.local_endpoint().port();
-        packet_parse_interface_->packet_connect_ptr_(connect_id, remote_ip, local_ip, io_type_);
+        packet_parse_interface_->packet_connect_ptr_(connect_id, remote_ip, local_ip, io_type_, App_IoBridge::instance());
+
+        //判断是否存在转发接口
+            //添加点对点映射
+        if (true == App_IoBridge::instance()->regedit_session_id(remote_ip, io_type_, connect_id))
+        {
+            session_info->io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
+        }
+
+        //查看这个链接是否有桥接信息
+        session_info->io_bradge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id, remote_ip);
+        if (session_info->io_bradge_connect_id_ > 0)
+        {
+            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(session_info->connect_id_, session_info->io_bradge_connect_id_);
+        }
 
         //添加映射关系
         App_WorkThreadLogic::instance()->add_thread_session(connect_id, shared_from_this(), local_ip, remote_ip);
@@ -273,7 +303,7 @@ void CUdpServer::close_udp_endpoint_by_id(uint32 connect_id)
     if (f != udp_id_2_endpoint_list_.end())
     {
         //调用packet parse 断开消息
-        packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_);
+        packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_, App_IoBridge::instance());
 
         remote_ip.m_strClientIP = f->second->send_endpoint.address().to_string();
         remote_ip.m_u2Port = f->second->send_endpoint.port();
@@ -320,5 +350,29 @@ bool CUdpServer::format_send_packet(uint32 connect_id, std::shared_ptr<CMessage_
 bool CUdpServer::is_need_send_format()
 {
     return packet_parse_interface_->is_need_send_format_ptr_();
+}
+
+void CUdpServer::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id)
+{
+    auto session_info = find_udp_endpoint_by_id(to_io_connect_id);
+
+    if (session_info == nullptr)
+    {
+        PSS_LOGGER_DEBUG("[CUdpServer::set_io_bridge_connect_id]({}) is not find.", to_io_connect_id);
+        return;
+    }
+    else
+    {
+        if (to_io_connect_id > 0)
+        {
+            session_info->io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
+            session_info->io_bradge_connect_id_ = from_io_connect_id;
+        }
+        else
+        {
+            session_info->io_state_ = EM_SESSION_STATE::SESSION_IO_LOGIC;
+            session_info->io_bradge_connect_id_ = 0;
+        }
+    }
 }
 

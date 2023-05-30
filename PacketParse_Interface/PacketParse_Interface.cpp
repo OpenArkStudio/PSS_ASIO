@@ -5,6 +5,7 @@
 
 #include "define.h"
 #include "SessionBuffer.hpp"
+#include "IIoBridge.hpp"
 
 #if PSS_PLATFORM == PLATFORM_WIN
 #ifdef PACKETPARSE_INTERFACE_EXPORTS
@@ -23,11 +24,11 @@ using namespace std;
 DECLDIR bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, vector<std::shared_ptr<CMessage_Packet>>& message_list, EM_CONNECT_IO_TYPE emIOType);
 DECLDIR bool parse_packet_format_send_buffer(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, std::shared_ptr<CMessage_Packet> send_message, EM_CONNECT_IO_TYPE emIOType);
 DECLDIR bool is_need_send_format();
-DECLDIR bool connect(uint32 connect_id, const _ClientIPInfo& remote_ip, const _ClientIPInfo& local_ip, EM_CONNECT_IO_TYPE emIOType);
-DECLDIR void disConnect(uint32 connect_id, EM_CONNECT_IO_TYPE emIOType);
+DECLDIR bool connect(uint32 connect_id, const _ClientIPInfo& remote_ip, const _ClientIPInfo& local_ip, EM_CONNECT_IO_TYPE emIOType, IIoBridge* io_bridge);
+DECLDIR void disconnect(uint32 connect_id, EM_CONNECT_IO_TYPE emIOType, IIoBridge* io_bridge);
+DECLDIR void packet_load(IIoBridge* io_bridge);
+DECLDIR void packet_close(IIoBridge* io_bridge);
 DECLDIR void set_output(shared_ptr<spdlog::logger> logger);
-DECLDIR void packet_load();
-DECLDIR void packet_close();
 
 //是否需要格式化数据, true为是, false为不是
 bool is_need_send_format()
@@ -236,7 +237,7 @@ bool parse_packet_format_send_buffer(uint32 connect_id, std::shared_ptr<CMessage
     return false;
 }
 
-bool connect(uint32 u4ConnectID, const _ClientIPInfo& remote_ip, const _ClientIPInfo& local_ip, EM_CONNECT_IO_TYPE emIOType)
+bool connect(uint32 u4ConnectID, const _ClientIPInfo& remote_ip, const _ClientIPInfo& local_ip, EM_CONNECT_IO_TYPE emIOType, IIoBridge* io_bridge)
 {
     PSS_UNUSED_ARG(emIOType);
     PSS_LOGGER_INFO("[Connect]u4ConnectID = {}, {}:{} ==> {}:{}",
@@ -248,11 +249,36 @@ bool connect(uint32 u4ConnectID, const _ClientIPInfo& remote_ip, const _ClientIP
     return true;
 }
 
-void disConnect(uint32 u4ConnectID, EM_CONNECT_IO_TYPE emIOType)
+void disconnect(uint32 u4ConnectID, EM_CONNECT_IO_TYPE emIOType, IIoBridge* io_bridge)
 {
     PSS_UNUSED_ARG(emIOType);
     PSS_LOGGER_DEBUG("[DisConnect]u4ConnectID={}.",
         u4ConnectID);
+}
+
+void packet_load(IIoBridge* io_bridge)
+{
+    //Packet_Parse初始化调用
+#ifdef GCOV_TEST
+    //测试数据透传接口
+    _ClientIPInfo from_io;
+    from_io.m_strClientIP = "127.0.0.1";
+    from_io.m_u2Port = 10010;
+
+    _ClientIPInfo to_io;
+    to_io.m_strClientIP = "127.0.0.1";
+    to_io.m_u2Port = 10003;
+
+    io_bridge->add_session_io_mapping(from_io,
+        EM_CONNECT_IO_TYPE::CONNECT_IO_TCP,
+        to_io,
+        EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_TCP);
+#endif
+}
+
+void packet_close(IIoBridge* io_bridge)
+{
+    //Packet_Parse关闭调用
 }
 
 void set_output(shared_ptr<spdlog::logger> logger)
@@ -260,14 +286,3 @@ void set_output(shared_ptr<spdlog::logger> logger)
     //设置输出对象
     spdlog::set_default_logger(logger);
 }
-
-void packet_load()
-{
-    //Packet_Parse初始化调用
-}
-
-void packet_close()
-{
-    //Packet_Parse关闭调用
-}
-

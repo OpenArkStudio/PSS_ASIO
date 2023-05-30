@@ -150,6 +150,7 @@
     <ClCompile Include="Common\ConnectCounter.cpp" />
     <ClCompile Include="Common\serverconfig.cpp" />
     <ClCompile Include="Common\ServerService.cpp" />
+    <ClCompile Include="Message\Iobridge.cpp" />
     <ClCompile Include="Message\IotoIo.cpp" />
     <ClCompile Include="Message\LoadModule.cpp" />
     <ClCompile Include="Message\LoadPacketParse.cpp" />
@@ -173,6 +174,7 @@
   <ItemGroup>
     <ClInclude Include="..\Common\define.h" />
     <ClInclude Include="..\Common\IFrameObject.h" />
+    <ClInclude Include="..\Common\IIoBridge.hpp" />
     <ClInclude Include="..\Common\ISessionService.h" />
     <ClInclude Include="..\Common\LoadLibrary.hpp" />
     <ClInclude Include="..\Common\PerformanceCheck.hpp" />
@@ -196,6 +198,7 @@
     <ClInclude Include="Common\serverconfig.h" />
     <ClInclude Include="Common\serverconfigtype.h" />
     <ClInclude Include="Common\ServerService.h" />
+    <ClInclude Include="Message\Iobridge.h" />
     <ClInclude Include="Message\IotoIo.h" />
     <ClInclude Include="Message\LoadModule.h" />
     <ClInclude Include="Message\LoadPacketParse.h" />

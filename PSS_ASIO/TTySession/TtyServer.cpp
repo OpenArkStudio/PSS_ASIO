@@ -39,7 +39,20 @@ void CTTyServer::start(asio::io_context* io_context, const std::string& tty_name
 
         App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip_, remote_ip_);
 
-        packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip_, local_ip_, io_type_);
+        packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip_, local_ip_, io_type_, App_IoBridge::instance());
+
+        //添加点对点映射
+        if (true == App_IoBridge::instance()->regedit_session_id(remote_ip_, io_type_, connect_id_))
+        {
+            io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
+        }
+
+        //查看这个链接是否有桥接信息
+        io_bradge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip_);
+        if (io_bradge_connect_id_ > 0)
+        {
+            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bradge_connect_id_);
+        }
 
         do_receive();
     }
@@ -196,7 +209,7 @@ void CTTyServer::close(uint32 connect_id)
     io_context_->dispatch([self, connect_id, io_type, remote_ip]()
         {
             PSS_UNUSED_ARG(connect_id);
-            self->packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type);
+            self->packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type, App_IoBridge::instance());
 
             //删除映射关系
             App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip, self);
@@ -224,6 +237,20 @@ bool CTTyServer::is_need_send_format()
     return packet_parse_interface_->is_need_send_format_ptr_();
 }
 
+void CTTyServer::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id)
+{
+    if (to_io_connect_id > 0)
+    {
+        io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
+        io_bradge_connect_id_ = from_io_connect_id;
+    }
+    else
+    {
+        io_state_ = EM_SESSION_STATE::SESSION_IO_LOGIC;
+        io_bradge_connect_id_ = 0;
+    }
+}
+
 void CTTyServer::do_read_some(std::error_code ec, std::size_t length)
 {
     auto connect_id = connect_id_;
@@ -245,23 +272,37 @@ void CTTyServer::do_read_some(std::error_code ec, std::size_t length)
         }
 
         session_recv_buffer_.set_write_data(length);
-
-        //处理数据拆包
-        vector<std::shared_ptr<CMessage_Packet>> message_list;
-        bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
-        if (!ret)
+        
+        //判断是否有桥接
+        if (EM_SESSION_STATE::SESSION_IO_BRIDGE == io_state_)
         {
-            //链接断开(解析包不正确)
-            session_recv_buffer_.move(length);
-            App_WorkThreadLogic::instance()->close_session_event(connect_id);
-            do_receive();
+            //将数据转发给桥接接口
+            auto ret = App_WorkThreadLogic::instance()->do_io_bridge_data(connect_id_, io_bradge_connect_id_, session_recv_buffer_, length, shared_from_this());
+            if (1 == ret)
+            {
+                //远程IO链接已断开
+                io_bradge_connect_id_ = 0;
+            }
         }
         else
         {
-            recv_data_time_ = std::chrono::steady_clock::now();
+            //处理数据拆包
+            vector<std::shared_ptr<CMessage_Packet>> message_list;
+            bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
+            if (!ret)
+            {
+                //链接断开(解析包不正确)
+                session_recv_buffer_.move(length);
+                App_WorkThreadLogic::instance()->close_session_event(connect_id);
+                do_receive();
+            }
+            else
+            {
+                recv_data_time_ = std::chrono::steady_clock::now();
 
-            //添加到数据队列处理
-            App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id, message_list, self);
+                //添加到数据队列处理
+                App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id, message_list, self);
+            }
         }
 
         do_receive();

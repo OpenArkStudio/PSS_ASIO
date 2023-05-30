@@ -63,21 +63,6 @@ void CSessionService::close_io_session(uint32 connect_id)
 
 }
 
-bool CSessionService::add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type, const _ClientIPInfo& to_io, EM_CONNECT_IO_TYPE to_io_type, ENUM_IO_BRIDGE_TYPE bridge_type)
-{
-    return App_WorkThreadLogic::instance()->add_session_io_mapping(from_io,
-        from_io_type,
-        to_io,
-        to_io_type,
-        bridge_type);
-}
-
-bool CSessionService::delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type)
-{
-    return App_WorkThreadLogic::instance()->delete_session_io_mapping(from_io,
-        from_io_type);
-}
-
 bool CSessionService::send_frame_message(uint16 tag_thread_id, const std::string& message_tag, std::shared_ptr<CMessage_Packet> send_packet, CFrame_Message_Delay delay_timer)
 {
     return App_WorkThreadLogic::instance()->send_frame_message(tag_thread_id,

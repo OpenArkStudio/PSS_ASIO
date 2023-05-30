@@ -68,8 +68,8 @@ bool CLoadPacketParse::LoadPacketInfo(uint32 u4PacketParseID, const std::string&
         dispaly_error_message("Connect", packet_parse_file, pPacketParseInfo);
         return false;
     }
-
-    pPacketParseInfo->packet_disconnect_ptr_ = (packet_disconnect)CLoadLibrary::PSS_dlsym(pPacketParseInfo->m_hModule, "disConnect");
+    
+    pPacketParseInfo->packet_disconnect_ptr_ = (packet_disconnect)CLoadLibrary::PSS_dlsym(pPacketParseInfo->m_hModule, "disconnect");
 
     if(nullptr == pPacketParseInfo->m_hModule || !pPacketParseInfo->packet_disconnect_ptr_)
     {
@@ -108,7 +108,7 @@ bool CLoadPacketParse::LoadPacketInfo(uint32 u4PacketParseID, const std::string&
     pPacketParseInfo->packet_set_output_ptr_(spdlog::default_logger());
 
     //调用初始化
-    pPacketParseInfo->packet_load_ptr_();
+    pPacketParseInfo->packet_load_ptr_(App_IoBridge::instance());
 
     PSS_LOGGER_DEBUG("[CLoadPacketParse::LoadPacketInfo] load {0} OK!", packet_parse_file);
     return true;
@@ -136,7 +136,7 @@ void CLoadPacketParse::Close()
     //清理所有已存在的指针
     for_each(m_objPacketParseList.begin(), m_objPacketParseList.end(), [](const std::pair<uint32, shared_ptr<_Packet_Parse_Info>>& iter) {
         //关闭模块接口
-        iter.second->packet_close_ptr_();
+        iter.second->packet_close_ptr_(App_IoBridge::instance());
         CLoadLibrary::PSS_dlClose(iter.second->m_hModule);
         });
 

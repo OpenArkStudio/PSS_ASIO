@@ -12,7 +12,8 @@ class ISession
 public:
     ISession() = default;
     virtual ~ISession() = default;
-
+    
+    virtual void set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id) = 0;      //设置对应的桥接io的id
     virtual _ClientIPInfo get_remote_ip(uint32 connect_id) = 0;     //获得发送数据端的信息
     virtual void set_write_buffer(uint32 connect_id, const char* data, size_t length) = 0; //写入些缓冲
     virtual void do_write(uint32 connect_id) = 0;        //写入IO

@@ -93,7 +93,7 @@ void CKcpServer::do_receive_from(std::error_code ec, std::size_t length)
         ikcp_update(session_kcp->kcpcb_, iclock());
 
         //处理kcp的数据解析
-        ikcp_input(session_kcp->kcpcb_, session_recv_buffer_.read(), length);
+        ikcp_input(session_kcp->kcpcb_, session_recv_buffer_.read(), (long)length);
         
         //将kcp中的数据解析出来
         int logic_data_length = 0;
@@ -123,20 +123,32 @@ void CKcpServer::do_receive_from(std::error_code ec, std::size_t length)
             return;
         }
 
-        //处理数据拆包
-        vector<std::shared_ptr<CMessage_Packet>> message_list;
-        bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id, &session_recv_data_buffer_, message_list, io_type_);
-        if (!ret)
+        //判断是否有桥接
+        if (EM_SESSION_STATE::SESSION_IO_BRIDGE == io_state_ && io_bradge_connect_id_ > 0)
         {
-            //链接断开(解析包不正确)
-            session_recv_data_buffer_.move(logic_data_length);
-            App_WorkThreadLogic::instance()->close_session_event(connect_id);
+            //将数据转发给桥接接口
+            auto bridge_packet = std::make_shared<CMessage_Packet>();
+            bridge_packet->buffer_.append(session_recv_buffer_.read(), length);
+            App_WorkThreadLogic::instance()->send_io_bridge_message(io_bradge_connect_id_, bridge_packet);
+            session_recv_buffer_.move(length);
         }
         else
         {
-            recv_data_time_ = std::chrono::steady_clock::now();
-            //添加到数据队列处理
-            App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id, message_list, self);
+            //处理数据拆包
+            vector<std::shared_ptr<CMessage_Packet>> message_list;
+            bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id, &session_recv_data_buffer_, message_list, io_type_);
+            if (!ret)
+            {
+                //链接断开(解析包不正确)
+                session_recv_data_buffer_.move(logic_data_length);
+                App_WorkThreadLogic::instance()->close_session_event(connect_id);
+            }
+            else
+            {
+                recv_data_time_ = std::chrono::steady_clock::now();
+                //添加到数据队列处理
+                App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id, message_list, self);
+            }
         }
 
         kcp_mutex_.lock();
@@ -306,7 +318,20 @@ uint32 CKcpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t l
         remote_ip.m_u2Port = recv_endpoint.port();
         local_ip.m_strClientIP = socket_.local_endpoint().address().to_string();
         local_ip.m_u2Port = socket_.local_endpoint().port();
-        packet_parse_interface_->packet_connect_ptr_(connect_id, remote_ip, local_ip, io_type_);
+        packet_parse_interface_->packet_connect_ptr_(connect_id, remote_ip, local_ip, io_type_, App_IoBridge::instance());
+
+        //添加点对点映射
+        if (true == App_IoBridge::instance()->regedit_session_id(remote_ip, io_type_, connect_id))
+        {
+            io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
+        }
+
+        //查看这个链接是否有桥接信息
+        io_bradge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id, remote_ip);
+        if (io_bradge_connect_id_ > 0)
+        {
+            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id, io_bradge_connect_id_);
+        }
 
         //添加映射关系
         App_WorkThreadLogic::instance()->add_thread_session(connect_id, shared_from_this(), local_ip, remote_ip);
@@ -336,7 +361,7 @@ void CKcpServer::close_udp_endpoint_by_id(uint32 connect_id)
     if (f != udp_id_2_endpoint_list_.end())
     {
         //调用packet parse 断开消息
-        packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_);
+        packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_, App_IoBridge::instance());
 
         auto session_endpoint = f->second->send_endpoint;
 
@@ -409,6 +434,20 @@ uint32 CKcpServer::get_mark_id(uint32 connect_id)
 std::chrono::steady_clock::time_point& CKcpServer::get_recv_time()
 {
     return recv_data_time_;
+}
+
+void CKcpServer::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id)
+{
+    if (to_io_connect_id > 0)
+    {
+        io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
+        io_bradge_connect_id_ = from_io_connect_id;
+    }
+    else
+    {
+        io_state_ = EM_SESSION_STATE::SESSION_IO_LOGIC;
+        io_bradge_connect_id_ = 0;
+    }
 }
 
 bool CKcpServer::format_send_packet(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, std::shared_ptr<CMessage_Packet> format_message)

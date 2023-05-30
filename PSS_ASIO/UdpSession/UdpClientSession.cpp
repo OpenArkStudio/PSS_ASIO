@@ -15,12 +15,17 @@ void CUdpClientSession::start(const CConnect_IO_Info& io_type)
     //建立连接
     udp::endpoint end_point(asio::ip::address::from_string(io_type.server_ip.c_str()), io_type.server_port);
     send_endpoint_ = end_point;
-    udp::endpoint local_endpoint(asio::ip::address::from_string(io_type.client_ip.c_str()), io_type.client_port); // 本地地址和端口，0.0.0.0表示任意地址
-    recv_endpoint_ = local_endpoint;
-    asio::error_code connect_error;
     
     socket_.open(udp::v4());
-    socket_.bind(local_endpoint);    // 将套接字绑定到本地地址和端口
+    //判断有没有本地IP
+    if (io_type.client_ip.size() > 0 && io_type.client_port > 0)
+    {
+        udp::endpoint local_endpoint(asio::ip::address::from_string(io_type.client_ip.c_str()), io_type.client_port); // 本地地址和端口，0.0.0.0表示任意地址
+        recv_endpoint_ = local_endpoint;
+        socket_.bind(local_endpoint);    // 将套接字绑定到本地地址和端口
+    }
+
+    asio::error_code connect_error;
     socket_.set_option(asio::ip::udp::socket::reuse_address(true));
     
     socket_.connect(end_point, connect_error);
@@ -48,7 +53,20 @@ void CUdpClientSession::start(const CConnect_IO_Info& io_type)
         PSS_LOGGER_DEBUG("[CUdpClientSession::start]remote({0}:{1})", remote_ip.m_strClientIP, remote_ip.m_u2Port);
         PSS_LOGGER_DEBUG("[CUdpClientSession::start]local({0}:{1})", local_ip.m_strClientIP, local_ip.m_u2Port);
 
-        packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip, local_ip, io_type_);
+        packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip, local_ip, io_type_, App_IoBridge::instance());
+
+        //添加点对点映射
+        if (true == App_IoBridge::instance()->regedit_session_id(remote_ip, io_type_, connect_id_))
+        {
+            io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
+        }
+
+        //查看这个链接是否有桥接信息
+        io_bradge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip);
+        if (io_bradge_connect_id_ > 0)
+        {
+            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bradge_connect_id_);
+        }
 
         //添加映射关系
         App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip, remote_ip);
@@ -72,7 +90,7 @@ void CUdpClientSession::close(uint32 connect_id)
 
             self->socket_.close();
 
-            self->packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type);
+            self->packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type, App_IoBridge::instance());
 
             //输出接收发送字节数
             PSS_LOGGER_DEBUG("[CUdpClientSession::Close]recv:{0}, send:{1}", 
@@ -204,6 +222,20 @@ uint32 CUdpClientSession::get_mark_id(uint32 connect_id)
     return server_id_;
 }
 
+void CUdpClientSession::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id)
+{
+    if (to_io_connect_id > 0)
+    {
+        io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
+        io_bradge_connect_id_ = from_io_connect_id;
+    }
+    else
+    {
+        io_state_ = EM_SESSION_STATE::SESSION_IO_LOGIC;
+        io_bradge_connect_id_ = 0;
+    }
+}
+
 void CUdpClientSession::do_receive_from(std::error_code ec, std::size_t length)
 {
     if (!ec)
@@ -217,25 +249,40 @@ void CUdpClientSession::do_receive_from(std::error_code ec, std::size_t length)
             length);
         session_send_buffer_.set_write_data(length);
 
-        //处理数据拆包
-        vector<std::shared_ptr<CMessage_Packet>> message_list;
-        bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
-        if (!ret)
+        //判断是否有桥接
+        if (EM_SESSION_STATE::SESSION_IO_BRIDGE == io_state_)
         {
-            //链接断开(解析包不正确)
-            session_recv_buffer_.move(length);
-            App_WorkThreadLogic::instance()->close_session_event(connect_id_);
-            do_receive();
+            //将数据转发给桥接接口
+            auto ret = App_WorkThreadLogic::instance()->do_io_bridge_data(connect_id_, io_bradge_connect_id_, session_recv_buffer_, length, shared_from_this());
+            if (1 == ret)
+            {
+                //远程IO链接已断开
+                io_bradge_connect_id_ = 0;
+            }
         }
         else
         {
-            recv_data_time_ = std::chrono::steady_clock::now();
+            //处理数据拆包
+            vector<std::shared_ptr<CMessage_Packet>> message_list;
+            bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
+            if (!ret)
+            {
+                //链接断开(解析包不正确)
+                session_recv_buffer_.move(length);
+                App_WorkThreadLogic::instance()->close_session_event(connect_id_);
+                do_receive();
+            }
+            else
+            {
+                recv_data_time_ = std::chrono::steady_clock::now();
 
-            //添加到数据队列处理
-            App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id_, message_list, shared_from_this());
+                //添加到数据队列处理
+                App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id_, message_list, shared_from_this());
+            }
+
+            session_recv_buffer_.move(length);
         }
 
-        session_recv_buffer_.move(length);
         //继续读数据
         do_receive();
     }

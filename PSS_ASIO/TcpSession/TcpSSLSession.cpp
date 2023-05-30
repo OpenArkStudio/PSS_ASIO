@@ -21,7 +21,20 @@ void CTcpSSLSession::open(uint32 packet_parse_id, uint32 recv_size)
     remote_ip_.m_u2Port = ssl_socket_.lowest_layer().remote_endpoint().port();
     local_ip_.m_strClientIP = ssl_socket_.lowest_layer().local_endpoint().address().to_string();
     local_ip_.m_u2Port = ssl_socket_.lowest_layer().local_endpoint().port();
-    packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip_, local_ip_, io_type_);
+    packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip_, local_ip_, io_type_, App_IoBridge::instance());
+
+    //添加点对点映射
+    if (true == App_IoBridge::instance()->regedit_session_id(remote_ip_, io_type_, connect_id_))
+    {
+        io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
+    }
+
+    //查看这个链接是否有桥接信息
+    io_bradge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip_);
+    if (io_bradge_connect_id_ > 0)
+    {
+        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bradge_connect_id_);
+    }
 
     //加入session 映射
     App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip_, remote_ip_);
@@ -54,7 +67,7 @@ void CTcpSSLSession::close(uint32 connect_id)
             PSS_LOGGER_DEBUG("[CTcpSession::Close]recv:{0}, send:{1} io_send_count:{2}", recv_data_size, send_data_size, io_send_count);
 
             //断开连接
-            self->packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type);
+            self->packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type, App_IoBridge::instance());
 
             App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip, self);
         });
@@ -97,21 +110,35 @@ void CTcpSSLSession::do_read_some(std::error_code ec, std::size_t length)
         recv_data_size_ += length;
         session_recv_buffer_.set_write_data(length);
 
-        //处理数据拆包
-        vector<std::shared_ptr<CMessage_Packet>> message_list;
-        bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
-        if (!ret)
+        //判断是否有桥接
+        if (EM_SESSION_STATE::SESSION_IO_BRIDGE == io_state_)
         {
-            //链接断开(解析包不正确)
-            App_WorkThreadLogic::instance()->close_session_event(connect_id_);
+            //将数据转发给桥接接口
+            auto ret = App_WorkThreadLogic::instance()->do_io_bridge_data(connect_id_, io_bradge_connect_id_, session_recv_buffer_, length, shared_from_this());
+            if (1 == ret)
+            {
+                //远程IO链接已断开
+                io_bradge_connect_id_ = 0;
+            }
         }
         else
         {
-            //更新接收数据时间
-            recv_data_time_ = std::chrono::steady_clock::now();
+            //处理数据拆包
+            vector<std::shared_ptr<CMessage_Packet>> message_list;
+            bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
+            if (!ret)
+            {
+                //链接断开(解析包不正确)
+                App_WorkThreadLogic::instance()->close_session_event(connect_id_);
+            }
+            else
+            {
+                //更新接收数据时间
+                recv_data_time_ = std::chrono::steady_clock::now();
 
-            //添加消息处理
-            App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id_, message_list, shared_from_this());
+                //添加消息处理
+                App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id_, message_list, shared_from_this());
+            }
         }
 
         //继续读数据
@@ -213,6 +240,20 @@ uint32 CTcpSSLSession::get_mark_id(uint32 connect_id)
 std::chrono::steady_clock::time_point& CTcpSSLSession::get_recv_time()
 {
     return recv_data_time_;
+}
+
+void CTcpSSLSession::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id)
+{
+    if (to_io_connect_id > 0)
+    {
+        io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
+        io_bradge_connect_id_ = from_io_connect_id;
+    }
+    else
+    {
+        io_state_ = EM_SESSION_STATE::SESSION_IO_LOGIC;
+        io_bradge_connect_id_ = 0;
+    }
 }
 
 bool CTcpSSLSession::format_send_packet(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, std::shared_ptr<CMessage_Packet> format_message)

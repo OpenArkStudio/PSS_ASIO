@@ -1,7 +1,5 @@
 ﻿#include "TcpClientSession.h"
 
-#include "TcpSession.h"
-
 CTcpClientSession::CTcpClientSession(asio::io_context* io_context)
     : socket_(*io_context), io_context_(io_context)
 {
@@ -38,7 +36,6 @@ bool CTcpClientSession::start(const CConnect_IO_Info& io_info)
     tcp::resolver::results_type::iterator endpoint_iter;
     socket_.async_connect(end_point, std::bind(&CTcpClientSession::handle_connect,
         this, std::placeholders::_1, endpoint_iter));
-
     return true;
 }
 
@@ -52,6 +49,9 @@ void CTcpClientSession::close(uint32 connect_id)
     EM_CONNECT_IO_TYPE io_type = io_type_;
     _ClientIPInfo remote_ip = remote_ip_;
 
+    //清除点对点转发消息映射
+    App_IoBridge::instance()->unregedit_session_id(remote_ip, io_type_);
+
     //放到收发线程去处理
     io_context_->dispatch([self, connect_id, recv_data_size, send_data_size, io_type, remote_ip]() {
         self->socket_.close();
@@ -60,7 +60,7 @@ void CTcpClientSession::close(uint32 connect_id)
         PSS_LOGGER_DEBUG("[CTcpClientSession::Close]recv:{0}, send:{1}", recv_data_size, send_data_size);
 
         //断开连接
-        self->packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type);
+        self->packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type, App_IoBridge::instance());
 
         //发送链接断开消息
         App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip, self);
@@ -198,6 +198,20 @@ std::chrono::steady_clock::time_point& CTcpClientSession::get_recv_time()
     return recv_data_time_;
 }
 
+void CTcpClientSession::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id)
+{
+    if (to_io_connect_id > 0)
+    {
+        io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
+        io_bradge_connect_id_ = from_io_connect_id;
+    }
+    else
+    {
+        io_state_ = EM_SESSION_STATE::SESSION_IO_LOGIC;
+        io_bradge_connect_id_ = 0;
+    }
+}
+
 bool CTcpClientSession::format_send_packet(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, std::shared_ptr<CMessage_Packet> format_message)
 {
     return packet_parse_interface_->parse_format_send_buffer_ptr_(connect_id, message, format_message, get_io_type());
@@ -226,23 +240,38 @@ void CTcpClientSession::do_read_some(std::error_code ec, std::size_t length)
         session_recv_buffer_.set_write_data(length);
         PSS_LOGGER_DEBUG("[CTcpClientSession::do_write]recv length={}.", length);
 
-        //处理数据拆包
-        vector<std::shared_ptr<CMessage_Packet>> message_list;
-        bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
-        if (!ret)
+        //判断是否有桥接
+        if (EM_SESSION_STATE::SESSION_IO_BRIDGE == io_state_)
         {
-            //链接断开(解析包不正确)
-            App_WorkThreadLogic::instance()->close_session_event(connect_id_);
+            //将数据转发给桥接接口
+            auto ret = App_WorkThreadLogic::instance()->do_io_bridge_data(connect_id_, io_bradge_connect_id_, session_recv_buffer_, length, shared_from_this());
+            if (1 == ret)
+            {
+                //远程IO链接已断开
+                io_bradge_connect_id_ = 0;
+            }
         }
         else
         {
-            recv_data_time_ = std::chrono::steady_clock::now();
+            //处理数据拆包
+            vector<std::shared_ptr<CMessage_Packet>> message_list;
+            bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
+            if (!ret)
+            {
+                //链接断开(解析包不正确)
+                App_WorkThreadLogic::instance()->close_session_event(connect_id_);
+            }
+            else
+            {
+                recv_data_time_ = std::chrono::steady_clock::now();
 
-            //添加消息处理
-            App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id_, message_list, shared_from_this());
+                //添加消息处理
+                App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id_, message_list, shared_from_this());
+            }
+
+            session_recv_buffer_.move(length);
         }
 
-        session_recv_buffer_.move(length);
         //继续读数据
         do_read();
     }
@@ -272,7 +301,20 @@ void CTcpClientSession::handle_connect(const asio::error_code& ec, tcp::resolver
         PSS_LOGGER_DEBUG("[CTcpClientSession::start]remote({0}:{1})", remote_ip_.m_strClientIP, remote_ip_.m_u2Port);
         PSS_LOGGER_DEBUG("[CTcpClientSession::start]local({0}:{1})", local_ip_.m_strClientIP, local_ip_.m_u2Port);
 
-        packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip_, local_ip_, io_type_);
+        packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip_, local_ip_, io_type_, App_IoBridge::instance());
+
+        //添加点对点映射
+        if (true == App_IoBridge::instance()->regedit_session_id(remote_ip_, io_type_, connect_id_))
+        {
+            io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
+        }
+
+        //查看这个链接是否有桥接信息
+        io_bradge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip_);
+        if (io_bradge_connect_id_ > 0)
+        {
+            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bradge_connect_id_);
+        }
 
 #ifdef GCOV_TEST
         //测试发送写入失败回调消息

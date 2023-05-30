@@ -334,9 +334,6 @@ void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession
         communicate_service_->set_connect_id(server_id, connect_id);
     }
 
-    //添加点对点映射
-    io_to_io_.regedit_session_id(romote_info, session->get_io_type(), connect_id);
-
     //向插件告知链接建立消息
     App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, module_logic, local_info, romote_info]() {
         module_logic->add_session(connect_id, session, local_info, romote_info);
@@ -370,9 +367,6 @@ void CWorkThreadLogic::delete_thread_session(uint32 connect_id, const _ClientIPI
         //取消服务器间链接
         communicate_service_->set_connect_id(server_id, 0);
     }
-
-    //清除点对点转发消息映射
-    io_to_io_.unregedit_session_id(from_io, session->get_io_type());
 
     //向插件告知链接断开消息
     App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, module_logic]() {
@@ -420,38 +414,8 @@ int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, c
 #endif
         //添加到数据队列处理
         App_tms::instance()->AddMessage(curr_thread_index, [this, session, connect_id, message_list, module_logic]() {
-            //判定是否是需要透传的数据（这里一定要保持线程处理时序一致）
-            auto io_2_io_session_id = io_to_io_.get_to_session_id(connect_id, session->get_remote_ip(connect_id));
-            if (io_2_io_session_id > 0)
-            {
-#ifdef GCOV_TEST
-                PSS_LOGGER_DEBUG("[CTcpSession::assignation_thread_module_logic]({0}) io to io).", connect_id);
-#endif	
-                auto curr_post_thread_index = io_2_io_session_id % thread_count_;
-                auto post_module_logic = thread_module_list_[curr_post_thread_index];
-
-                auto session_io = post_module_logic->get_session_interface(io_2_io_session_id);
-                //发现对端不存在，丢到业务逻辑去处理
-                if (nullptr == session_io)
-                {
-                    assignation_thread_module_logic_iotoio_error(connect_id, message_list, session);
-                }
-                else
-                {
-                    //存在点对点透传，直接透传数据
-                    App_tms::instance()->AddMessage(curr_post_thread_index, [io_2_io_session_id, message_list, session_io]() {
-                        for (const auto& recv_packet : message_list)
-                        {
-                            session_io->do_write_immediately(io_2_io_session_id, recv_packet->buffer_.c_str(), recv_packet->buffer_.size());
-                        }
-                        });
-                }
-            }
-            else
-            {
-                //插件逻辑处理
-                do_work_thread_module_logic(session, connect_id, message_list, module_logic);
-            }
+            //插件逻辑处理
+            do_work_thread_module_logic(session, connect_id, message_list, module_logic);
             });
 
 #ifdef GCOV_TEST
@@ -740,6 +704,64 @@ void CWorkThreadLogic::send_io_buffer() const
     }
 }
 
+bool CWorkThreadLogic::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id)
+{
+    auto curr_post_thread_index = to_io_connect_id % thread_count_;
+    auto post_module_logic = thread_module_list_[curr_post_thread_index];
+
+    auto session_io = post_module_logic->get_session_interface(to_io_connect_id);
+    if (nullptr == session_io)
+    {
+        //没找到对应链接
+        return false;
+    }
+    else
+    {
+        //设置端到端的桥接id
+        session_io->set_io_bridge_connect_id(from_io_connect_id, to_io_connect_id);
+        return true;
+    }
+}
+
+int CWorkThreadLogic::do_io_bridge_data(uint32 connect_id, uint32 io_bradge_connect_id_, CSessionBuffer& session_recv_buffer, std::size_t length, shared_ptr<ISession> session)
+{
+    int ret = 0;
+    auto bridge_packet = std::make_shared<CMessage_Packet>();
+    bridge_packet->buffer_.append(session_recv_buffer.read(), length);
+    if (io_bradge_connect_id_ > 0)
+    {
+        if (false == send_io_bridge_message(io_bradge_connect_id_, bridge_packet))
+        {
+            //发送失败，将数据包会给业务逻辑去处理
+            vector<std::shared_ptr<CMessage_Packet>> message_error_list;
+            bridge_packet->command_id_ = LOGIC_IOTOIO_DATA_ERROR;
+            message_error_list.emplace_back(bridge_packet);
+
+            //添加消息处理
+            assignation_thread_module_logic(connect_id, message_error_list, session);
+            ret = 1;
+        }
+        else
+        {
+            ret = 0;
+        }
+    }
+    else
+    {
+        //发送失败，将数据包会给业务逻辑去处理
+        vector<std::shared_ptr<CMessage_Packet>> message_error_list;
+        bridge_packet->command_id_ = LOGIC_IOTOIO_DATA_ERROR;
+        message_error_list.emplace_back(bridge_packet);
+
+        //添加消息处理
+        assignation_thread_module_logic(connect_id, message_error_list, session);
+        ret = 2;
+    }
+
+    session_recv_buffer.move(length);
+    return ret;
+}
+
 void CWorkThreadLogic::send_io_message(uint32 connect_id, std::shared_ptr<CMessage_Packet> send_packet)
 {
     //处理线程的投递
@@ -750,6 +772,23 @@ void CWorkThreadLogic::send_io_message(uint32 connect_id, std::shared_ptr<CMessa
     App_tms::instance()->AddMessage(curr_thread_index, [this, connect_id, send_packet, module_logic]() {
         do_io_message_delivery(connect_id, send_packet, module_logic);
         });
+}
+
+bool CWorkThreadLogic::send_io_bridge_message(uint32 io_bridge_connect_id, std::shared_ptr<CMessage_Packet> send_packet)
+{
+    uint16 curr_thread_index = io_bridge_connect_id % thread_count_;
+    auto module_logic = thread_module_list_[curr_thread_index];
+
+    auto session = module_logic->get_session_interface(io_bridge_connect_id);
+    if (nullptr != session)
+    {
+        session->do_write_immediately(io_bridge_connect_id, send_packet->buffer_.c_str(), send_packet->buffer_.size());
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 bool CWorkThreadLogic::connect_io_server(const CConnect_IO_Info& io_info, EM_CONNECT_IO_TYPE io_type)
@@ -774,16 +813,6 @@ void CWorkThreadLogic::close_io_server(uint32 server_id)
 uint32 CWorkThreadLogic::get_io_server_id(uint32 connect_id)
 {
     return communicate_service_->get_server_id(connect_id);
-}
-
-bool CWorkThreadLogic::add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type, const _ClientIPInfo& to_io, EM_CONNECT_IO_TYPE to_io_type, ENUM_IO_BRIDGE_TYPE bridge_type)
-{
-    return io_to_io_.add_session_io_mapping(from_io, from_io_type, to_io, to_io_type, bridge_type);
-}
-
-bool CWorkThreadLogic::delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type)
-{
-    return io_to_io_.delete_session_io_mapping(from_io, from_io_type);
 }
 
 void CWorkThreadLogic::run_check_task(uint32 timeout_seconds) const

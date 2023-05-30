@@ -7,6 +7,7 @@
 #include "ISessionService.h"
 #include "IotoIo.h"
 #include "CoreTimer.hpp"
+#include "SessionBuffer.hpp"
 
 //根据线程的逻辑插件处理模块
 //add by freeeyes
@@ -110,15 +111,13 @@ public:
 
     void send_io_message(uint32 connect_id, std::shared_ptr<CMessage_Packet> send_packet);
 
+    bool send_io_bridge_message(uint32 io_bridge_connect_id, std::shared_ptr<CMessage_Packet> send_packet);
+
     bool connect_io_server(const CConnect_IO_Info& io_info, EM_CONNECT_IO_TYPE io_type);
 
     void close_io_server(uint32 server_id);
 
     uint32 get_io_server_id(uint32 connect_id);
-
-    bool add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type, const _ClientIPInfo& to_io, EM_CONNECT_IO_TYPE to_io_type, ENUM_IO_BRIDGE_TYPE bridge_type = ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH);
-
-    bool delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type);
 
     void run_check_task(uint32 timeout_seconds) const;
 
@@ -148,13 +147,16 @@ public:
 
     void send_io_buffer() const;
 
+    bool set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id);
+
+    int do_io_bridge_data(uint32 connect_id, uint32 io_bradge_connect_id_, CSessionBuffer& session_recv_buffer, std::size_t length, shared_ptr<ISession> session);
+
 private:
     using hashmappluginworkthread = unordered_map<uint32, shared_ptr<CModuleLogic>>;
     using hashmaplogictimer = unordered_map<uint64, brynet::Timer::WeakPtr>;
     vector<shared_ptr<CModuleLogic>> thread_module_list_;
     CLoadModule load_module_;
     uint16      thread_count_ = 0;
-    CIotoIo     io_to_io_;
     ICommunicationInterface* communicate_service_ = nullptr;
     bool        module_init_finish_ = false;
     vector<uint32> plugin_work_thread_buffer_list_;

@@ -48,20 +48,6 @@ void CBaseCommand::Init(ISessionService* session_service)
 
     //测试连接tcp
     logic_connect_tcp();
-
-    //测试数据透传接口
-    _ClientIPInfo from_io;
-    from_io.m_strClientIP = "127.0.0.1";
-    from_io.m_u2Port = 10010;
-
-    _ClientIPInfo to_io;
-    to_io.m_strClientIP = "127.0.0.1";
-    to_io.m_u2Port = 10003;
-
-    session_service_->add_session_io_mapping(from_io,
-        EM_CONNECT_IO_TYPE::CONNECT_IO_TCP,
-        to_io,
-        EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_TCP);
 #endif
 
     PSS_LOGGER_DEBUG("[load_module]({0})io thread count.", session_service_->get_io_work_thread_count());
