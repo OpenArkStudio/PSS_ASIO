@@ -33,13 +33,13 @@ if(WIN32)
 		add_definitions(
 		-D_DEBUG
 		-D_USRDLL
-		-DTEST_LOGIC_EXPORTS
+		-DPACKETPARSE_INTERFACE_EXPORTS
 		-D_WINDOWS)
 	else()
 		add_definitions(
 		-DNDEBUG
 		-D_USRDLL
-		-DTEST_LOGIC_EXPORTS
+		-DPACKETPARSE_INTERFACE_EXPORTS
 		-D_WINDOWS)		
 	endif()
 endif()

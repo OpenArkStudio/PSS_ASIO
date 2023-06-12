@@ -35,7 +35,7 @@ public:
         MultiByteToWideChar(CP_ACP, 0, pFilePath, (int)strlen(pFilePath) + 1, wszFilePath,
             (int)(sizeof(wszFilePath) / sizeof(wszFilePath[0])));
 
-        return ::LoadLibrary(wszFilePath);
+        return ::LoadLibraryW(wszFilePath);
 #else
         return dlopen(pFilePath, nMode);
 #endif
