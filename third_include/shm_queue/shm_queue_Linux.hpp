@@ -119,7 +119,7 @@ namespace shm_queue {
                         if ((unsigned long long)msg_queue_data.len == thread_id_)
                         {
                             //Ïß³Ì¹Ø±Õ
-                            std::cout << "[recv_message]recv thread is close" << std::endl;
+                            //std::cout << "[recv_message]recv thread is close" << std::endl;
                             break;
                         }
                         else

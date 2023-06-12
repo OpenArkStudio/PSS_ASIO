@@ -169,7 +169,7 @@ namespace shm_queue {
             auto queue_size = (sizeof(CShm_head) + message_size) * message_count;
             message_size_ = message_size;
 
-            std::cout << "[create_instance]queue_size=" << queue_size << std::endl;
+            //std::cout << "[create_instance]queue_size=" << queue_size << std::endl;
 
             //打开mmap对象
             char* shm_ptr = create_share_memory(key, queue_size);
