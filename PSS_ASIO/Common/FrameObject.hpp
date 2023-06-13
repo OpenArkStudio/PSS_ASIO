@@ -26,7 +26,7 @@ public:
         command_info_.command_id_ = command_id;
         module_command_list_.emplace_back(command_info_);
         return true;
-    };
+    }
 
     bool Regedit_command(uint16 command_id, Logic_message_dispose_fn logic_fn)
     {
@@ -41,7 +41,7 @@ public:
     ISessionService* get_session_service() final
     {
         return session_service_;
-    };
+    }
 
     vector<CLogic_Command_Info> module_command_list_;
     ISessionService* session_service_ = nullptr;

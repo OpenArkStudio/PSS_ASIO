@@ -19,7 +19,7 @@ public:
 
         write_size_ = 0;
         max_buff_size_ = _size;
-    };
+    }
 
     bool set_write_data(size_t length)
     {
@@ -32,27 +32,27 @@ public:
             write_size_ += length;
             return true;
         }
-    };
+    }
 
     char* get_curr_write_ptr()
     {
         return buffer_.get() + write_size_;
-    };
+    }
 
     size_t get_buffer_size()
     {
         return max_buff_size_ - write_size_;
-    };
+    }
 
     char* read()
     {
         return  buffer_.get();
-    };
+    }
 
     size_t get_write_size()
     {
         return write_size_;
-    };
+    }
 
     void move(size_t _length)
     {
@@ -66,7 +66,7 @@ public:
             std::memmove(buffer_.get(), buffer_.get() + _length, move_length);
             write_size_ = move_length;
         }
-    };
+    }
 
     CSessionBuffer& operator = (const CSessionBuffer&) = delete;
 

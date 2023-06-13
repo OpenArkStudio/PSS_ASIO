@@ -17,16 +17,23 @@ void CUdpClientSession::start(const CConnect_IO_Info& io_type)
     send_endpoint_ = end_point;
     
     socket_.open(udp::v4());
+    socket_.set_option(asio::ip::udp::socket::reuse_address(true));
     //判断有没有本地IP
     if (io_type.client_ip.size() > 0 && io_type.client_port > 0)
     {
         udp::endpoint local_endpoint(asio::ip::address::from_string(io_type.client_ip.c_str()), io_type.client_port); // 本地地址和端口，0.0.0.0表示任意地址
         recv_endpoint_ = local_endpoint;
-        socket_.bind(local_endpoint);    // 将套接字绑定到本地地址和端口
+        try
+        {
+            socket_.bind(local_endpoint);    // 将套接字绑定到本地地址和端口
+        }
+        catch (std::system_error const& ex)
+        {
+            PSS_LOGGER_ERROR("[CUdpClientSession::start] bind addr error remote:[{}:{}] local:[{}:{}] ex.what:{}.", io_type.server_ip, io_type.server_port,io_type.client_ip,io_type.client_port, ex.what());
+        }
     }
 
     asio::error_code connect_error;
-    socket_.set_option(asio::ip::udp::socket::reuse_address(true));
     
     socket_.connect(end_point, connect_error);
 
@@ -174,8 +181,9 @@ EM_CONNECT_IO_TYPE CUdpClientSession::get_io_type()
     return io_type_;
 }
 
-std::chrono::steady_clock::time_point& CUdpClientSession::get_recv_time()
+std::chrono::steady_clock::time_point& CUdpClientSession::get_recv_time(uint32 connect_id)
 {
+    PSS_UNUSED_ARG(connect_id);
     return recv_data_time_;
 }
 
@@ -183,8 +191,6 @@ bool CUdpClientSession::format_send_packet(uint32 connect_id, std::shared_ptr<CM
 {
     return packet_parse_interface_->parse_format_send_buffer_ptr_(connect_id, message, format_message, get_io_type());
 }
-
-
 
 bool CUdpClientSession::is_need_send_format()
 {

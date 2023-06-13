@@ -16,7 +16,7 @@ int CModuleInterface::do_module_message(const CMessage_Source& source, std::shar
     }
     else
     {
-        PSS_LOGGER_DEBUG("[CModuleInterface::do_module_message]no find command_id({0}-->{1})", source.connect_id_, recv_packet->command_id_);
+        PSS_LOGGER_WARN("[CModuleInterface::do_module_message]no find command_id({0}-->{1})", source.connect_id_, recv_packet->command_id_);
         return -1;
     }
 }

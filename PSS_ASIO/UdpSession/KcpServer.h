@@ -107,7 +107,7 @@ public:
 
     uint32 get_mark_id(uint32 connect_id) final;
 
-    std::chrono::steady_clock::time_point& get_recv_time() final;
+    std::chrono::steady_clock::time_point& get_recv_time(uint32 connect_id = 0) final;
 
     void set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id) final;
 

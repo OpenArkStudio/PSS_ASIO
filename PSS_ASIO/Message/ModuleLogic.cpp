@@ -410,7 +410,7 @@ int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, c
     auto module_logic = thread_module_list_[curr_thread_index];
 
 #ifdef GCOV_TEST
-        PSS_LOGGER_DEBUG("[CTcpSession::assignation_thread_module_logic]({0}) curr_thread_index={1}).", connect_id, curr_thread_index);
+        PSS_LOGGER_DEBUG("[CWorkThreadLogic::assignation_thread_module_logic]({0}) curr_thread_index={1}).", connect_id, curr_thread_index);
 #endif
         //添加到数据队列处理
         App_tms::instance()->AddMessage(curr_thread_index, [this, session, connect_id, message_list, module_logic]() {
@@ -631,7 +631,7 @@ bool CWorkThreadLogic::close_frame_work_thread(uint32 thread_id)
     //不能结束工作线程
     if (thread_id < thread_count_)
     {
-        PSS_LOGGER_DEBUG("[CWorkThreadLogic::create_frame_work_thread]thread id must more than config thread count.");
+        PSS_LOGGER_DEBUG("[CWorkThreadLogic::close_frame_work_thread]thread id must more than config thread count.");
         return false;
     }
 
@@ -796,7 +796,7 @@ bool CWorkThreadLogic::connect_io_server(const CConnect_IO_Info& io_info, EM_CON
     //寻找当前server_id是否存在
     if (true == communicate_service_->is_exist(io_info.server_id))
     {
-        PSS_LOGGER_DEBUG("[CWorkThreadLogic::connect_io_server]server_id={0} is exist.");
+        PSS_LOGGER_DEBUG("[CWorkThreadLogic::connect_io_server]server_id={0} is exist.",io_info.server_id);
         return false;
     }
     else

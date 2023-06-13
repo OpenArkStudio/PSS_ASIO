@@ -83,6 +83,21 @@ void CSessionInterface::check_session_io_timeout(uint32 connect_timeout, vector<
                 session_list.emplace_back(session_cancel);
             }
         }
+        else if (session_io.second.session_->get_io_type() == EM_CONNECT_IO_TYPE::CONNECT_IO_UDP)
+        {
+            std::chrono::duration<double, std::ratio<1, 1>> elapsed = check_connect_time_ - session_io.second.session_->get_recv_time(session_io.first);
+            if (elapsed.count() >= connect_timeout)
+            {
+                PSS_LOGGER_INFO("[CSessionInterface::check_session_io_timeout]elapsed={0}.", elapsed.count());
+                
+                CSessionIO_Cancel session_cancel;
+                session_cancel.session_id_ = session_io.first;
+                session_cancel.session_ = session_io.second.session_;
+                
+                //添加删除列表
+                session_list.emplace_back(session_cancel);
+            }
+        }
     }
 
 }

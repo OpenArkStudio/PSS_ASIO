@@ -77,8 +77,7 @@ void CTcpSession::do_read()
                 session_send_buffer_.set_write_data(length);
 
                 //处理数据拆包
-
-
+                
                 session_recv_buffer_.move(length);
                 //继续读数据
                 self->do_read();

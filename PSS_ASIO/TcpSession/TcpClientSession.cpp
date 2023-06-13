@@ -23,7 +23,15 @@ bool CTcpClientSession::start(const CConnect_IO_Info& io_info)
         asio::ip::tcp::endpoint localEndpoint(asio::ip::address::from_string(io_info.client_ip), io_info.client_port);
         socket_.open(asio::ip::tcp::v4(), connect_error);
         socket_.set_option(asio::ip::tcp::socket::reuse_address(true));
-        socket_.bind(localEndpoint, connect_error);
+
+        try
+        {
+            socket_.bind(localEndpoint, connect_error);
+        }
+        catch (std::system_error const& ex)
+        {
+            PSS_LOGGER_ERROR("[CTcpClientSession::start] bind addr error remote:[{}:{}] local:[{}:{}] ex.what:{}.", io_info.server_ip, io_info.server_port,io_info.client_ip,io_info.client_port, ex.what());
+        }
     }
 
     //赋值对应的IP和端口信息
@@ -193,8 +201,9 @@ uint32 CTcpClientSession::get_mark_id(uint32 connect_id)
     return server_id_;
 }
 
-std::chrono::steady_clock::time_point& CTcpClientSession::get_recv_time()
+std::chrono::steady_clock::time_point& CTcpClientSession::get_recv_time(uint32 connect_id)
 {
+    PSS_UNUSED_ARG(connect_id);
     return recv_data_time_;
 }
 
@@ -333,7 +342,7 @@ void CTcpClientSession::handle_connect(const asio::error_code& ec, tcp::resolver
         is_connect_ = false;
 
         //连接建立失败
-        PSS_LOGGER_DEBUG("[CTcpClientSession::start]({0}:{1}  ==> {2}:{3})error({4})", 
+        PSS_LOGGER_DEBUG("[CTcpClientSession::handle_connect]({0}:{1}  ==> {2}:{3})error({4})", 
             local_ip_.m_strClientIP,
             local_ip_.m_u2Port,
             remote_ip_.m_strClientIP,

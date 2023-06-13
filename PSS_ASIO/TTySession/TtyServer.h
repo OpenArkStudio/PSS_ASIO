@@ -36,7 +36,7 @@ public:
 
     uint32 get_mark_id(uint32 connect_id) final;
 
-    std::chrono::steady_clock::time_point& get_recv_time() final;
+    std::chrono::steady_clock::time_point& get_recv_time(uint32 connect_id) final;
 
     bool format_send_packet(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, std::shared_ptr<CMessage_Packet> format_message) final;
 

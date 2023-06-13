@@ -142,7 +142,7 @@ void tcp_test_connect_synchronize_server(std::string strIP, unsigned short port,
     tcp::endpoint end_point(asio::ip::address::from_string(strIP.c_str()), port);
 
     asio::error_code connect_error;
-    asio::ip::tcp::endpoint localEndpoint(asio::ip::address::from_string("127.0.0.1"), remote_port);
+    asio::ip::tcp::endpoint localEndpoint(asio::ip::address::from_string(strIP.c_str()), remote_port);
     
     s.open(asio::ip::tcp::v4(), connect_error);
     if (connect_error)
@@ -159,6 +159,7 @@ void tcp_test_connect_synchronize_server(std::string strIP, unsigned short port,
         return;
     }
 
+    s.set_option(asio::ip::tcp::socket::reuse_address(true));
     s.connect(end_point, connect_error);
 
     if (connect_error)

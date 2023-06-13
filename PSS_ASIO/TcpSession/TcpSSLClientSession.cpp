@@ -204,8 +204,9 @@ uint32 CTcpSSLClientSession::get_mark_id(uint32 connect_id)
     return server_id_;
 }
 
-std::chrono::steady_clock::time_point& CTcpSSLClientSession::get_recv_time()
+std::chrono::steady_clock::time_point& CTcpSSLClientSession::get_recv_time(uint32 connect_id)
 {
+    PSS_UNUSED_ARG(connect_id);
     return recv_data_time_;
 }
 

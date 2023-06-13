@@ -15,22 +15,22 @@ namespace shm_queue {
     public:
         CShm_message_queue()
         {
-        };
+        }
 
         bool set_proc_message(const char* message_text, size_t len)
         {
             return shm_queue_->set_proc_message(message_text, len);
-        };
+        }
 
         void recv_message(queue_recv_message_func fn_logic)
         {
             return shm_queue_->recv_message(fn_logic);
-        };
+        }
 
         void close()
         {
             shm_queue_->close();
-        };
+        }
         bool create_instance(shm_key key, size_t message_size, int message_count)
         {
 #if PSS_PLATFORM == PLATFORM_WIN
@@ -39,17 +39,17 @@ namespace shm_queue {
             shm_queue_ = std::make_shared<CMessage_Queue_Linux>();
 #endif
             return shm_queue_->create_instance(key, message_size, message_count);
-        };
+        }
 
         void show_message_list()
         {
             shm_queue_->show_message_list();
-        };
+        }
 
         std::string get_error() const
         {
             return shm_queue_->get_error();
-        };
+        }
 
         void set_error_function(queue_error_func error_func)
         {

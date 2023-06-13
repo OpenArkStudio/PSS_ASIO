@@ -1,10 +1,22 @@
 ﻿#include "UdpServer.h"
 
 CUdpServer::CUdpServer(asio::io_context& io_context, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size, EM_NET_TYPE em_net_type)
-    : socket_(io_context, udp::endpoint(asio::ip::address_v4::from_string(server_ip), port)), max_recv_size_(max_recv_size), max_send_size_(max_send_size), io_context_(&io_context)
+    : socket_(io_context), max_recv_size_(max_recv_size), max_send_size_(max_send_size), io_context_(&io_context)
 {
     //处理链接建立消息
     PSS_LOGGER_DEBUG("[CUdpServer::do_accept]{0}:{1} Begin Accept.", server_ip, port);
+
+    try
+    {
+        socket_.open(udp::v4());
+        socket_.set_option(asio::ip::udp::socket::reuse_address(true));
+        udp::endpoint local_endpoint(asio::ip::address_v4::from_string(server_ip), port); 
+        socket_.bind(local_endpoint);    // 将套接字绑定到本地地址和端口
+    }
+    catch (std::system_error const& ex)
+    {
+        PSS_LOGGER_ERROR("[CUdpServer::do_accept] bind addr error local:[{}:{}] ex.what:{}.", server_ip, port,ex.what());
+    }
 
     if (em_net_type == EM_NET_TYPE::NET_TYPE_BROADCAST)
     {
@@ -101,6 +113,7 @@ void CUdpServer::do_receive_from(std::error_code ec, std::size_t length)
             else
             {
                 recv_data_time_ = std::chrono::steady_clock::now();
+                cid_recv_data_time_[connect_id] = std::chrono::steady_clock::now();
                 //添加到数据队列处理
                 App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id, message_list, self);
             }
@@ -313,8 +326,14 @@ void CUdpServer::close_udp_endpoint_by_id(uint32 connect_id)
         udp_id_2_endpoint_list_.erase(f);
         udp_endpoint_2_id_list_.erase(session_endpoint);
     }
+	
+	App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip, self);
 
-    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip, self);
+    auto iter=cid_recv_data_time_.find(connect_id);
+    if(iter != cid_recv_data_time_.end())
+    {
+        cid_recv_data_time_.erase(iter);
+    }
 }
 
 void CUdpServer::add_send_finish_size(uint32 connect_id, size_t length)
@@ -337,8 +356,14 @@ uint32 CUdpServer::get_mark_id(uint32 connect_id)
     return 0;
 }
 
-std::chrono::steady_clock::time_point& CUdpServer::get_recv_time()
+std::chrono::steady_clock::time_point& CUdpServer::get_recv_time(uint32 connect_id)
 {
+    auto iter=cid_recv_data_time_.find(connect_id);
+    if(iter != cid_recv_data_time_.end())
+    {
+        return iter->second;
+    }
+    
     return recv_data_time_;
 }
 

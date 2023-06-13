@@ -260,8 +260,9 @@ uint32 CTcpSession::get_mark_id(uint32 connect_id)
     return 0;
 }
 
-std::chrono::steady_clock::time_point& CTcpSession::get_recv_time()
+std::chrono::steady_clock::time_point& CTcpSession::get_recv_time(uint32 connect_id)
 {
+    PSS_UNUSED_ARG(connect_id);
     return recv_data_time_;
 }
 

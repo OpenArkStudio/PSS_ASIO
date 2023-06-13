@@ -97,31 +97,38 @@ public:
     std::string ssl_server_pem_file_;
     std::string ssl_dh_pem_file_;
     EM_NET_TYPE em_net_type_ = EM_NET_TYPE::NET_TYPE_POINT_TO_POINT;
-    unsigned int io_number_ = 0;
 };
 
 //客户端IP信息
 class _ClientIPInfo
 {
 public:
-    string  m_strClientIP = "unset ip";      //客户端的IP地址
-    uint16 m_u2Port = 0;        //客户端的端口
+    string m_strClientIP = "unset ip";      //客户端的IP地址
+    uint16 m_u2Port = 0;                    //客户端的端口
 
-    bool operator ==(const _ClientIPInfo& p) const
+    bool operator == (const _ClientIPInfo& other) const
     {
-        return m_strClientIP == p.m_strClientIP && m_u2Port == p.m_u2Port;
+        return m_strClientIP == other.m_strClientIP && m_u2Port == other.m_u2Port;
     }
 
-    bool operator <(const _ClientIPInfo& p) const 
+    bool operator < (const _ClientIPInfo& other) const 
     {
-        if (this->m_strClientIP < p.m_strClientIP)return true;
-        if (this->m_strClientIP > p.m_strClientIP)return false;
-        if (this->m_u2Port < p.m_u2Port)return true;
+        if (this->m_strClientIP < other.m_strClientIP)return true;
+        if (this->m_strClientIP > other.m_strClientIP)return false;
+        if (this->m_u2Port < other.m_u2Port)return true;
+        return false;
+    }
+
+    bool operator > (const _ClientIPInfo& other) const 
+    {
+        if (this->m_strClientIP > other.m_strClientIP)return true;
+        if (this->m_strClientIP < other.m_strClientIP)return false;
+        if (this->m_u2Port > other.m_u2Port)return true;
         return false;
     }
 
     // 赋值运算符重载函数
-    _ClientIPInfo& operator =(const _ClientIPInfo& other)
+    _ClientIPInfo& operator = (const _ClientIPInfo& other)
     {
         // 避免自赋值
         if (this != &other)
@@ -129,7 +136,7 @@ public:
             m_strClientIP = other.m_strClientIP;
             m_u2Port = other.m_u2Port;
         }
-
+        
         return *this;
     }
         

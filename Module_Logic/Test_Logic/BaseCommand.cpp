@@ -89,36 +89,36 @@ void CBaseCommand::logic_connect_udp()
 
 void CBaseCommand::logic_connect(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
 {
-    PSS_LOGGER_DEBUG("[logic_connect]connand={}, connect", source.connect_id_);
-    PSS_LOGGER_DEBUG("[logic_connect]connand={}, local ip={} local port={}", source.connect_id_, source.local_ip_.m_strClientIP, source.local_ip_.m_u2Port);
-    PSS_LOGGER_DEBUG("[logic_connect]connand={}, remote ip={} remote port={}", source.connect_id_, source.remote_ip_.m_strClientIP, source.remote_ip_.m_u2Port);
-    PSS_LOGGER_DEBUG("[logic_connect]connand={}, work thread id={}", source.connect_id_, source.work_thread_id_);
+    PSS_LOGGER_DEBUG("[logic_connect]connectid={}, connect", source.connect_id_);
+    PSS_LOGGER_DEBUG("[logic_connect]connectid={}, local ip={} local port={}", source.connect_id_, source.local_ip_.m_strClientIP, source.local_ip_.m_u2Port);
+    PSS_LOGGER_DEBUG("[logic_connect]connectid={}, remote ip={} remote port={}", source.connect_id_, source.remote_ip_.m_strClientIP, source.remote_ip_.m_u2Port);
+    PSS_LOGGER_DEBUG("[logic_connect]connectid={}, work thread id={}", source.connect_id_, source.work_thread_id_);
 
     if (source.type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_TCP)
     {
-        PSS_LOGGER_DEBUG("[logic_connect]connand={}, CONNECT_IO_TCP", source.connect_id_);
+        PSS_LOGGER_DEBUG("[logic_connect]connectid={}, CONNECT_IO_TCP", source.connect_id_);
     }
     else if (source.type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_UDP)
     {
-        PSS_LOGGER_DEBUG("[logic_connect]connand={}, thread id", source.work_thread_id_);
-        PSS_LOGGER_DEBUG("[logic_connect]connand={}, CONNECT_IO_UDP", source.connect_id_);
+        PSS_LOGGER_DEBUG("[logic_connect]connectid={}, thread id", source.work_thread_id_);
+        PSS_LOGGER_DEBUG("[logic_connect]connectid={}, CONNECT_IO_UDP", source.connect_id_);
     }
     else if (source.type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_TTY)
     {
-        PSS_LOGGER_DEBUG("[logic_connect]connand={}, CONNECT_IO_TTY", source.connect_id_);
+        PSS_LOGGER_DEBUG("[logic_connect]connectid={}, CONNECT_IO_TTY", source.connect_id_);
     }
     else if (source.type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_TCP)
     {
-        PSS_LOGGER_DEBUG("[logic_connect]connand={}, CONNECT_IO_SERVER_TCP", source.connect_id_);
-        PSS_LOGGER_DEBUG("[logic_connect]connand={}, server_id={}", source.connect_id_, source.connect_mark_id_);
+        PSS_LOGGER_DEBUG("[logic_connect]connectid={}, CONNECT_IO_SERVER_TCP", source.connect_id_);
+        PSS_LOGGER_DEBUG("[logic_connect]connectid={}, server_id={}", source.connect_id_, source.connect_mark_id_);
 
         //²âÊÔ¹Ø±ÕÁ´½Ó
         //session_service_->close_io_session(source.connect_id_);
     }
     else if (source.type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_UDP)
     {
-        PSS_LOGGER_DEBUG("[logic_connect]connand={}, CONNECT_IO_SERVER_UDP", source.connect_id_);
-        PSS_LOGGER_DEBUG("[logic_connect]connand={}, server_id={}", source.connect_id_, source.connect_mark_id_);
+        PSS_LOGGER_DEBUG("[logic_connect]connectid={}, CONNECT_IO_SERVER_UDP", source.connect_id_);
+        PSS_LOGGER_DEBUG("[logic_connect]connectid={}, server_id={}", source.connect_id_, source.connect_mark_id_);
     }
 
 #ifdef GCOV_TEST
@@ -137,7 +137,7 @@ void CBaseCommand::logic_connect(const CMessage_Source& source, std::shared_ptr<
 
 void CBaseCommand::logic_disconnect(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
 {
-    PSS_LOGGER_DEBUG("[do_module_message]connand={}, disconnect", source.connect_id_);
+    PSS_LOGGER_DEBUG("[CBaseCommand::logic_disconnect]connectid={}, disconnect", source.connect_id_);
 }
 
 int CBaseCommand::logic_test_sync(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)

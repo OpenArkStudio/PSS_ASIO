@@ -16,7 +16,7 @@ public:
                 m_timerMgr->schedule();
                 PSS_LOGGER_DEBUG("[PSS_Timer_Manager::start]End.");
             });
-    };
+    }
 
     void Close()
     {
@@ -25,12 +25,12 @@ public:
             m_timerMgr->Close();
             m_ttTimerThread.join();
         }
-    };
+    }
 
     brynet::TimerMgr::Ptr GetTimerPtr() const
     {
         return m_timerMgr;
-    };
+    }
 
 private:
     brynet::TimerMgr::Ptr m_timerMgr;
