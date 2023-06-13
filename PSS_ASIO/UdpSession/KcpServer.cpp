@@ -373,7 +373,7 @@ void CKcpServer::close_udp_endpoint_by_id(uint32 connect_id)
     }
 
     //删除映射关系
-    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip, self);
+    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
 }
 
 void CKcpServer::add_send_finish_size(uint32 connect_id, size_t length)

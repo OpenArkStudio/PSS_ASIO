@@ -8,14 +8,11 @@ bool CIoBridge::add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_
 
     //判断链接是否已存在，如果存在则通知桥接session对象
     auto connect_info = iotoio_.find_io_to_io_list(from_io, from_io_type);
-    if (nullptr != connect_info)
+    if (nullptr != connect_info && connect_info->from_session_id_ > 0 && connect_info->to_session_id_ > 0)
     {
-        if (connect_info->from_session_id_ > 0 && connect_info->to_session_id_ > 0)
-        {
-            //两边的链接已经存在了
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_info->from_session_id_, connect_info->to_session_id_);
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_info->to_session_id_, connect_info->from_session_id_);
-        }
+        //两边的链接已经存在了
+        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_info->from_session_id_, connect_info->to_session_id_);
+        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_info->to_session_id_, connect_info->from_session_id_);
     }
 
     return ret;

@@ -20,6 +20,12 @@ enum class ENUM_WORK_THREAD_STATE
     WORK_THREAD_END,
 };
 
+//发送插件的json字符串格式
+const std::string JSON_MODULE_THREAD_ID = "{\"thread id\":";
+const std::string JSON_MODULE_COMMAND_ID = ", \"command id\":\"";
+const std::string JSON_MODULE_WORK_THREAD_TIMEOUT = "\", \"work_thread_timeout\":";
+const std::string JSON_MODULE_END = "\"}";
+
 //以消息模式处理逻辑代码
 class CDelayPluginMessage
 {
@@ -95,7 +101,7 @@ public:
 
     void add_thread_session(uint32 connect_id, shared_ptr<ISession> session, const _ClientIPInfo& local_info, const _ClientIPInfo& romote_info);
 
-    void delete_thread_session(uint32 connect_id, const _ClientIPInfo& from_io, shared_ptr<ISession> session);
+    void delete_thread_session(uint32 connect_id, shared_ptr<ISession> session);
 
     void close_session_event(uint32 connect_id);
 

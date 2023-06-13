@@ -104,7 +104,7 @@ void CUdpClientSession::close(uint32 connect_id)
                 self->recv_data_size_,
                 self->send_data_size_);
 
-            App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip, self);
+            App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
         });
 }
 

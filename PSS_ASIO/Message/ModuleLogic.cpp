@@ -262,7 +262,7 @@ void CWorkThreadLogic::close()
     }
 
     //关闭所有的扩展工作线程
-    for (auto f : plugin_work_thread_list_)
+    for (const auto& f : plugin_work_thread_list_)
     {
         f.second->close();
     }
@@ -355,7 +355,7 @@ void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession
         });
 }
 
-void CWorkThreadLogic::delete_thread_session(uint32 connect_id, const _ClientIPInfo& from_io, shared_ptr<ISession> session)
+void CWorkThreadLogic::delete_thread_session(uint32 connect_id, shared_ptr<ISession> session)
 {
     //session 连接断开
     uint16 curr_thread_index = connect_id % thread_count_;
@@ -836,9 +836,9 @@ void CWorkThreadLogic::run_check_task(uint32 timeout_seconds) const
             auto send_packet = std::make_shared<CMessage_Packet>();
 
             recv_packet->command_id_ = LOGIC_THREAD_DEAD_LOCK;
-            recv_packet->buffer_ = "{\"thread id\": " + std::to_string(module_logic->get_work_thread_id()) 
-                + ", \"command id\":\"" + std::to_string(module_logic->get_last_dispose_command_id()) 
-                + "\", \"work_thread_timeout\":" + std::to_string(work_thread_timeout) + "}";
+            recv_packet->buffer_ = JSON_MODULE_THREAD_ID + std::to_string(module_logic->get_work_thread_id())
+                + JSON_MODULE_COMMAND_ID + std::to_string(module_logic->get_last_dispose_command_id())
+                + JSON_MODULE_WORK_THREAD_TIMEOUT + std::to_string(work_thread_timeout) + JSON_MODULE_END;
 
             thread_module_list_[0]->do_thread_module_logic(source, recv_packet, send_packet);
 

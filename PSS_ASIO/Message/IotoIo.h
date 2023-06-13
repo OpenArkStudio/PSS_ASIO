@@ -10,6 +10,8 @@
 class CIo_Connect_Info
 {
 public:
+    CIo_Connect_Info() {};
+
     _ClientIPInfo from_io_;
     EM_CONNECT_IO_TYPE from_io_type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_TCP;
     uint32 from_session_id_ = 0;

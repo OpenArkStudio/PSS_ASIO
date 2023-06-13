@@ -327,7 +327,7 @@ void CUdpServer::close_udp_endpoint_by_id(uint32 connect_id)
         udp_endpoint_2_id_list_.erase(session_endpoint);
     }
 	
-	App_WorkThreadLogic::instance()->delete_thread_session(connect_id, remote_ip, self);
+	App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
 
     auto iter=cid_recv_data_time_.find(connect_id);
     if(iter != cid_recv_data_time_.end())
