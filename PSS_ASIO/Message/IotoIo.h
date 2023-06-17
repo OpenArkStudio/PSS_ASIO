@@ -10,7 +10,7 @@
 class CIo_Connect_Info
 {
 public:
-    CIo_Connect_Info() {};
+    CIo_Connect_Info() = default;
 
     _ClientIPInfo from_io_;
     EM_CONNECT_IO_TYPE from_io_type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_TCP;
@@ -19,6 +19,24 @@ public:
     EM_CONNECT_IO_TYPE to_io_type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_TCP;
     uint32 to_session_id_ = 0;
     ENUM_IO_BRIDGE_TYPE bridge_type_ = ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH;
+
+    // 赋值运算符重载函数
+    CIo_Connect_Info& operator = (const CIo_Connect_Info& other)
+    {
+        // 避免自赋值
+        if (this != &other)
+        {
+            from_io_ = other.from_io_;
+            from_io_type_ = other.from_io_type_;
+            from_session_id_ = other.from_session_id_;
+            to_io_ = other.to_io_;
+            to_io_type_ = other.to_io_type_;
+            to_session_id_ = other.to_session_id_;
+            bridge_type_ = other.bridge_type_;
+        }
+
+        return *this;
+    }
 };
 
 class CIotoIo 

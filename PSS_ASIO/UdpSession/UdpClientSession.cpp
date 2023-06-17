@@ -276,7 +276,6 @@ void CUdpClientSession::do_receive_from(std::error_code ec, std::size_t length)
                 //链接断开(解析包不正确)
                 session_recv_buffer_.move(length);
                 App_WorkThreadLogic::instance()->close_session_event(connect_id_);
-                do_receive();
             }
             else
             {
@@ -286,7 +285,6 @@ void CUdpClientSession::do_receive_from(std::error_code ec, std::size_t length)
                 App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id_, message_list, shared_from_this());
             }
 
-            session_recv_buffer_.move(length);
         }
 
         //继续读数据
