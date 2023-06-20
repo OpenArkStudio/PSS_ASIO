@@ -51,7 +51,10 @@ public:
         {
             is_callback_ = true;
         }
-
+        else
+        {
+            is_callback_ = false;
+        }
         time_begin_ = std::chrono::steady_clock::now();
         func_ = functional;
     }
