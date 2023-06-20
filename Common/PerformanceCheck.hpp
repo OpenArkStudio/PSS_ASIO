@@ -50,8 +50,9 @@ public:
         if (random_sample.Get_Random())
         {
             is_callback_ = true;
-            time_begin_ = std::chrono::steady_clock::now();
         }
+
+        time_begin_ = std::chrono::steady_clock::now();
         func_ = functional;
     }
 
