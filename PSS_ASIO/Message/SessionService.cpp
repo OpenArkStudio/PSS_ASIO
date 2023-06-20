@@ -139,6 +139,16 @@ std::string CSessionService::do_plugin_api(const std::string& api_name, const st
     }
 }
 
+bool CSessionService::add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type, const _ClientIPInfo& to_io, EM_CONNECT_IO_TYPE to_io_type, ENUM_IO_BRIDGE_TYPE bridge_type /*= ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH*/)
+{
+    return App_IoBridge::instance()->add_session_io_mapping(from_io, from_io_type, to_io, to_io_type, bridge_type);
+}
+
+bool CSessionService::delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type)
+{
+    return App_IoBridge::instance()->delete_session_io_mapping(from_io, from_io_type);
+}
+
 bool CSessionService::create_queue(shm_queue::shm_key key, size_t message_size, int message_count)
 {
     return App_QueueSessionManager::instance()->create_queue(key, message_size, message_count);

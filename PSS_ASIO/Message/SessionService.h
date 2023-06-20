@@ -7,6 +7,7 @@
 #include "ModuleLogic.h"
 #include "serverconfig.h"
 #include "QueueService.h"
+#include "Iobridge.h"
 
 class CSessionService : public ISessionService
 {
@@ -27,6 +28,8 @@ public:
     uint32 get_curr_thread_logic_id() final; 
     bool add_plugin_api(const std::string& api_name, const plugin_api_logic& func) final;
     std::string do_plugin_api(const std::string& api_name, const std::string& api_func_param) final;
+    bool add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type, const _ClientIPInfo& to_io, EM_CONNECT_IO_TYPE to_io_type, ENUM_IO_BRIDGE_TYPE bridge_type = ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH) final;
+    bool delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type) final;
 
     bool create_queue(shm_queue::shm_key key, size_t message_size = shm_queue_list_size, int message_count = shm_queue_list_count) final;
     bool close(shm_queue::shm_key key) final;

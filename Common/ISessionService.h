@@ -29,6 +29,8 @@ public:
     virtual uint32 get_curr_thread_logic_id() = 0;
     virtual bool add_plugin_api(const std::string& api_name, const plugin_api_logic& func) = 0;
     virtual std::string do_plugin_api(const std::string& api_name, const std::string& api_func_param) = 0;
+    virtual bool add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type, const _ClientIPInfo& to_io, EM_CONNECT_IO_TYPE to_io_type, ENUM_IO_BRIDGE_TYPE bridge_type = ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH) = 0;
+    virtual bool delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type) = 0;
     //share memory queue list API
     virtual bool create_queue(shm_queue::shm_key key, size_t message_size = shm_queue_list_size, int message_count = shm_queue_list_count) = 0;
     virtual bool close(shm_queue::shm_key key) = 0;
