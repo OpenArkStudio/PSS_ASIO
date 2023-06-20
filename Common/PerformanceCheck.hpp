@@ -51,9 +51,8 @@ public:
         {
             is_callback_ = true;
             time_begin_ = std::chrono::steady_clock::now();
-            func_ = functional;
         }
-
+        func_ = functional;
     }
 
     explicit CPerformance_Check(std::string name, std::function<void(const std::string, const double)> functional)
