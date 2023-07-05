@@ -29,10 +29,10 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size)
     }
 
     //查看这个链接是否有桥接信息
-    io_bradge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip_);
-    if (io_bradge_connect_id_ > 0)
+    io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip_);
+    if (io_bridge_connect_id_ > 0)
     {
-        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bradge_connect_id_);
+        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bridge_connect_id_);
     }
 
     //加入session 映射
@@ -186,12 +186,13 @@ void CTcpSession::do_read_some(std::error_code ec, std::size_t length)
         //判断是否有桥接
         if (EM_SESSION_STATE::SESSION_IO_BRIDGE == io_state_)
         {
+            recv_data_time_ = std::chrono::steady_clock::now();
             //将数据转发给桥接接口
-            auto ret = App_WorkThreadLogic::instance()->do_io_bridge_data(connect_id_, io_bradge_connect_id_, session_recv_buffer_, length, shared_from_this());
+            auto ret = App_WorkThreadLogic::instance()->do_io_bridge_data(connect_id_, io_bridge_connect_id_, session_recv_buffer_, length, shared_from_this());
             if (1 == ret)
             {
                 //远程IO链接已断开
-                io_bradge_connect_id_ = 0;
+                io_bridge_connect_id_ = 0;
             }
         }
         else
@@ -281,12 +282,12 @@ void CTcpSession::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_
     if (to_io_connect_id > 0)
     {
         io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
-        io_bradge_connect_id_ = from_io_connect_id;
+        io_bridge_connect_id_ = from_io_connect_id;
     }
     else
     {
         io_state_ = EM_SESSION_STATE::SESSION_IO_LOGIC;
-        io_bradge_connect_id_ = 0;
+        io_bridge_connect_id_ = 0;
     }
 }
 

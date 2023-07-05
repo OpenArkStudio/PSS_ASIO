@@ -60,7 +60,7 @@ private:
     shared_ptr<asio::serial_port> serial_port_param_= nullptr;
     uint32 connect_id_ = 0;
     uint32 server_id_ = 0;
-    uint32 io_bradge_connect_id_ = 0;
+    uint32 io_bridge_connect_id_ = 0;
 
     _ClientIPInfo remote_ip_;
     _ClientIPInfo local_ip_;

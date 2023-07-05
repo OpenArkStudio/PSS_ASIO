@@ -102,7 +102,7 @@ bool CIotoIo::regedit_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYP
             is_find = true;
         }
 
-        if (io_connect.from_session_id_ > 0 && io_connect.to_session_id_ > 0)
+        if (io_connect.from_session_id_ > 0 && io_connect.to_session_id_ > 0 && is_find)
         {
             //建立连接关系
             session_to_session_list_.emplace_back(io_connect);

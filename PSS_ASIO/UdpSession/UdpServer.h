@@ -25,7 +25,7 @@ class CUdp_Session_Info
 {
 public:
     uint32 connect_id_ = 0;
-    uint32 io_bradge_connect_id_ = 0;
+    uint32 io_bridge_connect_id_ = 0;
     EM_SESSION_STATE io_state_ = EM_SESSION_STATE::SESSION_IO_LOGIC;
     udp::endpoint send_endpoint;
     size_t recv_data_size_ = 0;

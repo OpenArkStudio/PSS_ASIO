@@ -155,7 +155,7 @@ public:
 
     bool set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id);
 
-    int do_io_bridge_data(uint32 connect_id, uint32 io_bradge_connect_id_, CSessionBuffer& session_recv_buffer, std::size_t length, shared_ptr<ISession> session);
+    int do_io_bridge_data(uint32 connect_id, uint32 io_bridge_connect_id_, CSessionBuffer& session_recv_buffer, std::size_t length, shared_ptr<ISession> session);
 
 private:
     using hashmappluginworkthread = unordered_map<uint32, shared_ptr<CModuleLogic>>;

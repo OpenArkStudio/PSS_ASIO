@@ -124,12 +124,12 @@ void CKcpServer::do_receive_from(std::error_code ec, std::size_t length)
         }
 
         //判断是否有桥接
-        if (EM_SESSION_STATE::SESSION_IO_BRIDGE == io_state_ && io_bradge_connect_id_ > 0)
+        if (EM_SESSION_STATE::SESSION_IO_BRIDGE == io_state_ && io_bridge_connect_id_ > 0)
         {
             //将数据转发给桥接接口
             auto bridge_packet = std::make_shared<CMessage_Packet>();
             bridge_packet->buffer_.append(session_recv_buffer_.read(), length);
-            App_WorkThreadLogic::instance()->send_io_bridge_message(io_bradge_connect_id_, bridge_packet);
+            App_WorkThreadLogic::instance()->send_io_bridge_message(io_bridge_connect_id_, bridge_packet);
             session_recv_buffer_.move(length);
         }
         else
@@ -327,10 +327,10 @@ uint32 CKcpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t l
         }
 
         //查看这个链接是否有桥接信息
-        io_bradge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id, remote_ip);
-        if (io_bradge_connect_id_ > 0)
+        io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id, remote_ip);
+        if (io_bridge_connect_id_ > 0)
         {
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id, io_bradge_connect_id_);
+            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id, io_bridge_connect_id_);
         }
 
         //添加映射关系
@@ -442,12 +442,12 @@ void CKcpServer::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_i
     if (to_io_connect_id > 0)
     {
         io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
-        io_bradge_connect_id_ = from_io_connect_id;
+        io_bridge_connect_id_ = from_io_connect_id;
     }
     else
     {
         io_state_ = EM_SESSION_STATE::SESSION_IO_LOGIC;
-        io_bradge_connect_id_ = 0;
+        io_bridge_connect_id_ = 0;
     }
 }
 

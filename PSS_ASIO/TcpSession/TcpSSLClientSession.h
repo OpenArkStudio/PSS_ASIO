@@ -72,7 +72,7 @@ private:
 
     uint32 server_id_  = 0;
     uint32 connect_id_ = 0;
-    uint32 io_bradge_connect_id_ = 0;
+    uint32 io_bridge_connect_id_ = 0;
     CSessionBuffer session_recv_buffer_;
     CSessionBuffer session_send_buffer_;
 

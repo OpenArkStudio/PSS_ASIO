@@ -65,7 +65,7 @@ private:
     asio::ssl::stream<tcp::socket> ssl_socket_;
     asio::io_context* io_context_ = nullptr;
     uint32 connect_id_ = 0;
-    uint32 io_bradge_connect_id_ = 0;
+    uint32 io_bridge_connect_id_ = 0;
     CSessionBuffer session_recv_buffer_;
     std::string session_send_buffer_;
     shared_ptr<_Packet_Parse_Info> packet_parse_interface_ = nullptr;

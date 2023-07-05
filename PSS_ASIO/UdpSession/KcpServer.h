@@ -142,7 +142,7 @@ private:
 
     udp::socket socket_;
     uint32 connect_client_id_ = 0;
-    uint32 io_bradge_connect_id_ = 0;
+    uint32 io_bridge_connect_id_ = 0;
     udp::endpoint recv_endpoint_;
     
     using mapudpid2endpoint = map<uint32, shared_ptr<CKcp_Session_Info>>;

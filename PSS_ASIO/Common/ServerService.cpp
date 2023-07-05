@@ -63,7 +63,6 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
         *pszEnd = 0;
     }
 #endif
-
     //读取配置文件
     if (false == App_ServerConfig::instance()->read_server_config_file(pss_config_file_name))
     {

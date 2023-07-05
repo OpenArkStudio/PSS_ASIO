@@ -723,14 +723,14 @@ bool CWorkThreadLogic::set_io_bridge_connect_id(uint32 from_io_connect_id, uint3
     }
 }
 
-int CWorkThreadLogic::do_io_bridge_data(uint32 connect_id, uint32 io_bradge_connect_id_, CSessionBuffer& session_recv_buffer, std::size_t length, shared_ptr<ISession> session)
+int CWorkThreadLogic::do_io_bridge_data(uint32 connect_id, uint32 io_bridge_connect_id_, CSessionBuffer& session_recv_buffer, std::size_t length, shared_ptr<ISession> session)
 {
     int ret = 0;
     auto bridge_packet = std::make_shared<CMessage_Packet>();
     bridge_packet->buffer_.append(session_recv_buffer.read(), length);
-    if (io_bradge_connect_id_ > 0)
+    if (io_bridge_connect_id_ > 0)
     {
-        if (false == send_io_bridge_message(io_bradge_connect_id_, bridge_packet))
+        if (false == send_io_bridge_message(io_bridge_connect_id_, bridge_packet))
         {
             //发送失败，将数据包会给业务逻辑去处理
             vector<std::shared_ptr<CMessage_Packet>> message_error_list;

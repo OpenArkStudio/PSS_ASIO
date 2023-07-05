@@ -91,12 +91,14 @@ void CUdpServer::do_receive_from(std::error_code ec, std::size_t length)
 
         if (nullptr != session_info && EM_SESSION_STATE::SESSION_IO_BRIDGE == session_info->io_state_)
         {
+            recv_data_time_ = std::chrono::steady_clock::now();
+            cid_recv_data_time_[connect_id] = std::chrono::steady_clock::now();
             //将数据转发给桥接接口
-            auto ret = App_WorkThreadLogic::instance()->do_io_bridge_data(session_info->connect_id_, session_info->io_bradge_connect_id_, session_recv_buffer_, length, shared_from_this());
+            auto ret = App_WorkThreadLogic::instance()->do_io_bridge_data(session_info->connect_id_, session_info->io_bridge_connect_id_, session_recv_buffer_, length, shared_from_this());
             if (1 == ret)
             {
                 //远程IO链接已断开
-                session_info->io_bradge_connect_id_ = 0;
+                session_info->io_bridge_connect_id_ = 0;
             }
         }
         else
@@ -275,17 +277,17 @@ uint32 CUdpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t l
         packet_parse_interface_->packet_connect_ptr_(connect_id, remote_ip, local_ip, io_type_, App_IoBridge::instance());
 
         //判断是否存在转发接口
-            //添加点对点映射
+        //添加点对点映射
         if (true == App_IoBridge::instance()->regedit_session_id(remote_ip, io_type_, connect_id))
         {
             session_info->io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
         }
 
         //查看这个链接是否有桥接信息
-        session_info->io_bradge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id, remote_ip);
-        if (session_info->io_bradge_connect_id_ > 0)
+        session_info->io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id, remote_ip);
+        if (session_info->io_bridge_connect_id_ > 0)
         {
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(session_info->connect_id_, session_info->io_bradge_connect_id_);
+            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(session_info->connect_id_, session_info->io_bridge_connect_id_);
         }
 
         //添加映射关系
@@ -391,12 +393,12 @@ void CUdpServer::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_i
         if (to_io_connect_id > 0)
         {
             session_info->io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
-            session_info->io_bradge_connect_id_ = from_io_connect_id;
+            session_info->io_bridge_connect_id_ = from_io_connect_id;
         }
         else
         {
             session_info->io_state_ = EM_SESSION_STATE::SESSION_IO_LOGIC;
-            session_info->io_bradge_connect_id_ = 0;
+            session_info->io_bridge_connect_id_ = 0;
         }
     }
 }
