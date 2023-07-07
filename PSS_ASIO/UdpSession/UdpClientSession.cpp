@@ -18,6 +18,11 @@ void CUdpClientSession::start(const CConnect_IO_Info& io_type)
     
     socket_.open(udp::v4());
     socket_.set_option(asio::ip::udp::socket::reuse_address(true));
+    // 设置UDP缓冲区大小为10*1024*1024字节
+    asio::socket_base::receive_buffer_size recvoption(10*1024*1024);
+    asio::socket_base::send_buffer_size sendoption(10*1024*1024);
+    socket_.set_option(recvoption);
+    socket_.set_option(sendoption);
     //判断有没有本地IP
     if (io_type.client_ip.size() > 0 && io_type.client_port > 0)
     {
@@ -228,6 +233,36 @@ uint32 CUdpClientSession::get_mark_id(uint32 connect_id)
     return server_id_;
 }
 
+uint32 CUdpClientSession::get_connect_id() 
+{
+    return connect_id_;
+}
+
+void CUdpClientSession::regedit_session_id(uint32 connect_id)
+{
+    PSS_UNUSED_ARG(connect_id);
+    if (EM_SESSION_STATE::SESSION_IO_BRIDGE != io_state_)
+    {
+        _ClientIPInfo remote_ip;
+        remote_ip.m_strClientIP = socket_.remote_endpoint().address().to_string();
+        remote_ip.m_u2Port = socket_.remote_endpoint().port();
+
+        //添加点对点映射
+        if (true == App_IoBridge::instance()->regedit_session_id(remote_ip, io_type_, connect_id_))
+        {
+            io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
+        }
+
+        //查看这个链接是否有桥接信息
+        io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip);
+        if (io_bridge_connect_id_ > 0)
+        {
+            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bridge_connect_id_);
+        }
+    }
+    return;
+}
+
 void CUdpClientSession::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id)
 {
     if (to_io_connect_id > 0)
@@ -248,7 +283,7 @@ void CUdpClientSession::do_receive_from(std::error_code ec, std::size_t length)
     {
         recv_data_size_ += length;
         session_recv_buffer_.set_write_data(length);
-        PSS_LOGGER_DEBUG("[CUdpClientSession::do_write]recv length={}.", length);
+        //PSS_LOGGER_DEBUG("[CUdpClientSession::do_receive_from]recv length={}.", length);
 
         std::memcpy(session_send_buffer_.get_curr_write_ptr(),
             session_recv_buffer_.read(),
