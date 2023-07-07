@@ -49,6 +49,17 @@ void CCommunicationService::set_connect_id(uint32 server_id, uint32 connect_id)
     }
 }
 
+uint32 CCommunicationService::get_connect_id(uint32 server_id)
+{
+    auto f = communication_list_.find(server_id);
+    if (f != communication_list_.end())
+    {
+        return  f->second.connect_id_ ;
+    }
+
+    return 0;
+}
+
 void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
 {
     communication_list_[connect_info.io_info_.server_id] = connect_info;

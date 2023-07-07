@@ -26,4 +26,8 @@ public:
     virtual bool format_send_packet(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, std::shared_ptr<CMessage_Packet> format_message) = 0;  //格式化发送数据
     virtual bool is_need_send_format() = 0;    //是否需要格式化发送
     virtual bool is_connect() { return true; };  //当前链接状态是否是链接的
+
+    virtual uint32 get_connect_id() = 0;         //获得当前链接connect_id
+
+    virtual void regedit_session_id(uint32 connect_id = 0) = 0; //会话链接建立时为来得及添加映射关系导致注册不成功,提供接口给业务调用
 };

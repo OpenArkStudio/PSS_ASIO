@@ -3,6 +3,11 @@
 CTcpSession::CTcpSession(tcp::socket socket, asio::io_context* io_context)
     : socket_(std::move(socket)), io_context_(io_context)
 {
+    // 设置UDP缓冲区大小为10*1024*1024字节
+    asio::socket_base::receive_buffer_size recvoption(10*1024*1024);
+    asio::socket_base::send_buffer_size sendoption(10*1024*1024);
+    socket_.set_option(recvoption);
+    socket_.set_option(sendoption);
 }
 
 void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size)
@@ -259,6 +264,32 @@ uint32 CTcpSession::get_mark_id(uint32 connect_id)
 {
     PSS_UNUSED_ARG(connect_id);
     return 0;
+}
+
+uint32 CTcpSession::get_connect_id() 
+{
+    return connect_id_;
+}
+
+void CTcpSession::regedit_session_id(uint32 connect_id)
+{
+    PSS_UNUSED_ARG(connect_id);
+    if (EM_SESSION_STATE::SESSION_IO_BRIDGE != io_state_)
+    {
+        //添加点对点映射
+        if (true == App_IoBridge::instance()->regedit_session_id(remote_ip_, io_type_, connect_id_))
+        {
+            io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
+        }
+
+        //查看这个链接是否有桥接信息
+        io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip_);
+        if (io_bridge_connect_id_ > 0)
+        {
+            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bridge_connect_id_);
+        }
+    }
+    return;
 }
 
 std::chrono::steady_clock::time_point& CTcpSession::get_recv_time(uint32 connect_id)

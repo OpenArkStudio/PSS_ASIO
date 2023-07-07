@@ -8,7 +8,7 @@ bool CIotoIo::add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO
         if (true == compare_connect_io(from_io, from_io_type, Connect_Info.from_io_, Connect_Info.from_io_type_))
         {
             //点对点链接已存在，不能添加
-            PSS_LOGGER_DEBUG("[CIotoIo::add_session_io_mapping]from_ioio={}:{} is exist.", from_io.m_strClientIP, from_io.m_u2Port);
+            PSS_LOGGER_DEBUG("[CIotoIo::add_session_io_mapping]from_io={}:{} is exist.", from_io.m_strClientIP, from_io.m_u2Port);
             return false;
         }
     }
@@ -233,7 +233,7 @@ uint32 CIotoIo::get_endpoint_session_id(const _ClientIPInfo& from_io, const CIo_
         //判断两个IP是否相等
         if (from_io == s_2_s.to_io_)
         {
-            return s_2_s.to_session_id_;
+            return s_2_s.from_session_id_;
         }
     }
 

@@ -33,6 +33,8 @@ public:
 
     void set_connect_id(uint32 server_id, uint32 connect_id) final;
 
+    uint32 get_connect_id(uint32 server_id) final;
+
     void close_connect(uint32 server_id) final;
 
     bool is_exist(uint32 server_id) final;

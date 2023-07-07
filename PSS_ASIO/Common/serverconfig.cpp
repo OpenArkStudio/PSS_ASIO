@@ -114,7 +114,7 @@ bool CServerConfig::read_server_config_file(const std::string& file_name)
     }
     catch (const json::parse_error& e)
     {
-        log_screen("[CServerConfig::read_server_config_file]parse error(", e.what(), ")");
+        log_screen("[CServerConfig::read_server_config_file]parse error(", e.what(), ")", "\n");
         return false;
     }
 }

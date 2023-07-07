@@ -10,6 +10,12 @@ CUdpServer::CUdpServer(asio::io_context& io_context, const std::string& server_i
     {
         socket_.open(udp::v4());
         socket_.set_option(asio::ip::udp::socket::reuse_address(true));
+        // 设置UDP缓冲区大小为10*1024*1024字节
+        asio::socket_base::receive_buffer_size recvoption(10*1024*1024);
+        asio::socket_base::send_buffer_size sendoption(10*1024*1024);
+        socket_.set_option(recvoption);
+        socket_.set_option(sendoption);
+    
         udp::endpoint local_endpoint(asio::ip::address_v4::from_string(server_ip), port); 
         socket_.bind(local_endpoint);    // 将套接字绑定到本地地址和端口
     }
@@ -356,6 +362,37 @@ uint32 CUdpServer::get_mark_id(uint32 connect_id)
 {
     PSS_UNUSED_ARG(connect_id);
     return 0;
+}
+
+uint32 CUdpServer::get_connect_id() 
+{
+    return 0;
+}
+
+void CUdpServer::regedit_session_id(uint32 connect_id)
+{
+    auto session_info = find_udp_endpoint_by_id(connect_id);
+
+    if (nullptr != session_info && EM_SESSION_STATE::SESSION_IO_BRIDGE != session_info->io_state_)
+    {
+        _ClientIPInfo remote_ip;
+        remote_ip.m_strClientIP = session_info->send_endpoint.address().to_string();
+        remote_ip.m_u2Port = session_info->send_endpoint.port();
+
+        //添加点对点映射
+        if (true == App_IoBridge::instance()->regedit_session_id(remote_ip, io_type_, connect_id))
+        {
+            session_info->io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
+        }
+
+        //查看这个链接是否有桥接信息
+        session_info->io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id, remote_ip);
+        if (session_info->io_bridge_connect_id_ > 0)
+        {
+            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(session_info->connect_id_, session_info->io_bridge_connect_id_);
+        }
+    }
+    return;
 }
 
 std::chrono::steady_clock::time_point& CUdpServer::get_recv_time(uint32 connect_id)

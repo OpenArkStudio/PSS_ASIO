@@ -184,3 +184,28 @@ bool CSessionService::set_recv_function(shm_queue::shm_key key, const shm_queue:
     return App_QueueSessionManager::instance()->set_recv_function(key, fn_logic);
 }
 
+uint32 CSessionService::get_connect_id(uint32 server_id)
+{
+    if (server_id == 0)
+    {
+        PSS_LOGGER_INFO("[CSessionService::get_connect_id]server id must over 0, get_connect_id fail.");
+        return 0;
+    }
+
+    return App_WorkThreadLogic::instance()->get_connect_id(server_id);
+}
+
+void CSessionService::regedit_session_id(uint32 connect_id)
+{
+    if(connect_id == 0)
+    {
+        PSS_LOGGER_INFO("[CSessionService::regedit_session_id]server id must over 0, regedit_session_id fail.");
+        return;
+    }
+    else
+    {
+        App_WorkThreadLogic::instance()->regedit_session_id(connect_id);
+        return;
+    }
+}
+

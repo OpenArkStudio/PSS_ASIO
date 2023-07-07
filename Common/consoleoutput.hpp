@@ -68,7 +68,7 @@ public:
         }
 
         //设置输出抬头
-        console->set_pattern("[%Y-%m-%d %H:%M:%S.%e:%t][%@] %v");
+        console->set_pattern("[%Y-%m-%d %H:%M:%S.%e][%l][%t][%s %#]%v");
         
         spd::level::level_enum console_level = spdlog::level::info;
         //设置输出等级

@@ -805,6 +805,32 @@ bool CWorkThreadLogic::connect_io_server(const CConnect_IO_Info& io_info, EM_CON
     }
 }
 
+uint32 CWorkThreadLogic::get_connect_id(uint32 server_id) const
+{
+    //寻找当前server_id是否存在
+    if (true == communicate_service_->is_exist(server_id))
+    {
+        PSS_LOGGER_DEBUG("[CWorkThreadLogic::get_connect_id]server_id={0} is exist.",server_id);
+        return communicate_service_->get_connect_id(server_id);
+    }
+    else
+    {
+        PSS_LOGGER_ERROR("[CWorkThreadLogic::get_connect_id]server_id={0} is not exist.",server_id);
+        return 0;
+    }
+}
+
+void CWorkThreadLogic::regedit_session_id(uint32 connect_id) const
+{
+    uint16 curr_thread_index = connect_id % thread_count_;
+    auto module_logic = thread_module_list_[curr_thread_index];
+    auto session = module_logic->get_session_interface(connect_id);
+    if (session != nullptr)
+    {
+        session->regedit_session_id(connect_id);
+    }
+}
+
 void CWorkThreadLogic::close_io_server(uint32 server_id)
 {
     communicate_service_->close_connect(server_id);

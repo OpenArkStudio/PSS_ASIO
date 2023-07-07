@@ -52,6 +52,10 @@ public:
 
     uint32 get_mark_id(uint32 connect_id) final;
 
+    uint32 get_connect_id() final; 
+
+    void regedit_session_id(uint32 connect_id = 0) final;
+
     void set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id) final;
 
     void do_receive_from(std::error_code ec, std::size_t length);

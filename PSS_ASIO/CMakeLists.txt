@@ -19,10 +19,8 @@ file(GLOB THIRD_INCLUDE ${PROJECT_SOURCE_DIR}/third_include/*.h ${PROJECT_SOURCE
 source_group("third_Include" FILES ${THIRD_INCLUDE})
 
 message("----------${PROJECT_SOURCE_DIR}")
-message("kcp is set...begin")
 file(GLOB KCP_FILES ${PROJECT_SOURCE_DIR}/third_include/kcp/*.h ${PROJECT_SOURCE_DIR}/third_include/kcp/*.c)
 source_group("kcp" FILES ${KCP_FILES})
-message("kcp is set...end")
 
 file(GLOB COMMON_FILES Common/*.h Common/*.cpp)
 source_group("Common" FILES ${COMMON_FILES})

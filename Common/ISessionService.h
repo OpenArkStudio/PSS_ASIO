@@ -38,4 +38,8 @@ public:
     virtual bool set_close_function(shm_queue::shm_key key, const shm_queue::queue_close_func& close_func) = 0;
     virtual bool set_error_function(shm_queue::shm_key key, const shm_queue::queue_error_func& error_func) = 0;
     virtual bool set_recv_function(shm_queue::shm_key key, const shm_queue::queue_recv_message_func& fn_logic) = 0;
+
+    virtual uint32 get_connect_id(uint32 server_id) = 0;
+
+    virtual void regedit_session_id(uint32 connect_id = 0) = 0;
 };

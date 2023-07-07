@@ -204,6 +204,17 @@ uint32 CTcpSSLClientSession::get_mark_id(uint32 connect_id)
     return server_id_;
 }
 
+uint32 CTcpSSLClientSession::get_connect_id() 
+{
+    return connect_id_;
+}
+
+void CTcpSSLClientSession::regedit_session_id(uint32 connect_id)
+{
+    PSS_UNUSED_ARG(connect_id);
+    return;
+}
+
 std::chrono::steady_clock::time_point& CTcpSSLClientSession::get_recv_time(uint32 connect_id)
 {
     PSS_UNUSED_ARG(connect_id);

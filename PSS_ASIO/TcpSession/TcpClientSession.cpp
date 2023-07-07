@@ -23,6 +23,11 @@ bool CTcpClientSession::start(const CConnect_IO_Info& io_info)
         asio::ip::tcp::endpoint localEndpoint(asio::ip::address::from_string(io_info.client_ip), io_info.client_port);
         socket_.open(asio::ip::tcp::v4(), connect_error);
         socket_.set_option(asio::ip::tcp::socket::reuse_address(true));
+        // 设置UDP缓冲区大小为10*1024*1024字节
+        asio::socket_base::receive_buffer_size recvoption(10*1024*1024);
+        asio::socket_base::send_buffer_size sendoption(10*1024*1024);
+        socket_.set_option(recvoption);
+        socket_.set_option(sendoption);
 
         try
         {
@@ -201,6 +206,32 @@ uint32 CTcpClientSession::get_mark_id(uint32 connect_id)
     return server_id_;
 }
 
+uint32 CTcpClientSession::get_connect_id() 
+{
+    return connect_id_;
+}
+
+void CTcpClientSession::regedit_session_id(uint32 connect_id)
+{
+    PSS_UNUSED_ARG(connect_id);
+    if (EM_SESSION_STATE::SESSION_IO_BRIDGE != io_state_)
+    {
+        //添加点对点映射
+        if (true == App_IoBridge::instance()->regedit_session_id(remote_ip_, io_type_, connect_id_))
+        {
+            io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
+        }
+
+        //查看这个链接是否有桥接信息
+        io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip_);
+        if (io_bridge_connect_id_ > 0)
+        {
+            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bridge_connect_id_);
+        }
+    }
+    return;
+}
+
 std::chrono::steady_clock::time_point& CTcpClientSession::get_recv_time(uint32 connect_id)
 {
     PSS_UNUSED_ARG(connect_id);
@@ -247,7 +278,7 @@ void CTcpClientSession::do_read_some(std::error_code ec, std::size_t length)
     {
         recv_data_size_ += length;
         session_recv_buffer_.set_write_data(length);
-        PSS_LOGGER_DEBUG("[CTcpClientSession::do_write]recv length={}.", length);
+        //PSS_LOGGER_DEBUG("[CTcpClientSession::do_read_some]recv length={}.", length);
 
         //判断是否有桥接
         if (EM_SESSION_STATE::SESSION_IO_BRIDGE == io_state_)

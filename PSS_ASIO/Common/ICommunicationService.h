@@ -26,4 +26,6 @@ public:
     virtual void close() = 0;
 
     virtual uint32 get_server_id(uint32 connect_id) = 0;
+
+    virtual uint32 get_connect_id(uint32 server_id) = 0;
 };

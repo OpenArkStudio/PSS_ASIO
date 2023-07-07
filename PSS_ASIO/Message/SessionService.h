@@ -38,6 +38,10 @@ public:
     bool set_error_function(shm_queue::shm_key key, const shm_queue::queue_error_func& error_func) final;
     bool set_recv_function(shm_queue::shm_key key, const shm_queue::queue_recv_message_func& fn_logic) final;
 
+    uint32 get_connect_id(uint32 server_id) final;
+
+    void regedit_session_id(uint32 connect_id) final;
+
     void close();
 
 private:

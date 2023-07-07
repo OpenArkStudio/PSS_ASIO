@@ -222,6 +222,17 @@ uint32 CTTyServer::get_mark_id(uint32 connect_id)
     return server_id_;
 }
 
+uint32 CTTyServer::get_connect_id() 
+{
+    return connect_id_;
+}
+
+void CTTyServer::regedit_session_id(uint32 connect_id)
+{
+    PSS_UNUSED_ARG(connect_id);
+    return;
+}
+
 std::chrono::steady_clock::time_point& CTTyServer::get_recv_time(uint32 connect_id)
 {
     PSS_UNUSED_ARG(connect_id);

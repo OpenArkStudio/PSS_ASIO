@@ -14,7 +14,6 @@ class CServerConfig
 {
 public:
     CServerConfig() = default;
-
     bool read_server_config_file(const std::string& file_name = config_file_name);
 
     config_packet_list& get_config_packet_list();

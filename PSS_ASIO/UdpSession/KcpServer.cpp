@@ -431,6 +431,17 @@ uint32 CKcpServer::get_mark_id(uint32 connect_id)
     return 0;
 }
 
+uint32 CKcpServer::get_connect_id() 
+{
+    return 0;
+}
+
+void CKcpServer::regedit_session_id(uint32 connect_id)
+{
+    PSS_UNUSED_ARG(connect_id);
+    return;
+}
+
 std::chrono::steady_clock::time_point& CKcpServer::get_recv_time(uint32 connect_id)
 {
     PSS_UNUSED_ARG(connect_id);
