@@ -90,6 +90,7 @@ bool CIotoIo::regedit_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYP
     //寻找链接是否已经存在
     for (auto& io_connect : io_2_io_list_)
     {
+        is_find = false;
         if (true == compare_connect_io(io_connect.from_io_, io_connect.from_io_type_, from_io, io_type))
         {
             io_connect.from_session_id_ = session_id;
@@ -101,7 +102,7 @@ bool CIotoIo::regedit_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYP
             io_connect.to_session_id_ = session_id;
             is_find = true;
         }
-
+        
         if (io_connect.from_session_id_ > 0 && io_connect.to_session_id_ > 0 && is_find)
         {
             //建立连接关系
@@ -151,7 +152,6 @@ void CIotoIo::unregedit_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_T
         //清理链接失败信息
         delete_session_list(session_id);
     }
-
 }
 
 uint32 CIotoIo::get_to_session_id(uint32 session_id, const _ClientIPInfo& from_io)
