@@ -68,7 +68,7 @@ void CUdpClientSession::start(const CConnect_IO_Info& io_type)
         packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip, local_ip, io_type_, App_IoBridge::instance());
 
         //添加点对点映射
-        if (true == App_IoBridge::instance()->regedit_session_id(remote_ip, io_type_, connect_id_))
+        if (true == App_IoBridge::instance()->regedit_bridge_session_id(remote_ip, io_type_, connect_id_))
         {
             io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
         }
@@ -238,7 +238,7 @@ uint32 CUdpClientSession::get_connect_id()
     return connect_id_;
 }
 
-void CUdpClientSession::regedit_session_id(uint32 connect_id)
+void CUdpClientSession::regedit_bridge_session_id(uint32 connect_id)
 {
     PSS_UNUSED_ARG(connect_id);
     if (EM_SESSION_STATE::SESSION_IO_BRIDGE != io_state_)
@@ -248,7 +248,7 @@ void CUdpClientSession::regedit_session_id(uint32 connect_id)
         remote_ip.m_u2Port = socket_.remote_endpoint().port();
 
         //添加点对点映射
-        if (true == App_IoBridge::instance()->regedit_session_id(remote_ip, io_type_, connect_id_))
+        if (true == App_IoBridge::instance()->regedit_bridge_session_id(remote_ip, io_type_, connect_id_))
         {
             io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
         }

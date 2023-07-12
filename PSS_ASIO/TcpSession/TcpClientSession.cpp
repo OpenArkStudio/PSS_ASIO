@@ -63,7 +63,7 @@ void CTcpClientSession::close(uint32 connect_id)
     _ClientIPInfo remote_ip = remote_ip_;
 
     //清除点对点转发消息映射
-    App_IoBridge::instance()->unregedit_session_id(remote_ip, io_type_);
+    App_IoBridge::instance()->unregedit_bridge_session_id(remote_ip, io_type_);
 
     //放到收发线程去处理
     io_context_->dispatch([self, connect_id, recv_data_size, send_data_size, io_type, remote_ip]() {
@@ -211,13 +211,13 @@ uint32 CTcpClientSession::get_connect_id()
     return connect_id_;
 }
 
-void CTcpClientSession::regedit_session_id(uint32 connect_id)
+void CTcpClientSession::regedit_bridge_session_id(uint32 connect_id)
 {
     PSS_UNUSED_ARG(connect_id);
     if (EM_SESSION_STATE::SESSION_IO_BRIDGE != io_state_)
     {
         //添加点对点映射
-        if (true == App_IoBridge::instance()->regedit_session_id(remote_ip_, io_type_, connect_id_))
+        if (true == App_IoBridge::instance()->regedit_bridge_session_id(remote_ip_, io_type_, connect_id_))
         {
             io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
         }
@@ -343,7 +343,7 @@ void CTcpClientSession::handle_connect(const asio::error_code& ec, tcp::resolver
         packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip_, local_ip_, io_type_, App_IoBridge::instance());
 
         //添加点对点映射
-        if (true == App_IoBridge::instance()->regedit_session_id(remote_ip_, io_type_, connect_id_))
+        if (true == App_IoBridge::instance()->regedit_bridge_session_id(remote_ip_, io_type_, connect_id_))
         {
             io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
         }

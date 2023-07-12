@@ -284,7 +284,7 @@ uint32 CUdpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t l
 
         //判断是否存在转发接口
         //添加点对点映射
-        if (true == App_IoBridge::instance()->regedit_session_id(remote_ip, io_type_, connect_id))
+        if (true == App_IoBridge::instance()->regedit_bridge_session_id(remote_ip, io_type_, connect_id))
         {
             session_info->io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
         }
@@ -369,7 +369,7 @@ uint32 CUdpServer::get_connect_id()
     return 0;
 }
 
-void CUdpServer::regedit_session_id(uint32 connect_id)
+void CUdpServer::regedit_bridge_session_id(uint32 connect_id)
 {
     auto session_info = find_udp_endpoint_by_id(connect_id);
 
@@ -380,7 +380,7 @@ void CUdpServer::regedit_session_id(uint32 connect_id)
         remote_ip.m_u2Port = session_info->send_endpoint.port();
 
         //添加点对点映射
-        if (true == App_IoBridge::instance()->regedit_session_id(remote_ip, io_type_, connect_id))
+        if (true == App_IoBridge::instance()->regedit_bridge_session_id(remote_ip, io_type_, connect_id))
         {
             session_info->io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
         }

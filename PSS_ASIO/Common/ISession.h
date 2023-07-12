@@ -29,5 +29,5 @@ public:
 
     virtual uint32 get_connect_id() = 0;         //获得当前链接connect_id
 
-    virtual void regedit_session_id(uint32 connect_id = 0) = 0; //会话链接建立时为来得及添加映射关系导致注册不成功,提供接口给业务调用
+    virtual void regedit_bridge_session_id(uint32 connect_id = 0) = 0; //会话链接建立时为来得及添加映射关系导致注册不成功,提供接口给业务调用
 };

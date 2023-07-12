@@ -40,7 +40,7 @@ public:
 
     uint32 get_connect_id(uint32 server_id) final;
 
-    void regedit_session_id(uint32 connect_id) final;
+    void regedit_bridge_session_id(uint32 connect_id) final;
 
     void close();
 

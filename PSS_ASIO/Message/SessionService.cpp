@@ -195,16 +195,16 @@ uint32 CSessionService::get_connect_id(uint32 server_id)
     return App_WorkThreadLogic::instance()->get_connect_id(server_id);
 }
 
-void CSessionService::regedit_session_id(uint32 connect_id)
+void CSessionService::regedit_bridge_session_id(uint32 connect_id)
 {
     if(connect_id == 0)
     {
-        PSS_LOGGER_INFO("[CSessionService::regedit_session_id]server id must over 0, regedit_session_id fail.");
+        PSS_LOGGER_INFO("[CSessionService::regedit_bridge_session_id]server id must over 0, regedit_bridge_session_id fail.");
         return;
     }
     else
     {
-        App_WorkThreadLogic::instance()->regedit_session_id(connect_id);
+        App_WorkThreadLogic::instance()->regedit_bridge_session_id(connect_id);
         return;
     }
 }

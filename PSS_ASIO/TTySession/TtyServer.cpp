@@ -42,7 +42,7 @@ void CTTyServer::start(asio::io_context* io_context, const std::string& tty_name
         packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip_, local_ip_, io_type_, App_IoBridge::instance());
 
         //添加点对点映射
-        if (true == App_IoBridge::instance()->regedit_session_id(remote_ip_, io_type_, connect_id_))
+        if (true == App_IoBridge::instance()->regedit_bridge_session_id(remote_ip_, io_type_, connect_id_))
         {
             io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
         }
@@ -227,7 +227,7 @@ uint32 CTTyServer::get_connect_id()
     return connect_id_;
 }
 
-void CTTyServer::regedit_session_id(uint32 connect_id)
+void CTTyServer::regedit_bridge_session_id(uint32 connect_id)
 {
     PSS_UNUSED_ARG(connect_id);
     return;

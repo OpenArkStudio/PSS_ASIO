@@ -24,8 +24,8 @@ bool CIotoIo::add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO
     io_2_io_list_.emplace_back(connect_info);
 
     //查找当前链接是否存在了
-    auto from_session_id = get_regedit_session_id(from_io, from_io_type);
-    auto to_session_id = get_regedit_session_id(to_io, to_io_type);
+    auto from_session_id = get_regedit_bridge_session_id(from_io, from_io_type);
+    auto to_session_id = get_regedit_bridge_session_id(to_io, to_io_type);
 
     if (from_session_id > 0 && to_session_id > 0)
     {
@@ -80,7 +80,7 @@ bool CIotoIo::delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT
     return true;
 }
 
-bool CIotoIo::regedit_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type, uint32 session_id)
+bool CIotoIo::regedit_bridge_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type, uint32 session_id)
 {
     std::lock_guard <std::mutex> lock(mutex_);
     auto from_io_key = get_connect_list_key(from_io, io_type);
@@ -114,7 +114,7 @@ bool CIotoIo::regedit_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYP
     return is_find;
 }
 
-void CIotoIo::unregedit_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type)
+void CIotoIo::unregedit_bridge_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type)
 {
     std::lock_guard <std::mutex> lock(mutex_);
     //链接失效
@@ -254,7 +254,7 @@ bool CIotoIo::compare_connect_io(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYP
     }
 }
 
-uint32 CIotoIo::get_regedit_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type)
+uint32 CIotoIo::get_regedit_bridge_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type)
 {
     auto from_io_key = get_connect_list_key(from_io, io_type);
 

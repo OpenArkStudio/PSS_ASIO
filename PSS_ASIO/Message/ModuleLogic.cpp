@@ -820,14 +820,14 @@ uint32 CWorkThreadLogic::get_connect_id(uint32 server_id) const
     }
 }
 
-void CWorkThreadLogic::regedit_session_id(uint32 connect_id) const
+void CWorkThreadLogic::regedit_bridge_session_id(uint32 connect_id) const
 {
     uint16 curr_thread_index = connect_id % thread_count_;
     auto module_logic = thread_module_list_[curr_thread_index];
     auto session = module_logic->get_session_interface(connect_id);
     if (session != nullptr)
     {
-        session->regedit_session_id(connect_id);
+        session->regedit_bridge_session_id(connect_id);
     }
 }
 

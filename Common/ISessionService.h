@@ -41,5 +41,5 @@ public:
 
     virtual uint32 get_connect_id(uint32 server_id) = 0;
 
-    virtual void regedit_session_id(uint32 connect_id = 0) = 0;
+    virtual void regedit_bridge_session_id(uint32 connect_id = 0) = 0;
 };

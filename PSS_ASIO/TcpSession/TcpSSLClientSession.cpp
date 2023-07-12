@@ -209,7 +209,7 @@ uint32 CTcpSSLClientSession::get_connect_id()
     return connect_id_;
 }
 
-void CTcpSSLClientSession::regedit_session_id(uint32 connect_id)
+void CTcpSSLClientSession::regedit_bridge_session_id(uint32 connect_id)
 {
     PSS_UNUSED_ARG(connect_id);
     return;
@@ -352,7 +352,7 @@ void CTcpSSLClientSession::handshake()
                 self->packet_parse_interface_->packet_connect_ptr_(self->connect_id_, self->remote_ip_, self->local_ip_, self->io_type_, App_IoBridge::instance());
 
                 //添加点对点映射
-                if (true == App_IoBridge::instance()->regedit_session_id(self->remote_ip_, self->io_type_, self->connect_id_))
+                if (true == App_IoBridge::instance()->regedit_bridge_session_id(self->remote_ip_, self->io_type_, self->connect_id_))
                 {
                     self->io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
                 }

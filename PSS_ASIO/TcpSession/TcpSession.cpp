@@ -28,7 +28,7 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size)
     packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip_, local_ip_, io_type_, App_IoBridge::instance());
 
     //添加点对点映射
-    if (true == App_IoBridge::instance()->regedit_session_id(remote_ip_, io_type_, connect_id_))
+    if (true == App_IoBridge::instance()->regedit_bridge_session_id(remote_ip_, io_type_, connect_id_))
     {
         io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
     }
@@ -82,7 +82,7 @@ void CTcpSession::close(uint32 connect_id)
     if (EM_SESSION_STATE::SESSION_IO_BRIDGE == io_state_)
     {
         //清除点对点转发消息映射
-        App_IoBridge::instance()->unregedit_session_id(remote_ip, io_type_);
+        App_IoBridge::instance()->unregedit_bridge_session_id(remote_ip, io_type_);
     }
 
     //关闭链接放到IO收发线程里去做
@@ -271,13 +271,13 @@ uint32 CTcpSession::get_connect_id()
     return connect_id_;
 }
 
-void CTcpSession::regedit_session_id(uint32 connect_id)
+void CTcpSession::regedit_bridge_session_id(uint32 connect_id)
 {
     PSS_UNUSED_ARG(connect_id);
     if (EM_SESSION_STATE::SESSION_IO_BRIDGE != io_state_)
     {
         //添加点对点映射
-        if (true == App_IoBridge::instance()->regedit_session_id(remote_ip_, io_type_, connect_id_))
+        if (true == App_IoBridge::instance()->regedit_bridge_session_id(remote_ip_, io_type_, connect_id_))
         {
             io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
         }
@@ -289,7 +289,6 @@ void CTcpSession::regedit_session_id(uint32 connect_id)
             App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bridge_connect_id_);
         }
     }
-    return;
 }
 
 std::chrono::steady_clock::time_point& CTcpSession::get_recv_time(uint32 connect_id)

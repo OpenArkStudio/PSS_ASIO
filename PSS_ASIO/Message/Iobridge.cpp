@@ -45,14 +45,14 @@ bool CIoBridge::delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNE
     return iotoio_.delete_session_io_mapping(from_io, from_io_type);
 }
 
-bool CIoBridge::regedit_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type, uint32 session_id)
+bool CIoBridge::regedit_bridge_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type, uint32 session_id)
 {
-    return iotoio_.regedit_session_id(from_io, io_type, session_id);
+    return iotoio_.regedit_bridge_session_id(from_io, io_type, session_id);
 }
 
-void CIoBridge::unregedit_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type)
+void CIoBridge::unregedit_bridge_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type)
 {
-    return iotoio_.unregedit_session_id(from_io, io_type);
+    return iotoio_.unregedit_bridge_session_id(from_io, io_type);
 }
 
 uint32 CIoBridge::get_to_session_id(uint32 session_id, const _ClientIPInfo& from_io)
