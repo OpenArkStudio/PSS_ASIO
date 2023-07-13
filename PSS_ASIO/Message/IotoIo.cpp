@@ -42,23 +42,12 @@ bool CIotoIo::delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT
     std::lock_guard <std::mutex> lock(mutex_);
     
     int connect_pos = 0;
-    uint32 session_id = 0;
-
     bool is_break = false;
     for (const auto& io_connect : io_2_io_list_)
     {
         if (true == compare_connect_io(from_io, from_io_type, io_connect.from_io_, io_connect.from_io_type_))
         {
             //找到了，删除之
-            session_id = io_connect.from_session_id_;
-            io_2_io_list_.erase(io_2_io_list_.begin() + connect_pos);
-            is_break = true;
-        }
-
-        if (is_break == false && true == compare_connect_io(from_io, from_io_type, io_connect.to_io_, io_connect.to_io_type_))
-        {
-            //找到了，删除之
-            session_id = io_connect.to_session_id_;
             io_2_io_list_.erase(io_2_io_list_.begin() + connect_pos);
             is_break = true;
         }
@@ -71,11 +60,26 @@ bool CIotoIo::delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT
         connect_pos++;
     }
 
-    //如果发现存在session_id，则解除关联
-    if (session_id > 0)
+    connect_pos = 0;
+    is_break = false;
+    for (const auto& io_connect : io_2_io_list_)
     {
-        delete_session_list(session_id);
+        if (true == compare_connect_io(from_io, from_io_type, io_connect.to_io_, io_connect.to_io_type_))
+        {
+            io_2_io_list_.erase(io_2_io_list_.begin() + connect_pos);
+            is_break = true;
+        }
+
+        if (is_break == true)
+        {
+            break;
+        }
+
+        connect_pos++;
     }
+
+    delete_session_list(from_io, from_io_type);
+    delete_connect_list(from_io, from_io_type);
 
     return true;
 }
@@ -150,7 +154,7 @@ void CIotoIo::unregedit_bridge_session_id(const _ClientIPInfo& from_io, EM_CONNE
         }
 
         //清理链接失败信息
-        delete_session_list(session_id);
+        delete_session_list(from_io, io_type);
     }
 }
 
@@ -292,12 +296,12 @@ std::string CIotoIo::get_connect_list_key(const _ClientIPInfo& from_io, EM_CONNE
     return from_io_key;
 }
 
-void CIotoIo::delete_session_list(uint32 session_id)
+void CIotoIo::delete_session_list(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type)
 {
     int session_list_pos = 0;
     for (auto s_2_s : session_to_session_list_)
     {
-        if (s_2_s.from_session_id_ == session_id || s_2_s.to_session_id_ == session_id)
+        if (s_2_s.from_io_ == from_io && s_2_s.from_io_type_ == io_type)
         {
             session_to_session_list_.erase(session_to_session_list_.begin() + session_list_pos);
             break;
@@ -305,3 +309,17 @@ void CIotoIo::delete_session_list(uint32 session_id)
         session_list_pos++;
     }
 }
+
+void CIotoIo::delete_connect_list(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type)
+{
+    auto from_io_key = get_connect_list_key(from_io, io_type);
+
+    auto f = connect_list_.find(from_io_key);
+    if (f != connect_list_.end())
+    {
+        //删除链接消息
+        connect_list_.erase(from_io_key);
+    }
+}
+
+

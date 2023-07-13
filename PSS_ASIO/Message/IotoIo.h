@@ -64,7 +64,9 @@ private:
 
     std::string get_connect_list_key(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type) const;
 
-    void delete_session_list(uint32 session_id);
+    void delete_session_list(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type);
+
+    void delete_connect_list(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type);
 
     using hashmapconnectlist = unordered_map<std::string, uint32>;
     hashmapconnectlist connect_list_;
