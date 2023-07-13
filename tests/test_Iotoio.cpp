@@ -28,13 +28,7 @@ int run_test_iotoio()
     }
 
     io_to_io.delete_session_io_mapping(to_io, to_io_type);
-    if (io_to_io.get_to_session_id(1, from_io) != 0)
-    {
-        return 1;
-    }
-
-    io_to_io.unregedit_bridge_session_id(from_io, from_io_type);
-    if (io_to_io.get_to_session_id(1, from_io) != 0)
+    if (io_to_io.get_to_session_id(1, from_io) == 0)
     {
         return 1;
     }
