@@ -25,10 +25,7 @@ ADD_LIBRARY(${PROJECT_NAME} SHARED
 	${MAIN_FILES}
 	)
 
-#ifwindows	
-#__DEBUG;_USRDLL;TEST_LOGIC_EXPORTS;_WINDOWS;%(PreprocessorDefinitions)
 if(WIN32)
-	message("OS is windows...")
 	if(CMAKE_BUILD_TYPE MATCHES "debug")
 		add_definitions(
 		-D_DEBUG

@@ -323,6 +323,7 @@ void CUdpClientSession::do_receive_from(std::error_code ec, std::size_t length)
 
         }
 
+        session_recv_buffer_.move(length);
         //继续读数据
         do_receive();
     }

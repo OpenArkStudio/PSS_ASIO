@@ -27,7 +27,7 @@ class CCommunicationService : public ICommunicationInterface
 public:
     ~CCommunicationService() final = default;
 
-    void init_communication_service(asio::io_context* io_service_context, uint16 timeout_seconds) final;
+    void init_communication_service(CreateIoContextCallbackFunc callback, uint16 timeout_seconds) final;
 
     bool add_connect(const CConnect_IO_Info& io_info, EM_CONNECT_IO_TYPE io_type) final;
 
@@ -59,7 +59,7 @@ private:
     communication_list communication_list_;
     server_connect_id_list server_connect_id_list_;
     std::recursive_mutex mutex_;
-    asio::io_context* io_service_context_ = nullptr;
+    CreateIoContextCallbackFunc callback_;
     bool communication_is_run_ = false;
 };
 

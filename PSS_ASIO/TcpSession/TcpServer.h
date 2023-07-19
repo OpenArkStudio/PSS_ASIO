@@ -1,11 +1,12 @@
 ﻿#pragma once
 
 #include "TcpSession.h"
+#include "IoContextPool.h"
 
 class CTcpServer
 {
 public:
-    CTcpServer(asio::io_context& io_context, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_recv_size);
+    CTcpServer(CreateIoContextCallbackFunc callback, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_recv_size);
 
     void close() const;
 
@@ -17,6 +18,6 @@ private:
     std::shared_ptr<tcp::acceptor> acceptor_;
     uint32 packet_parse_id_ = 0;
     uint32 max_recv_size_ = 0;
-    asio::io_context* io_context_ = nullptr;
+    CreateIoContextCallbackFunc callback_;
 };
 

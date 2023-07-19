@@ -261,5 +261,22 @@ inline std::chrono::seconds get_time_delay(std::string date)
     return delete_seconds;
 }
 
+inline vector<std::string> string_split(const string& srcStr, const string& delim)
+{
+    int nPos = 0;
+    vector<string> vec;
+    string strtmp = srcStr;
+    nPos = strtmp.find(delim.c_str());
+    while(-1 != nPos)
+    {
+        string temp = strtmp.substr(0, nPos);
+        vec.push_back(temp);
+        strtmp = strtmp.substr(nPos+1);
+        nPos = strtmp.find(delim.c_str());
+    }
+    vec.push_back(strtmp);
+    return vec;
+}
+
 //接口函数模板
 using Logic_message_dispose_fn = std::function<int(const CMessage_Source&, std::shared_ptr<CMessage_Packet>, std::shared_ptr<CMessage_Packet>)>;

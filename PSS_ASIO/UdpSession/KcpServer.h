@@ -83,7 +83,7 @@ public:
 class CKcpServer : public std::enable_shared_from_this<CKcpServer>, public ISession
 {
 public:
-    CKcpServer(asio::io_context& io_context, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size);
+    CKcpServer(asio::io_context* io_context, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size);
 
     void start();
 

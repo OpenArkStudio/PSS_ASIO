@@ -18,7 +18,6 @@ source_group("proc_common" FILES ${PROC_COMMON})
 file(GLOB THIRD_INCLUDE ${PROJECT_SOURCE_DIR}/third_include/*.h ${PROJECT_SOURCE_DIR}/third_include/*.hpp)
 source_group("third_Include" FILES ${THIRD_INCLUDE})
 
-message("----------${PROJECT_SOURCE_DIR}")
 file(GLOB KCP_FILES ${PROJECT_SOURCE_DIR}/third_include/kcp/*.h ${PROJECT_SOURCE_DIR}/third_include/kcp/*.c)
 source_group("kcp" FILES ${KCP_FILES})
 
@@ -66,10 +65,7 @@ add_executable(pss_asio
 	${QUEUESESSION_FILES}
 	)
 
-#ifwindows	
-#_DEBUG;_CONSOLE;_WIN32_WINDOWS;_WINSOCK_DEPRECATED_NO_WARNINGS;ASIO_HAS_SERIAL_PORT;ASIO_HAS_IOCP;
 if(WIN32)
-	message("OS is windows...")
 	if(CMAKE_BUILD_TYPE MATCHES "debug")
 		add_definitions(
 		-D_DEBUG

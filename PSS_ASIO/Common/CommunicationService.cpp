@@ -1,9 +1,9 @@
 ﻿#include "CommunicationService.h"
 
-void CCommunicationService::init_communication_service(asio::io_context* io_service_context, uint16 timeout_seconds)
+void CCommunicationService::init_communication_service(CreateIoContextCallbackFunc callback, uint16 timeout_seconds)
 {
     //读取配置文件，链接服务器
-    io_service_context_ = io_service_context;
+    callback_ = callback;
 
     //定时检查任务，检查服务器间链接的状态。
     App_TimerManager::instance()->GetTimerPtr()->addTimer_loop(chrono::seconds(0), chrono::seconds(timeout_seconds), [this]()
@@ -73,7 +73,7 @@ void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
     if (connect_info.io_type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_TCP)
     {
         //IO是TCP
-        auto tcp_client_session = make_shared<CTcpClientSession>(io_service_context_);
+        auto tcp_client_session = make_shared<CTcpClientSession>(callback_());
         if (true == tcp_client_session->start(connect_info.io_info_))
         {
             communication_list_[connect_info.io_info_.server_id].session_ = tcp_client_session;
@@ -82,7 +82,7 @@ void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
     else if(connect_info.io_type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_UDP)
     {
         //IO是UDP
-        auto udp_client_session = make_shared<CUdpClientSession>(io_service_context_);
+        auto udp_client_session = make_shared<CUdpClientSession>(callback_());
         udp_client_session->start(connect_info.io_info_);
         communication_list_[connect_info.io_info_.server_id].session_ = udp_client_session;
     }
@@ -93,7 +93,7 @@ void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
             connect_info.io_info_.packet_parse_id,
             connect_info.io_info_.recv_size,
             connect_info.io_info_.send_size);
-        tty_client_session->start(io_service_context_,
+        tty_client_session->start(callback_(),
             connect_info.io_info_.server_ip,
             connect_info.io_info_.server_port,
             8,
@@ -103,7 +103,7 @@ void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
     else if (connect_info.io_type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_SSL)
     {
 #ifdef SSL_SUPPORT
-        auto ssl_client_session = make_shared<CTcpSSLClientSession>(io_service_context_);
+        auto ssl_client_session = make_shared<CTcpSSLClientSession>(callback_());
         ssl_client_session->start(connect_info.io_info_);
         communication_list_[connect_info.io_info_.server_id].session_ = ssl_client_session;
 #else

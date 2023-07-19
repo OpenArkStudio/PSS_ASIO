@@ -1,10 +1,10 @@
 #ifndef PSS_CONSOLE_OUTPUT_H
 #define PSS_CONSOLE_OUTPUT_H
 
-//ÆÁÄ»Êä³ö¹Ü¿Ø
+//å±å¹•è¾“å‡ºç®¡æ§
 //add by freeyes
 
-//ÕâÀïÊ¹ÓÃµÚÈı·½µÄ¸ñÊ½»¯´úÂë
+//è¿™é‡Œä½¿ç”¨ç¬¬ä¸‰æ–¹çš„æ ¼å¼åŒ–ä»£ç 
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_DEBUG
 #include "spdlog/spdlog.h"
 #include "spdlog/cfg/env.h"
@@ -17,30 +17,30 @@
 
 namespace spd = spdlog;
 
-//¶¨Òå²Ù×÷ºê
+//å®šä¹‰æ“ä½œå®
 #define PSS_LOGGER_DEBUG(...) SPDLOG_LOGGER_DEBUG(spdlog::default_logger(), __VA_ARGS__)
 #define PSS_LOGGER_INFO(...) SPDLOG_LOGGER_INFO(spdlog::default_logger(), __VA_ARGS__)
 #define PSS_LOGGER_WARN(...) SPDLOG_LOGGER_WARN(spdlog::default_logger(), __VA_ARGS__)
 #define PSS_LOGGER_ERROR(...) SPDLOG_LOGGER_ERROR(spdlog::default_logger(), __VA_ARGS__)
 
-//Êä³öÖ¸¶¨³¤¶ÈµÄ¶ş½øÖÆÊı¾İ
+//è¾“å‡ºæŒ‡å®šé•¿åº¦çš„äºŒè¿›åˆ¶æ•°æ®
 inline void pss_output_binary(const char* buffer, int begin, int end)
 {
     spdlog::default_logger()->info("[data]{:n}.", spdlog::to_hex(buffer + begin, buffer + end));
 }
 
-//Êä³öÅäÖÃ½á¹¹
+//è¾“å‡ºé…ç½®ç»“æ„
 class Console_Output_Info
 {
 public:
-    bool m_blTunOn               = true;              //trueÎªÆÁÄ»Êä³ö, falseÎªÎÄ¼şÊä³ö
+    bool m_blTunOn               = true;              //trueä¸ºå±å¹•è¾“å‡º, falseä¸ºæ–‡ä»¶è¾“å‡º
     int  m_nLogFileMaxSize       = 1024000;           
     int  m_nFileCount            = 0;
     std::string m_strConsoleName = "./consoleoutput";
     std::string m_strLevel       = "info";
 };
 
-//Êä³öº¯ÊıÀà
+//è¾“å‡ºå‡½æ•°ç±»
 class CConsoleOutput
 {
 public:
@@ -55,23 +55,23 @@ public:
         std::shared_ptr<spdlog::logger> console = nullptr;
         if (!m_Console_Output_Info.m_blTunOn)
         {
-            //ÆÁÄ»Êä³ö
+            //å±å¹•è¾“å‡º
             console = spdlog::stdout_color_mt("console");
         }
         else
         {
-            //ÎÄ¼şÊä³ö
+            //æ–‡ä»¶è¾“å‡º
             console = spdlog::rotating_logger_mt("console",
                 m_Console_Output_Info.m_strConsoleName.c_str(), 
                 m_Console_Output_Info.m_nLogFileMaxSize,
                 m_Console_Output_Info.m_nFileCount);
         }
 
-        //ÉèÖÃÊä³öÌ§Í·
+        //è®¾ç½®è¾“å‡ºæŠ¬å¤´
         console->set_pattern("[%Y-%m-%d %H:%M:%S.%e][%l][%t][%s %#]%v");
         
         spd::level::level_enum console_level = spdlog::level::info;
-        //ÉèÖÃÊä³öµÈ¼¶
+        //è®¾ç½®è¾“å‡ºç­‰çº§
         if (m_Console_Output_Info.m_strLevel == "info")
         {
             console_level = spdlog::level::info;

@@ -1,12 +1,13 @@
 ﻿#include "TcpServer.h"
 
-CTcpServer::CTcpServer(asio::io_context& io_context, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_buffer_size)
+CTcpServer::CTcpServer(CreateIoContextCallbackFunc callback, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_buffer_size)
     : packet_parse_id_(packet_parse_id), max_recv_size_(max_buffer_size)
 {
     try
     {
-        io_context_ = &io_context;
-        acceptor_ = std::make_shared<tcp::acceptor>(io_context, tcp::endpoint(asio::ip::address_v4::from_string(server_ip), port));
+        callback_ = callback;
+        asio::io_context* iocontext = callback_();
+        acceptor_ = std::make_shared<tcp::acceptor>(*iocontext, tcp::endpoint(asio::ip::address_v4::from_string(server_ip), port));
 
         //处理链接建立消息
         PSS_LOGGER_INFO("[CTcpServer::do_accept]({0}:{1}) Begin Accept.",
@@ -36,7 +37,7 @@ void CTcpServer::do_accept()
         {
             if (!ec)
             {
-                std::make_shared<CTcpSession>(std::move(socket), io_context_)->open(packet_parse_id_, max_recv_size_);
+                std::make_shared<CTcpSession>(std::move(socket), callback_())->open(packet_parse_id_, max_recv_size_);
             }
             else
             {

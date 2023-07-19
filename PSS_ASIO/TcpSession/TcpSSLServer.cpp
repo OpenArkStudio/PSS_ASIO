@@ -1,7 +1,7 @@
 #include "TcpSSLServer.h"
 #ifdef SSL_SUPPORT
 
-CTcpSSLServer::CTcpSSLServer(asio::io_context& io_context, 
+CTcpSSLServer::CTcpSSLServer(CreateIoContextCallbackFunc callback,
     std::string server_ip, 
     io_port_type port,
     uint32 packet_parse_id, 
@@ -14,12 +14,13 @@ packet_parse_id_(packet_parse_id),
 max_recv_size_(max_recv_size),
 ssl_server_password_(ssl_server_password),
 ssl_server_pem_file_(ssl_server_pem_file),
-ssl_server_dh_file_(ssl_server_dh_file),
-io_context_(&io_context)
+ssl_server_dh_file_(ssl_server_dh_file)
 {
     try
     {
-        acceptor_ = std::make_shared<tcp::acceptor>(io_context, tcp::endpoint(asio::ip::address_v4::from_string(server_ip), port));
+        callback_ = callback;
+        asio::io_context* iocontext = callback_();
+        acceptor_ = std::make_shared<tcp::acceptor>(*iocontext, tcp::endpoint(asio::ip::address_v4::from_string(server_ip), port));
 
         context_.set_options(
             asio::ssl::context::default_workarounds
@@ -63,7 +64,7 @@ void CTcpSSLServer::do_accept()
             {
                 std::make_shared<CTcpSSLSession>(
                     asio::ssl::stream<tcp::socket>(
-                        std::move(socket), context_), io_context_)->open(packet_parse_id_, max_recv_size_);
+                        std::move(socket), context_), callback_())->open(packet_parse_id_, max_recv_size_);
             }
             else
             {

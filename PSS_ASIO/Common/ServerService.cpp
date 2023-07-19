@@ -103,13 +103,14 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
     ::SetConsoleCtrlHandler(ConsoleHandlerRoutine, TRUE);
 #endif
 
+    asio::io_context* io_contex = App_IoContextPool::instance()->getIOContext();
     //注册监控中断事件(LINUX)
-    asio::signal_set signals(io_context_, SIGINT, SIGTERM);
+    asio::signal_set signals(*io_contex, SIGINT, SIGTERM);
     signals.async_wait(
         [this](std::error_code ec, int)
         {
             PSS_LOGGER_DEBUG("[CServerService::init_servce] server is error({0}).", ec.message());
-            io_context_.stop();
+            App_IoContextPool::instance()->stop();
         });
 
     //测试记录二进制
@@ -117,12 +118,12 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
     char test_buffer[20] = { "freeeyes" };
     pss_output_binary(test_buffer, 0, 3);
 #endif
-    
+
     //初始化框架定时器
     App_TimerManager::instance()->Start();
 
     //启动服务器间链接库
-    App_CommunicationService::instance()->init_communication_service(&io_context_,
+    App_CommunicationService::instance()->init_communication_service(CreateIoContextFunctor,
         (uint16)App_ServerConfig::instance()->get_config_workthread().s2s_timeout_seconds_);
 
     App_WorkThreadLogic::instance()->init_communication_service(App_CommunicationService::instance());
@@ -143,7 +144,7 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
             && tcp_server.ssl_dh_pem_file_ != "")
         {
 #ifdef SSL_SUPPORT
-            auto tcp_ssl_service = make_shared<CTcpSSLServer>(io_context_,
+            auto tcp_ssl_service = make_shared<CTcpSSLServer>(CreateIoContextFunctor,
                 tcp_server.ip_,
                 tcp_server.port_,
                 tcp_server.packet_parse_id_,
@@ -159,7 +160,7 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
         else
         {
             //正常的tcp链接
-            auto tcp_service = make_shared<CTcpServer>(io_context_,
+            auto tcp_service = make_shared<CTcpServer>(CreateIoContextFunctor,
                 tcp_server.ip_,
                 tcp_server.port_,
                 tcp_server.packet_parse_id_,
@@ -171,7 +172,7 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
     //加载UDP监听
     for (auto udp_server : App_ServerConfig::instance()->get_config_udp_list())
     {
-        auto udp_service = make_shared<CUdpServer>(io_context_, 
+        auto udp_service = make_shared<CUdpServer>(CreateIoContextFunctor(), 
             udp_server.ip_,
             udp_server.port_,
             udp_server.packet_parse_id_,
@@ -185,7 +186,7 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
     //加载KCP监听
     for (auto kcp_server : App_ServerConfig::instance()->get_config_kcp_list())
     {
-        auto kcp_service = make_shared<CKcpServer>(io_context_,
+        auto kcp_service = make_shared<CKcpServer>(CreateIoContextFunctor(),
             kcp_server.ip_,
             kcp_server.port_,
             kcp_server.packet_parse_id_,
@@ -202,7 +203,7 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
             tty_server.packet_parse_id_,
             tty_server.recv_buff_size_,
             tty_server.send_buff_size_);
-        tty_service->start(&io_context_, 
+        tty_service->start(CreateIoContextFunctor(), 
             tty_server.tty_name_, 
             (uint16)tty_server.tty_port_,
             (uint8)tty_server.char_size_,
@@ -213,7 +214,7 @@ bool CServerService::init_servce(const std::string& pss_config_file_name)
     //打开服务器间链接
     App_CommunicationService::instance()->run_server_to_server();
 
-    io_context_.run();
+    App_IoContextPool::instance()->run();
 
     PSS_LOGGER_DEBUG("[CServerService::init_servce] server is over.");
     close_service();
@@ -265,5 +266,5 @@ void CServerService::close_service()
 void CServerService::stop_service()
 {
     //停止，回收清理
-    io_context_.stop();
+    App_IoContextPool::instance()->stop();
 }

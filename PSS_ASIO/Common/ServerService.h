@@ -12,6 +12,7 @@
 #include "serverconfig.h"
 #include "CommunicationService.h"
 #include "SessionService.h"
+#include "IoContextPool.h"
 
 #if PSS_PLATFORM == PLATFORM_WIN
 #include <tchar.h>
@@ -35,8 +36,6 @@ private:
 #ifdef SSL_SUPPORT
     vector<shared_ptr<CTcpSSLServer>> tcp_ssl_service_list_;
 #endif
-
-    asio::io_context io_context_;
 };
 
 using App_ServerService = PSS_singleton<CServerService>;

@@ -3,11 +3,12 @@
 #ifdef SSL_SUPPORT
 
 #include "TcpSSLSession.h"
+#include "IoContextPool.h"
 
 class CTcpSSLServer
 {
 public:
-    CTcpSSLServer(asio::io_context& io_context, 
+    CTcpSSLServer(CreateIoContextCallbackFunc callback, 
         std::string server_ip, 
         io_port_type port,
         uint32 packet_parse_id, 
@@ -32,7 +33,7 @@ private:
     std::string ssl_server_password_;
     std::string ssl_server_pem_file_;
     std::string ssl_server_dh_file_;
-    asio::io_context* io_context_ = nullptr;
+    CreateIoContextCallbackFunc callback_;
 };
 
 #endif
