@@ -184,9 +184,12 @@ void CKcpServer::close_all()
     for (const auto& session_info : udp_id_2_endpoint_list_)
     {
         session_info.second->close_kcp();
+        this->close(session_info.first);
     }
 
     udp_id_2_endpoint_list_.clear();
+    udp_endpoint_2_id_list_.clear();
+    socket_.close();
 }
 
 void CKcpServer::set_write_buffer(uint32 connect_id, const char* data, size_t length)

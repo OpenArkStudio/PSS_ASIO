@@ -209,3 +209,12 @@ void CSessionService::regedit_bridge_session_id(uint32 connect_id)
     }
 }
 
+void CSessionService::start_single_service(const CConfigNetIO& netio)
+{
+    return App_NetSvrManager::instance()->start_single_service(netio);
+}
+
+void CSessionService::close_single_service(const CConfigNetIO& netio)
+{
+    return App_NetSvrManager::instance()->close_single_service(netio);
+}

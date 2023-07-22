@@ -45,6 +45,8 @@ public:
 
     void close(uint32 connect_id) final;
 
+    void close_all();
+
     void set_write_buffer(uint32 connect_id, const char* data, size_t length) final;
 
     void do_write(uint32 connect_id) final;
@@ -104,5 +106,7 @@ private:
     using hashmapcid_recv_data_time = unordered_map<uint32, std::chrono::steady_clock::time_point>;
     hashmapcid_recv_data_time cid_recv_data_time_;
 
+    string server_ip_;
+    io_port_type server_port_;
 };
 

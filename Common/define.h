@@ -90,6 +90,7 @@ class CConfigNetIO
 public:
     std::string ip_;
     io_port_type port_ = 0;
+    std::string protocol_type_ = "TCP";
     unsigned int packet_parse_id_ = 0;
     unsigned int recv_buff_size_ = 1024;
     unsigned int send_buff_size_ = 1024;

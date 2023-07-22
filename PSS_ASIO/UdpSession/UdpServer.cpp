@@ -1,7 +1,7 @@
 ﻿#include "UdpServer.h"
 
 CUdpServer::CUdpServer(asio::io_context* io_context, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size, EM_NET_TYPE em_net_type)
-    : socket_(*io_context), max_recv_size_(max_recv_size), max_send_size_(max_send_size), io_context_(io_context)
+    : socket_(*io_context), max_recv_size_(max_recv_size), max_send_size_(max_send_size), io_context_(io_context),server_ip_(server_ip),server_port_(port)
 {
     //处理链接建立消息
     PSS_LOGGER_DEBUG("[CUdpServer::do_accept]{0}:{1} Begin Accept.", server_ip, port);
@@ -73,65 +73,72 @@ void CUdpServer::do_receive()
 
 void CUdpServer::do_receive_from(std::error_code ec, std::size_t length)
 {
-    //查询当前的connect_id
-    auto connect_id = add_udp_endpoint(recv_endpoint_, length, max_send_size_);
-
-    if (!ec && length > 0)
+    try 
     {
-        //处理数据包
-        auto self(shared_from_this());
+        //查询当前的connect_id
+        auto connect_id = add_udp_endpoint(recv_endpoint_, length, max_send_size_);
 
-        //如果缓冲已满，断开连接，不再接受数据。
-        if (session_recv_buffer_.get_buffer_size() == 0)
+        if (!ec && length > 0)
         {
-            //链接断开(缓冲撑满了)
-            session_recv_buffer_.move(length);
-            App_WorkThreadLogic::instance()->close_session_event(connect_id);
-            do_receive();
-            return;
-        }
+            //处理数据包
+            auto self(shared_from_this());
 
-        session_recv_buffer_.set_write_data(length);
-
-        auto session_info = find_udp_endpoint_by_id(connect_id);
-
-        if (nullptr != session_info && EM_SESSION_STATE::SESSION_IO_BRIDGE == session_info->io_state_)
-        {
-            recv_data_time_ = std::chrono::steady_clock::now();
-            cid_recv_data_time_[connect_id] = std::chrono::steady_clock::now();
-            //将数据转发给桥接接口
-            auto ret = App_WorkThreadLogic::instance()->do_io_bridge_data(session_info->connect_id_, session_info->io_bridge_connect_id_, session_recv_buffer_, length, shared_from_this());
-            if (1 == ret)
+            //如果缓冲已满，断开连接，不再接受数据。
+            if (session_recv_buffer_.get_buffer_size() == 0)
             {
-                //远程IO链接已断开
-                session_info->io_bridge_connect_id_ = 0;
-            }
-        }
-        else
-        {
-            //处理数据拆包
-            vector<std::shared_ptr<CMessage_Packet>> message_list;
-            bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_client_id_, &session_recv_buffer_, message_list, io_type_);
-            if (!ret)
-            {
-                //链接断开(解析包不正确)
+                //链接断开(缓冲撑满了)
                 session_recv_buffer_.move(length);
                 App_WorkThreadLogic::instance()->close_session_event(connect_id);
+                do_receive();
+                return;
             }
-            else
+
+            session_recv_buffer_.set_write_data(length);
+
+            auto session_info = find_udp_endpoint_by_id(connect_id);
+
+            if (nullptr != session_info && EM_SESSION_STATE::SESSION_IO_BRIDGE == session_info->io_state_)
             {
                 recv_data_time_ = std::chrono::steady_clock::now();
                 cid_recv_data_time_[connect_id] = std::chrono::steady_clock::now();
-                //添加到数据队列处理
-                App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id, message_list, self);
+                //将数据转发给桥接接口
+                auto ret = App_WorkThreadLogic::instance()->do_io_bridge_data(session_info->connect_id_, session_info->io_bridge_connect_id_, session_recv_buffer_, length, shared_from_this());
+                if (1 == ret)
+                {
+                    //远程IO链接已断开
+                    session_info->io_bridge_connect_id_ = 0;
+                }
             }
+            else
+            {
+                //处理数据拆包
+                vector<std::shared_ptr<CMessage_Packet>> message_list;
+                bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_client_id_, &session_recv_buffer_, message_list, io_type_);
+                if (!ret)
+                {
+                    //链接断开(解析包不正确)
+                    session_recv_buffer_.move(length);
+                    App_WorkThreadLogic::instance()->close_session_event(connect_id);
+                }
+                else
+                {
+                    recv_data_time_ = std::chrono::steady_clock::now();
+                    cid_recv_data_time_[connect_id] = std::chrono::steady_clock::now();
+                    //添加到数据队列处理
+                    App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id, message_list, self);
+                }
+            }
+
+            session_recv_buffer_.move(length);
+
+            //持续接收数据
+            do_receive();
         }
-
-        session_recv_buffer_.move(length);
+    } 
+    catch (std::system_error const& ex) 
+    {
+        PSS_LOGGER_WARN("[CUdpServer::do_receive_from]close udp server[{}:{}]",server_ip_,server_port_);
     }
-
-    //持续接收数据
-    do_receive();
 }
 
 void CUdpServer::close(uint32 connect_id)
@@ -141,7 +148,19 @@ void CUdpServer::close(uint32 connect_id)
         {
             self->close_udp_endpoint_by_id(connect_id);
         });
+}
 
+void CUdpServer::close_all()
+{
+    //释放所有kcp资源
+    for (const auto& session_info : udp_id_2_endpoint_list_)
+    {
+        this->close(session_info.first);
+    }
+
+    udp_id_2_endpoint_list_.clear();
+    udp_endpoint_2_id_list_.clear();
+    socket_.close();
 }
 
 void CUdpServer::set_write_buffer(uint32 connect_id, const char* data, size_t length)
@@ -336,8 +355,8 @@ void CUdpServer::close_udp_endpoint_by_id(uint32 connect_id)
         udp_id_2_endpoint_list_.erase(f);
         udp_endpoint_2_id_list_.erase(session_endpoint);
     }
-	
-	App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
+
+    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
 
     auto iter=cid_recv_data_time_.find(connect_id);
     if(iter != cid_recv_data_time_.end())
