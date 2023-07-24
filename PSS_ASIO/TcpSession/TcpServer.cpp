@@ -1,7 +1,7 @@
 ﻿#include "TcpServer.h"
 
 CTcpServer::CTcpServer(CreateIoContextCallbackFunc callback, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_buffer_size)
-    : packet_parse_id_(packet_parse_id), max_recv_size_(max_buffer_size)
+    : packet_parse_id_(packet_parse_id), max_recv_size_(max_buffer_size),server_ip_(server_ip),server_port_(port)
 {
     try
     {
@@ -35,16 +35,23 @@ void CTcpServer::do_accept()
     acceptor_->async_accept(
         [this](std::error_code ec, tcp::socket socket)
         {
-            if (!ec)
+            try 
             {
-                std::make_shared<CTcpSession>(std::move(socket), callback_())->open(packet_parse_id_, max_recv_size_);
-            }
-            else
-            {
-                send_accept_listen_fail(ec);
-            }
+                if (!ec)
+                {
+                    std::make_shared<CTcpSession>(std::move(socket), callback_())->open(packet_parse_id_, max_recv_size_);
+                }
+                else
+                {
+                    send_accept_listen_fail(ec);
+                }
 
-            do_accept();
+                do_accept();
+            } 
+            catch (std::system_error const& ex) 
+            {
+                PSS_LOGGER_WARN("[CTcpServer::do_accept]close tcp server[{}:{}]",server_ip_,server_port_);
+            }
         });
 }
 
