@@ -6,6 +6,7 @@
 #include <chrono>
 #include <iostream>
 
+#include "VersionConfig.h"
 #include "consoleoutput.hpp"
 
 using namespace std;

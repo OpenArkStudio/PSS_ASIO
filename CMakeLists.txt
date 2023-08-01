@@ -16,6 +16,30 @@ endif()
 
 set(ROOT_DIR ${PROJECT_SOURCE_DIR})
 
+execute_process(
+    COMMAND git describe --abbrev=8 --always --tags
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+message("GIT_HASH: ${GIT_HASH}")
+
+execute_process(
+    COMMAND git symbolic-ref --short -q HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_BRANCH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+message("GIT_BRANCH: ${GIT_BRANCH}")
+string(TIMESTAMP COMPILE_TIME %Y-%m-%d_%H:%M:%S)
+set(build_time ${COMPILE_TIME})
+
+message("build_time:${build_time}")
+
+configure_file(${ROOT_DIR}/Common/VersionConfig.h.in ${ROOT_DIR}/Common/VersionConfig.h)
+
 if(UNIX)
 	#linux
 	

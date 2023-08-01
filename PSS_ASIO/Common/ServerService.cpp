@@ -87,6 +87,8 @@ bool CServerService::init_service(const std::string& pss_config_file_name)
         config_output.file_name_,
         config_output.output_level_);
 
+    PSS_LOGGER_DEBUG("[CServerService::init_service]build_time:{}\tversion:{}", V_BUILD_TIME, V_GIT_INFO);
+
     //初始化PacketParse插件
     for (const auto& packet_parse : App_ServerConfig::instance()->get_config_packet_list())
     {
