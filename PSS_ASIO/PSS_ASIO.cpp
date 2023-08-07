@@ -3,14 +3,16 @@
 
 #include "ServerService.h"
 #include <sys/types.h>
-#include <dirent.h>
 #include <stdio.h>
 #include <string.h>
+#if PSS_PLATFORM != PLATFORM_WIN
+#include <dirent.h>
 #include <unistd.h>
+#endif
 
 #define BUF_SIZE 1024
 
-string GetNameByPid(pid_t pid) 
+string GetNameByPid(int pid) 
 {
     char proc_pid_path[BUF_SIZE] = {0};
     char buf[BUF_SIZE] = {0};

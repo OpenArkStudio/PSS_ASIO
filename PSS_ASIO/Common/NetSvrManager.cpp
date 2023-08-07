@@ -1,6 +1,5 @@
 ﻿#include "NetSvrManager.h"
-#include <cxxabi.h>
-#include <execinfo.h>
+
 
 CNetSvrManager::CNetSvrManager()
 {
@@ -93,8 +92,6 @@ void CNetSvrManager::start_default_service()
             0);
         tty_service_map_[tty_server.tty_name_] = tty_service;
     }
-    
-    return;
 }
 
 void CNetSvrManager::close_all_service()

@@ -111,6 +111,12 @@
     <ClCompile Include="Message\Iobridge.cpp">
       <Filter>Message</Filter>
     </ClCompile>
+    <ClCompile Include="Common\IoContextPool.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\NetSvrManager.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TcpSession\TcpServer.h">
@@ -247,6 +253,9 @@
     </ClInclude>
     <ClInclude Include="Message\Iobridge.h">
       <Filter>Message</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\NetSvrManager.h">
+      <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

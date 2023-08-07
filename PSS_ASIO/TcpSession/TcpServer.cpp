@@ -50,7 +50,7 @@ void CTcpServer::do_accept()
             } 
             catch (std::system_error const& ex) 
             {
-                PSS_LOGGER_WARN("[CTcpServer::do_accept]close tcp server[{}:{}]",server_ip_,server_port_);
+                PSS_LOGGER_WARN("[CTcpServer::do_accept]close tcp server[{}:{}], error={}",server_ip_,server_port_, ex.what());
             }
         });
 }

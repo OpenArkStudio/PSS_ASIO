@@ -265,7 +265,7 @@ inline std::chrono::seconds get_time_delay(std::string date)
 
 inline vector<std::string> string_split(const string& srcStr, const string& delim)
 {
-    int nPos = 0;
+    size_t nPos = 0;
     vector<string> vec;
     string strtmp = srcStr;
     nPos = strtmp.find(delim.c_str());
@@ -282,6 +282,7 @@ inline vector<std::string> string_split(const string& srcStr, const string& deli
 
 inline void bind_thread_to_cpu(std::thread* ptrthread)
 {
+#if PSS_PLATFORM != PLATFORM_WIN
     if(nullptr == ptrthread)
     {
         return;
@@ -296,7 +297,7 @@ inline void bind_thread_to_cpu(std::thread* ptrthread)
     {
       PSS_LOGGER_ERROR("[bind_thread_to_cpu]Error calling pthread_setaffinity_np:{}",rc);
     }
-    return;
+#endif
 }
 
 //接口函数模板

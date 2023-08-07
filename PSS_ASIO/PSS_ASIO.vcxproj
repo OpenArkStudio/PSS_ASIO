@@ -148,6 +148,8 @@
     <ClCompile Include="..\third_include\kcp\ikcp.c" />
     <ClCompile Include="Common\CommunicationService.cpp" />
     <ClCompile Include="Common\ConnectCounter.cpp" />
+    <ClCompile Include="Common\IoContextPool.cpp" />
+    <ClCompile Include="Common\NetSvrManager.cpp" />
     <ClCompile Include="Common\serverconfig.cpp" />
     <ClCompile Include="Common\ServerService.cpp" />
     <ClCompile Include="Message\Iobridge.cpp" />
@@ -194,6 +196,7 @@
     <ClInclude Include="Common\FrameObject.hpp" />
     <ClInclude Include="Common\ICommunicationService.h" />
     <ClInclude Include="Common\ISession.h" />
+    <ClInclude Include="Common\NetSvrManager.h" />
     <ClInclude Include="Common\SendBuffer.h" />
     <ClInclude Include="Common\serverconfig.h" />
     <ClInclude Include="Common\serverconfigtype.h" />

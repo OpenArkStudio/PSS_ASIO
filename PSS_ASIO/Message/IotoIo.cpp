@@ -182,7 +182,7 @@ uint32 CIotoIo::get_to_session_id(uint32 session_id, const _ClientIPInfo& from_i
 CIo_Connect_Info CIotoIo::find_io_to_io_session_info(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE& from_io_type)
 {
     std::lock_guard <std::mutex> lock(mutex_);
-    for (const auto& s_2_s : session_to_session_list_)
+    for (auto& s_2_s : session_to_session_list_)
     {
         if (s_2_s.from_io_ == from_io && s_2_s.from_io_type_ == from_io_type)
         {

@@ -137,7 +137,7 @@ void CUdpServer::do_receive_from(std::error_code ec, std::size_t length)
     } 
     catch (std::system_error const& ex) 
     {
-        PSS_LOGGER_WARN("[CUdpServer::do_receive_from]close udp server[{}:{}]",server_ip_,server_port_);
+        PSS_LOGGER_WARN("[CUdpServer::do_receive_from]close udp server[{}:{}], error={}",server_ip_,server_port_, ex.what());
     }
 }
 
