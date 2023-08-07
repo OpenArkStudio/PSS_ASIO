@@ -25,11 +25,12 @@ CIoContextPool::CIoContextPool(std::size_t pool_size): next_io_context_(0)
 void CIoContextPool::run()
 {
     // Create a pool of threads to run all of the io_contexts.
-    std::vector<std::shared_ptr<asio::thread> > threads;
+    std::vector<std::shared_ptr<std::thread> > threads;
     for (std::size_t i = 0; i < io_contexts_.size(); ++i)
     {
-        std::shared_ptr<asio::thread> thread(new asio::thread(std::bind(&IoContextRun, io_contexts_[i])));
+        std::shared_ptr<std::thread> thread(new std::thread(std::bind(&IoContextRun, io_contexts_[i])));
         threads.push_back(thread);
+        bind_thread_to_cpu(thread.get());
     }
 
     // Wait for all threads in the pool to exit.

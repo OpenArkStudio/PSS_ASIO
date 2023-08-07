@@ -280,5 +280,24 @@ inline vector<std::string> string_split(const string& srcStr, const string& deli
     return vec;
 }
 
+inline void bind_thread_to_cpu(std::thread* ptrthread)
+{
+    if(nullptr == ptrthread)
+    {
+        return;
+    }
+    static std::size_t cpunum = std::thread::hardware_concurrency();
+    static std::size_t cpuidx = 0;
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    CPU_SET((cpuidx++)%cpunum,&cpuset);
+    int rc =pthread_setaffinity_np(ptrthread->native_handle(),sizeof(cpu_set_t), &cpuset);
+    if (rc != 0) 
+    {
+      PSS_LOGGER_ERROR("[bind_thread_to_cpu]Error calling pthread_setaffinity_np:{}",rc);
+    }
+    return;
+}
+
 //接口函数模板
 using Logic_message_dispose_fn = std::function<int(const CMessage_Source&, std::shared_ptr<CMessage_Packet>, std::shared_ptr<CMessage_Packet>)>;
