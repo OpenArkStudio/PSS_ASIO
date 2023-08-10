@@ -280,22 +280,31 @@ inline vector<std::string> string_split(const string& srcStr, const string& deli
     return vec;
 }
 
-inline void bind_thread_to_cpu(std::thread* ptrthread)
+//设定绑定的CPU
+inline void bind_thread_to_cpu(std::thread* logic_thread)
 {
-#if PSS_PLATFORM != PLATFORM_WIN
-    if(nullptr == ptrthread)
+    if(nullptr == logic_thread)
     {
         return;
     }
+
     static std::size_t cpunum = std::thread::hardware_concurrency();
     static std::size_t cpuidx = 0;
+
+#if PSS_PLATFORM != PLATFORM_WIN
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
     CPU_SET((cpuidx++)%cpunum,&cpuset);
-    int rc =pthread_setaffinity_np(ptrthread->native_handle(),sizeof(cpu_set_t), &cpuset);
+    int rc =pthread_setaffinity_np(logic_thread->native_handle(), sizeof(cpu_set_t), &cpuset);
     if (rc != 0) 
     {
       PSS_LOGGER_ERROR("[bind_thread_to_cpu]Error calling pthread_setaffinity_np:{}",rc);
+    }
+#else
+    auto mask = SetThreadAffinityMask(logic_thread->native_handle(), (cpuidx++) % cpunum);
+    if (mask == 0)
+    {
+        PSS_LOGGER_ERROR("[bind_thread_to_cpu]Error calling SetThreadAffinityMask:{}", cpunum);
     }
 #endif
 }

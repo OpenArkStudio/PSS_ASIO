@@ -1,7 +1,7 @@
 #ifndef _PSS_ASIO_IO_SERVICE_POOL_H_
 #define _PSS_ASIO_IO_SERVICE_POOL_H_
 
-#include "define.h"
+#include "serverconfig.h"
 
 #include <iostream>
 #include <asio.hpp>

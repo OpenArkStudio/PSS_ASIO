@@ -30,7 +30,12 @@ void CIoContextPool::run()
     {
         std::shared_ptr<std::thread> thread(new std::thread(std::bind(&IoContextRun, io_contexts_[i])));
         threads.push_back(thread);
-        bind_thread_to_cpu(thread.get());
+        
+        //如果配置了CPU绑定关系
+        if (App_ServerConfig::instance()->get_config_workthread().logic_thread_bind_cpu != 0)
+        {
+            bind_thread_to_cpu(thread.get());
+        }
     }
 
     // Wait for all threads in the pool to exit.

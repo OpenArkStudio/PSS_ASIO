@@ -12,33 +12,6 @@
 
 #define BUF_SIZE 1024
 
-string GetNameByPid(int pid) 
-{
-    char proc_pid_path[BUF_SIZE] = {0};
-    char buf[BUF_SIZE] = {0};
-    char task_name[BUF_SIZE] = {0};
-    string strTaskName = "";
-
-    sprintf(proc_pid_path, "/proc/%d/status", pid);
-    FILE* fp = fopen(proc_pid_path, "r");
-    if(NULL != fp)
-    {
-        if( fgets(buf, BUF_SIZE-1, fp) == nullptr)
-        {
-            fclose(fp);
-        }
-        else
-        {
-            fclose(fp);
-            sscanf(buf, "%*s %s", task_name);
-        }
-        
-        strTaskName = task_name;
-    }
-
-    return strTaskName;
-}
-
 int main(int argc, char* argv[])
 {
     //读取配置文件参数
@@ -55,9 +28,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        string strAppName = GetNameByPid(getpid());
-        string strCfgFile = strAppName + ".json"; 
-        App_ServerService::instance()->init_service(strCfgFile);
+        App_ServerService::instance()->init_service("server_config.json");
     }
     return 0;
 }

@@ -5,7 +5,8 @@
     "work time check": 60,
     "server to server time check": 30,
     "client connect timeout" : 60,
-	"IO send data check": 0
+	"IO send data check": 0,
+	"logic thread bind cpu": 0
   },
 
   "packet parse library": [
