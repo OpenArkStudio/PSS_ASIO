@@ -39,11 +39,11 @@ jobs:
         unzip -q sonar-scanner-cli-5.0.1.3006-linux.zip
         echo "ls unzip download file."
         ls -l
-        cd ${PWD}/sonar-scanner-cli-5.0.1.3006-linux/bin/
+        cd ${PWD}/sonar-scanner-5.0.1.3006-linux/bin/
         echo "ls sonar scanner file."
         ls -l        
         
-        echo "${PWD}/sonar-scanner-cli-5.0.1.3006-linux/bin/" >> $GITHUB_PATH
+        echo "${PWD}/sonar-scanner-5.0.1.3006-linux/bin/" >> $GITHUB_PATH
         wget -nv https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
         unzip -q build-wrapper-linux-x86.zip
         echo "${PWD}/build-wrapper-linux-x86" >> $GITHUB_PATH
