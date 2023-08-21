@@ -38,6 +38,8 @@ jobs:
         wget -nv https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
         unzip -q build-wrapper-linux-x86.zip
         echo "${PWD}/build-wrapper-linux-x86" >> $GITHUB_PATH
+        cd ${PWD}/sonar-scanner-cli-5.0.1.3006-linux.zip/bin/
+        echo ls -l
     - name: Install dependencies
       shell: bash
       run: |
