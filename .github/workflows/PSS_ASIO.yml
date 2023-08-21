@@ -28,7 +28,7 @@ jobs:
       working-directory: ${{github.workspace}}/Build/Linux
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -Dgcov_check=1
 
-    - name: dowwload sonar cloud client
+    - name: download sonar cloud client
       working-directory: ${{github.workspace}}
       shell: bash
       run: |
@@ -37,9 +37,11 @@ jobs:
         ls -l
         echo "ls download file."
         unzip -q sonar-scanner-cli-5.0.1.3006-linux.zip
-        echo "ls upzip download file."
+        echo "ls unzip download file."
         ls -l
-        cd sonar-scanner-cli-5.0.1.3006-linux        
+        cd ${PWD}/sonar-scanner-cli-5.0.1.3006-linux/bin/
+        echo "ls sonar scanner file."
+        ls -l        
         
         echo "${PWD}/sonar-scanner-cli-5.0.1.3006-linux/bin/" >> $GITHUB_PATH
         wget -nv https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
