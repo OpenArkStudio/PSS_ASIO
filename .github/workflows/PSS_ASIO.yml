@@ -34,11 +34,11 @@ jobs:
       run: |
         echo "download sonar scanner client."
         wget -nv https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
-        echo ls -l
+        ls -l
         echo "ls download file."
         unzip -q sonar-scanner-cli-5.0.1.3006-linux.zip
         cd sonar-scanner-cli-5.0.1.3006-linux.zip
-        echo ls -l
+        ls -l
         echo "ls upzip download file."  
         
         echo "${PWD}/sonar-scanner-cli-5.0.1.3006-linux.zip/bin/" >> $GITHUB_PATH
