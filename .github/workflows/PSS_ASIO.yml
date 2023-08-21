@@ -32,7 +32,7 @@ jobs:
       working-directory: ${{github.workspace}}
       shell: bash
       run: |
-        wget -nv https://binaries.sonarsource.com/?prefix=Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+        wget -nv https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
         unzip -q sonar-scanner-cli-5.0.1.3006-linux.zip
         echo "${PWD}/sonar-scanner-cli-5.0.1.3006-linux.zip/bin/" >> $GITHUB_PATH
         wget -nv https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
