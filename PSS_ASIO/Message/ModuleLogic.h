@@ -21,10 +21,10 @@ enum class ENUM_WORK_THREAD_STATE
 };
 
 //发送插件的json字符串格式
-const std::string JSON_MODULE_THREAD_ID = "{\"thread id\":";
-const std::string JSON_MODULE_COMMAND_ID = ", \"command id\":\"";
-const std::string JSON_MODULE_WORK_THREAD_TIMEOUT = "\", \"work_thread_timeout\":";
-const std::string JSON_MODULE_END = "\"}";
+const std::string JSON_MODULE_THREAD_ID = R"({"thread id":)";
+const std::string JSON_MODULE_COMMAND_ID = R"(, "command id":")";
+const std::string JSON_MODULE_WORK_THREAD_TIMEOUT = R"(", "work_thread_timeout":)";
+const std::string JSON_MODULE_END = R"("})";
 
 //以消息模式处理逻辑代码
 class CDelayPluginMessage

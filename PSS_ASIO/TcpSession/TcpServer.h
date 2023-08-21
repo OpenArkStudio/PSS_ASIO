@@ -6,7 +6,7 @@
 class CTcpServer
 {
 public:
-    CTcpServer(CreateIoContextCallbackFunc callback, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_recv_size);
+    CTcpServer(const CreateIoContextCallbackFunc callback, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_recv_size);
 
     void close() const;
 
