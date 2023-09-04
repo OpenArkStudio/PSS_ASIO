@@ -105,6 +105,7 @@ private:
 
     using hashmapcid_recv_data_time = unordered_map<uint32, std::chrono::steady_clock::time_point>;
     hashmapcid_recv_data_time cid_recv_data_time_;
+    std::mutex  udp_mutex_;
 
     string server_ip_;
     io_port_type server_port_;

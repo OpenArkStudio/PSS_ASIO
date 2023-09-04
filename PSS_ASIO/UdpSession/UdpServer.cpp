@@ -281,6 +281,8 @@ uint32 CUdpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t l
     }
     else
     {
+        std::lock_guard<std::mutex> lock(udp_mutex_);
+
         //生成一个新的ID
         auto connect_id = App_ConnectCounter::instance()->CreateCounter();
 
@@ -337,6 +339,7 @@ shared_ptr<CUdp_Session_Info> CUdpServer::find_udp_endpoint_by_id(uint32 connect
 
 void CUdpServer::close_udp_endpoint_by_id(uint32 connect_id)
 {
+    std::lock_guard<std::mutex> lock(udp_mutex_);
     auto self(shared_from_this());
 
     _ClientIPInfo remote_ip;
