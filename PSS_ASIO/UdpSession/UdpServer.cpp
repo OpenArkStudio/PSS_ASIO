@@ -163,10 +163,6 @@ void CUdpServer::do_receive_from(std::error_code ec, std::size_t length)
 void CUdpServer::close(uint32 connect_id)
 {
     PSS_LOGGER_DEBUG("[CUdpServer::close]start connect_id={0}",connect_id);
-    if(!udp_run_state_)
-    {
-        return;
-    }
     auto self(shared_from_this());
     io_context_->dispatch([self, connect_id]() 
         {
