@@ -166,6 +166,10 @@ void CKcpServer::do_receive_from(std::error_code ec, std::size_t length)
 
 void CKcpServer::close(uint32 connect_id)
 {
+    if(!socket_.is_open())
+    {
+        return;
+    }
     auto self(shared_from_this());
 
     io_context_->dispatch([self, connect_id]() 

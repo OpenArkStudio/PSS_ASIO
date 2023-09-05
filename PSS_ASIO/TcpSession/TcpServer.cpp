@@ -5,6 +5,7 @@ CTcpServer::CTcpServer(const CreateIoContextCallbackFunc callback, const std::st
 {
     try
     {
+        accept_run_state_ = true;
         callback_ = callback;
         asio::io_context* iocontext = callback_();
         acceptor_ = std::make_shared<tcp::acceptor>(*iocontext, tcp::endpoint(asio::ip::address_v4::from_string(server_ip), port));
@@ -18,20 +19,22 @@ CTcpServer::CTcpServer(const CreateIoContextCallbackFunc callback, const std::st
     }
     catch (std::system_error const& ex)
     {
-        PSS_LOGGER_INFO("[CTcpServer::do_accept]({0}:{1}) accept error {2}.", server_ip, port, ex.what());
+        PSS_LOGGER_WARN("[CTcpServer::do_accept]({0}:{1}) accept error {2}.", server_ip, port, ex.what());
     }
 }
 
-void CTcpServer::close() const
+void CTcpServer::close()
 {
-    if (nullptr != acceptor_)
-    {
-        acceptor_->close();
-    }
+    PSS_LOGGER_INFO("[CTcpServer::close]stop tcp server[{0}:{1}]", server_ip_, server_port_);
+    accept_run_state_ = false;
 }
 
 void CTcpServer::do_accept()
 {
+    if (!accept_run_state_)
+    {
+        return;
+    }
     acceptor_->async_accept(
         [this](std::error_code ec, tcp::socket socket)
         {
@@ -53,10 +56,23 @@ void CTcpServer::do_accept()
                 PSS_LOGGER_WARN("[CTcpServer::do_accept]close tcp server[{}:{}], error={}",server_ip_,server_port_, ex.what());
             }
         });
+
+    if (!accept_run_state_)
+    {
+        if (nullptr != acceptor_)
+        {
+            acceptor_->close();
+        }
+        return;
+    }
 }
 
-void CTcpServer::send_accept_listen_fail(std::error_code ec) const
+void CTcpServer::send_accept_listen_fail(std::error_code ec)
 {
+    if (!accept_run_state_)
+    {
+        return;
+    }
     //发送监听失败消息
     App_WorkThreadLogic::instance()->add_frame_events(LOGIC_LISTEN_SERVER_ERROR,
         0,
@@ -65,7 +81,7 @@ void CTcpServer::send_accept_listen_fail(std::error_code ec) const
         EM_CONNECT_IO_TYPE::CONNECT_IO_TCP);
 
     //监听失败，查看错误信息
-    PSS_LOGGER_INFO("[CTcpServer::do_accept]({0}{1})accept error:{2}",
+    PSS_LOGGER_INFO("[CTcpServer::do_accept]({0}:{1})accept error:{2}",
         acceptor_->local_endpoint().address().to_string(),
         acceptor_->local_endpoint().port(),
         ec.message());

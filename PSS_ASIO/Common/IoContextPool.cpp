@@ -32,7 +32,7 @@ void CIoContextPool::run()
         threads.push_back(thread);
         
         //如果配置了CPU绑定关系
-        if (App_ServerConfig::instance()->get_config_workthread().logic_thread_bind_cpu != 0)
+        if (App_ServerConfig::instance()->get_config_workthread().logic_thread_bind_cpu_ != 0)
         {
             bind_thread_to_cpu(thread.get());
         }

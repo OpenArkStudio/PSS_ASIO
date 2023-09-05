@@ -1,7 +1,6 @@
 ﻿#include "UdpClientSession.h"
 
-CUdpClientSession::CUdpClientSession(asio::io_context* io_context)
-    : socket_(*io_context), io_context_(io_context)
+CUdpClientSession::CUdpClientSession(asio::io_context* io_context) : socket_(*io_context), io_context_(io_context)
 {
 }
 
@@ -62,8 +61,12 @@ void CUdpClientSession::start(const CConnect_IO_Info& io_type)
         local_ip.m_strClientIP = socket_.local_endpoint().address().to_string();
         local_ip.m_u2Port = socket_.local_endpoint().port();
 
-        PSS_LOGGER_DEBUG("[CUdpClientSession::start]remote({0}:{1})", remote_ip.m_strClientIP, remote_ip.m_u2Port);
-        PSS_LOGGER_DEBUG("[CUdpClientSession::start]local({0}:{1})", local_ip.m_strClientIP, local_ip.m_u2Port);
+        PSS_LOGGER_INFO("[CUdpClientSession::start]connect_id:{} remote[{}:{}] local[{}:{}]",
+            connect_id_,
+            remote_ip.m_strClientIP, 
+            remote_ip.m_u2Port,
+            local_ip.m_strClientIP, 
+            local_ip.m_u2Port);
 
         packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip, local_ip, io_type_, App_IoBridge::instance());
 
@@ -89,6 +92,10 @@ void CUdpClientSession::start(const CConnect_IO_Info& io_type)
 
 void CUdpClientSession::close(uint32 connect_id)
 {
+    if(!socket_.is_open())
+    {
+        return;
+    }
     auto self(shared_from_this());
 
     auto io_type = io_type_;
@@ -146,9 +153,7 @@ void CUdpClientSession::do_write(uint32 connect_id)
 
 void CUdpClientSession::set_write_buffer(uint32 connect_id, const char* data, size_t length)
 {
-    std::memcpy(session_send_buffer_.get_curr_write_ptr(),
-        data,
-        length);
+    std::memcpy(session_send_buffer_.get_curr_write_ptr(),data,length);
     session_send_buffer_.set_write_data(length);
 }
 
@@ -204,6 +209,11 @@ bool CUdpClientSession::is_need_send_format()
 
 void CUdpClientSession::send_io_data(uint32 connect_id, std::shared_ptr<CSendBuffer> send_buffer)
 {
+    if(!socket_.is_open())
+    {
+        PSS_LOGGER_WARN("[CUdpClientSession::send_io_data]connect_id={0}, socket is closed.", connect_id);
+        return;
+    }
     clear_write_buffer(send_buffer->buffer_length_);
 
     //异步发送
@@ -217,7 +227,7 @@ void CUdpClientSession::send_io_data(uint32 connect_id, std::shared_ptr<CSendBuf
                     if (ec)
                     {
                         //暂时不处理
-                        PSS_LOGGER_DEBUG("[CUdpClientSession::do_write]connect_id={0}, write error({1}).", connect_id, ec.message());
+                        PSS_LOGGER_ERROR("[CUdpClientSession::send_io_data]connect_id={0}, write error({1}).", connect_id, ec.message());
                     }
                     else
                     {
@@ -279,6 +289,12 @@ void CUdpClientSession::set_io_bridge_connect_id(uint32 from_io_connect_id, uint
 
 void CUdpClientSession::do_receive_from(std::error_code ec, std::size_t length)
 {
+    if(!socket_.is_open())
+    {
+        PSS_LOGGER_WARN("[CUdpClientSession::do_receive_from]connect_id={0}, socket is closed.", connect_id_);
+        return;
+    }
+    
     if (!ec)
     {
         recv_data_size_ += length;

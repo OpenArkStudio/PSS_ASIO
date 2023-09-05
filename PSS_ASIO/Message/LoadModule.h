@@ -75,10 +75,10 @@ private:
     void delete_module_name_list(const string& module_name);
 
     using hashmapModuleList = unordered_map<string, shared_ptr<_ModuleInfo>>;
-    hashmapModuleList                  module_list_;
-    vector<string>                     module_name_list_;               //当前插件名称列表
+    hashmapModuleList module_list_;
+    vector<string>    module_name_list_;               //当前插件名称列表
 
     command_to_module_function command_to_module_function_;
     plugin_name_to_module_run plugin_name_to_module_run_;
-    ISessionService* session_service_;
+    ISessionService* session_service_ = nullptr;
 };

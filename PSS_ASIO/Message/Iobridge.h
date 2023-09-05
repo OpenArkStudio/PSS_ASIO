@@ -1,6 +1,6 @@
 #pragma once
 
-//提供IO桥接服务注册
+//鎻愪緵IO妗ユ帴鏈嶅姟娉ㄥ唽
 //add by freeeyes
 
 #include "IotoIo.h"

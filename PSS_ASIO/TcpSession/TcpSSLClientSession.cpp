@@ -30,8 +30,7 @@ bool CTcpSSLClientSession::start(const CConnect_IO_Info& io_info)
     }
 
     ssl_socket_.set_verify_mode(asio::ssl::verify_peer);
-    ssl_socket_.set_verify_callback(
-        std::bind(&CTcpSSLClientSession::verify_certificate, this, _1, _2));
+    ssl_socket_.set_verify_callback(std::bind(&CTcpSSLClientSession::verify_certificate, this, _1, _2));
 
     //建立连接(异步)
     tcp::resolver resolver(*io_context_);
@@ -67,6 +66,10 @@ bool CTcpSSLClientSession::start(const CConnect_IO_Info& io_info)
 
 void CTcpSSLClientSession::close(uint32 connect_id)
 {
+    if(!socket_.is_open())
+    {
+        return;
+    }
     auto self(shared_from_this());
 
     auto recv_data_size = recv_data_size_;
