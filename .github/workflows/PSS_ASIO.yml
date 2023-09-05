@@ -26,7 +26,7 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{github.workspace}}/Build/Linux
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -Dgcov_check=1
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Debug -Dgcov_check=1
 
     - name: download sonar cloud client
       working-directory: ${{github.workspace}}
@@ -70,8 +70,11 @@ jobs:
         echo "gcov********************" 
         cd ${{github.workspace}}/PSS_ASIO
         pwd
-        gcovr --sonarqube > coverage.xml
-        cat coverage.xml
+        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/TTySession/*.cpp.gcda ../../PSS_ASIO/TTySession/*.cpp > /dev/null
+        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/TcpSession/*.cpp.gcda ../../PSS_ASIO/TcpSession/*.cpp > /dev/null
+        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/UdpSession/*.cpp.gcda ../../PSS_ASIO/UdpSession/*.cpp > /dev/null
+        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/Common/*.cpp.gcda ../../PSS_ASIO/Common/*.cpp > /dev/null
+        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/Message/*.cpp.gcda ../../PSS_ASIO/Message/*.cpp > /dev/null
         echo "link***********************"
         cd ${{github.workspace}}
         pwd

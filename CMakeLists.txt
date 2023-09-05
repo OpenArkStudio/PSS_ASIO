@@ -42,12 +42,13 @@ configure_file(${ROOT_DIR}/Common/VersionConfig.h.in ${ROOT_DIR}/Common/VersionC
 
 if(UNIX)
 	#linux
-	
-	if(CMAKE_BUILD_TYPE MATCHES "debug")
+	if(CMAKE_BUILD_TYPE MATCHES "Debug")
+		message("[PSS_ASIO]set Debug...")
 		set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -fPIC")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -D_DEBUG")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -ggdb -fPIC")
 	else()
+		message("[PSS_ASIO]set Release...")
 		set(CMAKE_BUILD_TYPE "Release")
 		set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -fPIC")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -DNDEBUG")
