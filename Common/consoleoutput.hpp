@@ -1,4 +1,4 @@
-﻿#ifndef PSS_CONSOLE_OUTPUT_H
+#ifndef PSS_CONSOLE_OUTPUT_H
 #define PSS_CONSOLE_OUTPUT_H
 
 //屏幕输出管控

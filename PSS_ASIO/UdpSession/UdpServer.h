@@ -72,6 +72,8 @@ public:
     void set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id) final;
 
 private:
+    void close_server();
+
     void do_receive();
 
     void do_receive_from(std::error_code ec, std::size_t length);
@@ -105,7 +107,7 @@ private:
 
     using hashmapcid_recv_data_time = unordered_map<uint32, std::chrono::steady_clock::time_point>;
     hashmapcid_recv_data_time cid_recv_data_time_;
-    std::mutex  udp_mutex_;
+    bool udp_run_state_;
 
     string server_ip_;
     io_port_type server_port_;

@@ -47,8 +47,7 @@ bool CTcpClientSession::start(const CConnect_IO_Info& io_info)
 
     //异步链接
     tcp::resolver::results_type::iterator endpoint_iter;
-    socket_.async_connect(end_point, std::bind(&CTcpClientSession::handle_connect,
-        this, std::placeholders::_1, endpoint_iter));
+    socket_.async_connect(end_point, std::bind(&CTcpClientSession::handle_connect, this, std::placeholders::_1, endpoint_iter));
     return true;
 }
 
@@ -337,8 +336,12 @@ void CTcpClientSession::handle_connect(const asio::error_code& ec, tcp::resolver
         local_ip_.m_strClientIP = socket_.local_endpoint().address().to_string();
         local_ip_.m_u2Port = socket_.local_endpoint().port();
 
-        PSS_LOGGER_DEBUG("[CTcpClientSession::start]remote({0}:{1})", remote_ip_.m_strClientIP, remote_ip_.m_u2Port);
-        PSS_LOGGER_DEBUG("[CTcpClientSession::start]local({0}:{1})", local_ip_.m_strClientIP, local_ip_.m_u2Port);
+        PSS_LOGGER_INFO("[CTcpClientSession::handle_connect]connect_id:{} remote[{}:{}] local[{}:{}]",
+            connect_id_,
+            remote_ip_.m_strClientIP, 
+            remote_ip_.m_u2Port,
+            local_ip_.m_strClientIP, 
+            local_ip_.m_u2Port);
 
         packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip_, local_ip_, io_type_, App_IoBridge::instance());
 

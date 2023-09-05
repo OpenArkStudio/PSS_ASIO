@@ -7,7 +7,6 @@ CNetSvrManager::CNetSvrManager()
 
 CNetSvrManager::~CNetSvrManager()
 {
-    this->close_all_service();
 }
 
 void CNetSvrManager::start_default_service()

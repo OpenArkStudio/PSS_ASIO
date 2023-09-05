@@ -32,7 +32,6 @@ public:
             while (_queue.empty())
             {
                 _condition.wait(lock);
-
             }
             //注意这一段必须放在if语句中，因为lock的生命域仅仅在if大括号内
             msg = std::move(_queue.front());
@@ -45,7 +44,6 @@ public:
             std::lock_guard<std::mutex> lock(_mutex);
             if (_queue.empty())
                 return false;
-
 
             msg = std::move(_queue.front());
             _queue.pop();

@@ -89,7 +89,7 @@ enum class EM_SESSION_STATE
 class CConfigNetIO
 {
 public:
-    std::string ip_;
+    std::string ip_ = "";
     io_port_type port_ = 0;
     std::string protocol_type_ = "TCP";
     unsigned int packet_parse_id_ = 0;
@@ -269,7 +269,7 @@ inline vector<std::string> string_split(const string& srcStr, const string& deli
     vector<string> vec;
     string strtmp = srcStr;
     nPos = strtmp.find(delim.c_str());
-    while(-1 != nPos)
+    while(string::npos != nPos)
     {
         string temp = strtmp.substr(0, nPos);
         vec.push_back(temp);
@@ -298,7 +298,7 @@ inline void bind_thread_to_cpu(std::thread* logic_thread)
     int rc =pthread_setaffinity_np(logic_thread->native_handle(), sizeof(cpu_set_t), &cpuset);
     if (rc != 0) 
     {
-      PSS_LOGGER_ERROR("[bind_thread_to_cpu]Error calling pthread_setaffinity_np:{}",rc);
+        PSS_LOGGER_ERROR("[bind_thread_to_cpu]Error calling pthread_setaffinity_np:{}",rc);
     }
 #else
     auto mask = SetThreadAffinityMask(logic_thread->native_handle(), (cpuidx++) % cpunum);
