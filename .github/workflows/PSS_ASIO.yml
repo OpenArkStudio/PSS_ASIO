@@ -71,7 +71,7 @@ jobs:
         cd ${{github.workspace}}
         pwd
         gcovr --sonarqube > coverage.xml
-        cat coverage.xml
+        ls -la coverage.xml
 
     - name: SonarCloud Scan make report
       working-directory: ${{github.workspace}}
