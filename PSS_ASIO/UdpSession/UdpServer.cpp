@@ -8,12 +8,11 @@ CUdpServer::CUdpServer(asio::io_context* io_context, const std::string& server_i
 
     try
     {
-        udp_run_state_ = true;
         socket_.open(udp::v4());
         socket_.set_option(asio::ip::udp::socket::reuse_address(true));
-        // 设置UDP缓冲区大小为10*1024*1024字节
-        asio::socket_base::receive_buffer_size recvoption(10*1024*1024);
-        asio::socket_base::send_buffer_size sendoption(10*1024*1024);
+        // 设置UDP缓冲区大小为udp_net_buffer_size
+        asio::socket_base::receive_buffer_size recvoption(udp_net_buffer_size);
+        asio::socket_base::send_buffer_size sendoption(udp_net_buffer_size);
         socket_.set_option(recvoption);
         socket_.set_option(sendoption);
     
@@ -63,14 +62,6 @@ _ClientIPInfo CUdpServer::get_remote_ip(uint32 connect_id)
 
 void CUdpServer::do_receive()
 {
-    if (!udp_run_state_)
-    {
-        if(socket_.is_open())
-        {
-            this->close_server();
-        }
-        return;
-    }
     auto self(shared_from_this());
     socket_.async_receive_from(
         asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()), recv_endpoint_,
@@ -78,20 +69,10 @@ void CUdpServer::do_receive()
         {
             self->do_receive_from(ec, length);
         });
-
-    if (!udp_run_state_)
-    {
-        this->close_server();
-        return;
-    }
 }
 
 void CUdpServer::do_receive_from(std::error_code ec, std::size_t length)
 {
-    if(!udp_run_state_)
-    {
-        return;
-    }
     try 
     {
         //查询当前的connect_id
@@ -174,7 +155,7 @@ void CUdpServer::close(uint32 connect_id)
 void CUdpServer::close_all()
 {
     PSS_LOGGER_DEBUG("[CUdpServer::close_all]start size1={} size2={}",udp_id_2_endpoint_list_.size(),udp_endpoint_2_id_list_.size());
-    udp_run_state_ = false;
+    close_server();
     PSS_LOGGER_DEBUG("[CUdpServer::close_all]end");
 }
 

@@ -43,9 +43,6 @@ private:
     using hashipport2tcpsslserver = unordered_map<string,shared_ptr<CTcpSSLServer>>;
     hashipport2tcpsslserver tcp_ssl_service_map_;
 #endif
-
-private:
-    std::mutex mutex_;
 };
 
 using App_NetSvrManager = PSS_singleton<CNetSvrManager>;

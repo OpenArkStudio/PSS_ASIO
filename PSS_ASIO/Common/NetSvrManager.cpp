@@ -137,58 +137,66 @@ void CNetSvrManager::close_all_service()
 
 void CNetSvrManager::start_single_service(const CConfigNetIO& netio)
 {
-    std::lock_guard <std::mutex> lock(mutex_);
-    string stripport;
     if("TCP" == netio.protocol_type_)
     {
-        PSS_LOGGER_INFO("[CNetSvrManager::start_single_service]create tcp service[{}:{}]",netio.ip_,netio.port_);
-        auto tcp_service = make_shared<CTcpServer>(CreateIoContextFunctor,
-            netio.ip_,
-            netio.port_,
-            netio.packet_parse_id_,
-            netio.recv_buff_size_);
-        stripport = netio.ip_ + "_" + std::to_string(netio.port_);
-        tcp_service_map_[stripport] = tcp_service;
+        App_tms::instance()->AddMessage(0, [this, netio]() {
+            string stripport;
+            PSS_LOGGER_INFO("[CNetSvrManager::start_single_service]create tcp service[{}:{}]", netio.ip_, netio.port_);
+            auto tcp_service = make_shared<CTcpServer>(CreateIoContextFunctor,
+                netio.ip_,
+                netio.port_,
+                netio.packet_parse_id_,
+                netio.recv_buff_size_);
+            stripport = netio.ip_ + "_" + std::to_string(netio.port_);
+            tcp_service_map_[stripport] = tcp_service;
+            });
     }
     else
     {
-        PSS_LOGGER_INFO("[CNetSvrManager::start_single_service]create udp service[{}:{}]",netio.ip_,netio.port_);
-        auto udp_service = make_shared<CUdpServer>(CreateIoContextFunctor(), 
-            netio.ip_,
-            netio.port_,
-            netio.packet_parse_id_,
-            netio.recv_buff_size_,
-            netio.send_buff_size_,
-            netio.em_net_type_);
-        udp_service->start();
-        stripport = netio.ip_ + "_" + std::to_string(netio.port_);
-        udp_service_map_[stripport] = udp_service;
+        App_tms::instance()->AddMessage(0, [this, netio]() {
+            string stripport;
+            PSS_LOGGER_INFO("[CNetSvrManager::start_single_service]create udp service[{}:{}]", netio.ip_, netio.port_);
+            auto udp_service = make_shared<CUdpServer>(CreateIoContextFunctor(),
+                netio.ip_,
+                netio.port_,
+                netio.packet_parse_id_,
+                netio.recv_buff_size_,
+                netio.send_buff_size_,
+                netio.em_net_type_);
+            udp_service->start();
+            stripport = netio.ip_ + "_" + std::to_string(netio.port_);
+            udp_service_map_[stripport] = udp_service;
+            });
     }
 }
 
 void CNetSvrManager::close_single_service(const CConfigNetIO& netio)
 {
-    std::lock_guard <std::mutex> lock(mutex_);
-    string stripport = netio.ip_ + "_" + std::to_string(netio.port_);
     if("TCP" == netio.protocol_type_)
     {
-        PSS_LOGGER_INFO("[CNetSvrManager::close_single_service]close tcp service[{}:{}]",netio.ip_,netio.port_);
-        auto tcp = tcp_service_map_.find(stripport);
-        if (tcp != tcp_service_map_.end())
-        {
-            tcp->second->close();
-            tcp_service_map_.erase(stripport);
-        }
+        App_tms::instance()->AddMessage(0, [this, netio]() {
+            string stripport = netio.ip_ + "_" + std::to_string(netio.port_);
+            PSS_LOGGER_INFO("[CNetSvrManager::close_single_service]close tcp service[{}:{}]", netio.ip_, netio.port_);
+            auto tcp = tcp_service_map_.find(stripport);
+            if (tcp != tcp_service_map_.end())
+            {
+                tcp->second->close();
+                tcp_service_map_.erase(stripport);
+            }
+            });
     }
     else
     {
-        PSS_LOGGER_INFO("[CNetSvrManager::close_single_service]close udp service[{}:{}]",netio.ip_,netio.port_);
-        auto udp = udp_service_map_.find(stripport);
-        if (udp != udp_service_map_.end())
-        {
-            udp->second->close_all();
-            udp_service_map_.erase(stripport);
-        }
+        App_tms::instance()->AddMessage(0, [this, netio]() {
+            string stripport = netio.ip_ + "_" + std::to_string(netio.port_);
+            PSS_LOGGER_INFO("[CNetSvrManager::close_single_service]close udp service[{}:{}]", netio.ip_, netio.port_);
+            auto udp = udp_service_map_.find(stripport);
+            if (udp != udp_service_map_.end())
+            {
+                udp->second->close_all();
+                udp_service_map_.erase(stripport);
+            }
+            });
     }
 }
 

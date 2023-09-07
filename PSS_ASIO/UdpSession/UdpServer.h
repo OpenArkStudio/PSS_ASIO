@@ -21,6 +21,8 @@ enum class EM_UDP_VALID
     UDP_VALUD,
 };
 
+const uint32 udp_net_buffer_size = 10 * 1024 * 1024;
+
 class CUdp_Session_Info
 {
 public:
@@ -107,7 +109,6 @@ private:
 
     using hashmapcid_recv_data_time = unordered_map<uint32, std::chrono::steady_clock::time_point>;
     hashmapcid_recv_data_time cid_recv_data_time_;
-    bool udp_run_state_;
 
     string server_ip_;
     io_port_type server_port_;
