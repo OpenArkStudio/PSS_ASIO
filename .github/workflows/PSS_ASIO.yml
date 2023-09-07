@@ -68,19 +68,10 @@ jobs:
         sleep 5
         echo "close pss_asio"
         echo "gcov********************" 
-        cd ${{github.workspace}}/PSS_ASIO
-        pwd
-        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/TTySession/*.cpp.gcda ../../PSS_ASIO/TTySession/*.cpp > /dev/null
-        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/TcpSession/*.cpp.gcda ../../PSS_ASIO/TcpSession/*.cpp > /dev/null
-        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/UdpSession/*.cpp.gcda ../../PSS_ASIO/UdpSession/*.cpp > /dev/null
-        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/Common/*.cpp.gcda ../../PSS_ASIO/Common/*.cpp > /dev/null
-        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/Message/*.cpp.gcda ../../PSS_ASIO/Message/*.cpp > /dev/null
-        echo "link***********************"
         cd ${{github.workspace}}
         pwd
-        cd ./Build/Linux/PSS_ASIO/CMakeFiles/pss_asio.dir
-        cat link.txt
-        echo "end***********************"
+        gcovr --sonarqube > coverage.xml
+        cat coverage.xml
 
     - name: SonarCloud Scan make report
       working-directory: ${{github.workspace}}
