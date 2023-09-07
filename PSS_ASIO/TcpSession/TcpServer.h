@@ -19,7 +19,6 @@ private:
     uint32 packet_parse_id_ = 0;
     uint32 max_recv_size_ = 0;
     CreateIoContextCallbackFunc callback_;
-    bool accept_run_state_;
     
     string server_ip_;
     io_port_type server_port_;

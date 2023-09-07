@@ -5,7 +5,6 @@ CTcpServer::CTcpServer(const CreateIoContextCallbackFunc callback, const std::st
 {
     try
     {
-        accept_run_state_ = true;
         callback_ = callback;
         asio::io_context* iocontext = callback_();
         acceptor_ = std::make_shared<tcp::acceptor>(*iocontext, tcp::endpoint(asio::ip::address_v4::from_string(server_ip), port));
@@ -25,16 +24,12 @@ CTcpServer::CTcpServer(const CreateIoContextCallbackFunc callback, const std::st
 
 void CTcpServer::close()
 {
-    PSS_LOGGER_INFO("[CTcpServer::close]stop tcp server[{0}:{1}]", server_ip_, server_port_);
-    accept_run_state_ = false;
+    PSS_LOGGER_INFO("[CTcpServer::close]stop tcp accept bgein[{0}:{1}]", server_ip_, server_port_);
+    acceptor_->close();
 }
 
 void CTcpServer::do_accept()
 {
-    if (!accept_run_state_)
-    {
-        return;
-    }
     acceptor_->async_accept(
         [this](std::error_code ec, tcp::socket socket)
         {
@@ -57,33 +52,22 @@ void CTcpServer::do_accept()
             }
         });
 
-    if (!accept_run_state_)
-    {
-        if (nullptr != acceptor_)
-        {
-            acceptor_->close();
-        }
-        return;
-    }
+    PSS_LOGGER_INFO("[CTcpServer::close]stop tcp accept ok[{0}:{1}]", server_ip_, server_port_);
 }
 
 void CTcpServer::send_accept_listen_fail(std::error_code ec)
 {
-    if (!accept_run_state_)
-    {
-        return;
-    }
     //发送监听失败消息
     App_WorkThreadLogic::instance()->add_frame_events(LOGIC_LISTEN_SERVER_ERROR,
         0,
-        acceptor_->local_endpoint().address().to_string(),
-        acceptor_->local_endpoint().port(),
+        server_ip_,
+        server_port_,
         EM_CONNECT_IO_TYPE::CONNECT_IO_TCP);
 
     //监听失败，查看错误信息
     PSS_LOGGER_INFO("[CTcpServer::do_accept]({0}:{1})accept error:{2}",
-        acceptor_->local_endpoint().address().to_string(),
-        acceptor_->local_endpoint().port(),
+        server_ip_,
+        server_port_,
         ec.message());
 }
 

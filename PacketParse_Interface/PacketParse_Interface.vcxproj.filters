@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="PacketParse_Inferface.cpp">
+    <ClCompile Include="PacketParse_Interface.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

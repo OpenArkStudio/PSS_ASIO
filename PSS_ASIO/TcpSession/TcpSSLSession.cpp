@@ -50,10 +50,6 @@ _ClientIPInfo CTcpSSLSession::get_remote_ip(uint32 connect_id)
 
 void CTcpSSLSession::close(uint32 connect_id)
 {
-    if(!socket_.is_open())
-    {
-        return;
-    }
     auto self(shared_from_this());
 
     auto recv_data_size = recv_data_size_;
