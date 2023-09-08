@@ -89,17 +89,6 @@ bool CServerService::init_service(const std::string& pss_config_file_name)
 
     PSS_LOGGER_DEBUG("[CServerService::init_service]build_time:{}\tversion:{}", V_BUILD_TIME, V_GIT_INFO);
 
-    //初始化PacketParse插件
-    for (const auto& packet_parse : App_ServerConfig::instance()->get_config_packet_list())
-    {
-        if (false == App_PacketParseLoader::instance()->LoadPacketInfo(packet_parse.packet_parse_id_, 
-            packet_parse.packet_parse_path_,
-            packet_parse.packet_parse_file_name_))
-        {
-            PSS_LOGGER_DEBUG("[CServerService::init_service] load error.");
-        }
-    }
-
 #if PSS_PLATFORM == PLATFORM_WIN
     ::SetConsoleCtrlHandler(ConsoleHandlerRoutine, TRUE);
 #endif
@@ -122,6 +111,17 @@ bool CServerService::init_service(const std::string& pss_config_file_name)
 
     //初始化框架定时器
     App_TimerManager::instance()->Start();
+
+    //初始化PacketParse插件
+    for (const auto& packet_parse : App_ServerConfig::instance()->get_config_packet_list())
+    {
+        if (false == App_PacketParseLoader::instance()->LoadPacketInfo(packet_parse.packet_parse_id_,
+            packet_parse.packet_parse_path_,
+            packet_parse.packet_parse_file_name_))
+        {
+            PSS_LOGGER_DEBUG("[CServerService::init_service] load error.");
+        }
+    }
 
     //启动服务器间链接库
     App_CommunicationService::instance()->init_communication_service(CreateIoContextFunctor,

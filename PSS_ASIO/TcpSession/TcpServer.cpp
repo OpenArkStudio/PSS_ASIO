@@ -51,8 +51,6 @@ void CTcpServer::do_accept()
                 PSS_LOGGER_WARN("[CTcpServer::do_accept]close tcp server[{}:{}], error={}",server_ip_,server_port_, ex.what());
             }
         });
-
-    PSS_LOGGER_INFO("[CTcpServer::close]stop tcp accept ok[{0}:{1}]", server_ip_, server_port_);
 }
 
 void CTcpServer::send_accept_listen_fail(std::error_code ec)
