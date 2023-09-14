@@ -202,6 +202,9 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
         App_tms::instance()->CreateLogic(thread_id);
     }
 
+    //所有线程启动完成
+    App_tms::instance()->Start();
+
     plugin_work_thread_buffer_list_.clear();
 
     //等待10毫秒，让所有线程创建完毕
@@ -368,8 +371,10 @@ void CWorkThreadLogic::delete_thread_session(uint32 connect_id, shared_ptr<ISess
         communicate_service_->set_connect_id(server_id, 0);
     }
 
+    auto io_type = session->get_io_type();
+
     //向插件告知链接断开消息
-    App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, module_logic]() {
+    App_tms::instance()->AddMessage(curr_thread_index, [connect_id, server_id, io_type, module_logic]() {
         CMessage_Source source;
         auto recv_packet = std::make_shared<CMessage_Packet>();
         auto send_packet = std::make_shared<CMessage_Packet>();
@@ -378,8 +383,8 @@ void CWorkThreadLogic::delete_thread_session(uint32 connect_id, shared_ptr<ISess
 
         source.connect_id_ = connect_id;
         source.work_thread_id_ = module_logic->get_work_thread_id();
-        source.type_ = session->get_io_type();
-        source.connect_mark_id_ = session->get_mark_id(connect_id);
+        source.type_ = io_type;
+        source.connect_mark_id_ = server_id;
 
         module_logic->do_thread_module_logic(source, recv_packet, send_packet);
 

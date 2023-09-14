@@ -1,10 +1,12 @@
 ﻿#include "TtyServer.h"
 
-CTTyServer::CTTyServer(uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size)
+CTTyServer::CTTyServer(uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size, CIo_List_Manager* io_list_manager)
 {
     //处理链接建立消息
     session_recv_buffer_.Init(max_recv_size);
     session_send_buffer_.Init(max_send_size);
+
+    io_list_manager_ = io_list_manager;
 
     connect_id_ = App_ConnectCounter::instance()->CreateCounter();
 
@@ -23,6 +25,7 @@ void CTTyServer::start(asio::io_context* io_context, const std::string& tty_name
 
     server_id_ = server_id;
     tty_name_ = tty_name;
+    tty_port_ = tty_port;
 
     asio::serial_port::baud_rate option;
     std::error_code ec;
@@ -54,6 +57,8 @@ void CTTyServer::start(asio::io_context* io_context, const std::string& tty_name
             App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bridge_connect_id_);
         }
 
+        io_list_manager_->add_accept_net_io_event(tty_name_, tty_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_TTY, std::dynamic_pointer_cast<CIo_Net_server>(shared_from_this()));
+
         do_receive();
     }
 }
@@ -69,8 +74,19 @@ void CTTyServer::do_receive()
     serial_port_param_->async_read_some(asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()),
         [self](std::error_code ec, std::size_t length)
         {
-            //处理接收数据
-            self->do_read_some(ec, length);
+            if (!ec)
+            {
+                //处理接收数据
+                self->do_read_some(ec, length);
+            }
+            else
+            {
+                PSS_LOGGER_DEBUG("[CTTyServer::do_receive]({}:{})accept error:{}.", 
+                    self->tty_name_, 
+                    self->tty_port_, 
+                    ec.message());
+                return;
+            }
         });
 }
 
@@ -213,7 +229,14 @@ void CTTyServer::close(uint32 connect_id)
 
             //删除映射关系
             App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
+
+            self->io_list_manager_->del_accept_net_io_event(self->tty_name_, self->tty_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_TTY);
         });
+}
+
+void CTTyServer::close()
+{
+    close(connect_id_);
 }
 
 uint32 CTTyServer::get_mark_id(uint32 connect_id)

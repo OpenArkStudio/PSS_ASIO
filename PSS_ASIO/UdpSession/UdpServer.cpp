@@ -1,7 +1,7 @@
 ﻿#include "UdpServer.h"
 
-CUdpServer::CUdpServer(asio::io_context* io_context, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size, EM_NET_TYPE em_net_type)
-    : socket_(*io_context), max_recv_size_(max_recv_size), max_send_size_(max_send_size), io_context_(io_context),server_ip_(server_ip),server_port_(port)
+CUdpServer::CUdpServer(asio::io_context* io_context, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size, EM_NET_TYPE em_net_type, CIo_List_Manager* io_list_manager)
+    : socket_(*io_context), max_recv_size_(max_recv_size), max_send_size_(max_send_size), io_context_(io_context),server_ip_(server_ip),server_port_(port), io_list_manager_(io_list_manager)
 {
     //处理链接建立消息
     PSS_LOGGER_DEBUG("[CUdpServer::do_accept]{0}:{1} Begin Accept.", server_ip, port);
@@ -43,6 +43,7 @@ CUdpServer::CUdpServer(asio::io_context* io_context, const std::string& server_i
 
 void CUdpServer::start()
 {
+    io_list_manager_->add_accept_net_io_event(server_ip_, server_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_UDP, shared_from_this());
     do_receive();
 }
 
@@ -67,7 +68,18 @@ void CUdpServer::do_receive()
         asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()), recv_endpoint_,
         [self](std::error_code ec, std::size_t length)
         {
-            self->do_receive_from(ec, length);
+            if (!ec)
+            {
+                self->do_receive_from(ec, length);
+            }
+            else
+            {
+                PSS_LOGGER_DEBUG("[CUdpServer::do_receive]({}:{})async_receive_from error:{}.",
+                    self->server_ip_,
+                    self->server_port_,
+                    ec.message());
+                return;
+            }
         });
 }
 
@@ -152,19 +164,26 @@ void CUdpServer::close(uint32 connect_id)
     PSS_LOGGER_DEBUG("[CUdpServer::close]end connect_id={0}",connect_id);
 }
 
-void CUdpServer::close_all()
+void CUdpServer::close()
 {
-    PSS_LOGGER_DEBUG("[CUdpServer::close_all]start size1={} size2={}",udp_id_2_endpoint_list_.size(),udp_endpoint_2_id_list_.size());
-    close_server();
-    PSS_LOGGER_DEBUG("[CUdpServer::close_all]end");
+    auto self(shared_from_this());
+    io_context_->dispatch([self]()
+        {
+            self->close_server();
+            self->io_list_manager_->del_accept_net_io_event(self->server_ip_, self->server_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
+        });
 }
 
 void CUdpServer::close_server()
 {
-    //释放所有kcp资源
+    //释放所有udp资源
     for (const auto& session_info : udp_id_2_endpoint_list_)
     {
-        this->close(session_info.first);
+        auto connect_id = session_info.first;
+        //这里发送数据通知()
+        packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_, App_IoBridge::instance());
+
+        App_WorkThreadLogic::instance()->delete_thread_session(connect_id, shared_from_this());
     }
 
     udp_id_2_endpoint_list_.clear();

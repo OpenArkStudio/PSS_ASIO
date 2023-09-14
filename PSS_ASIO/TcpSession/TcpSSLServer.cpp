@@ -1,4 +1,5 @@
 #include "TcpSSLServer.h"
+
 #ifdef SSL_SUPPORT
 
 CTcpSSLServer::CTcpSSLServer(CreateIoContextCallbackFunc callback,
@@ -8,13 +9,15 @@ CTcpSSLServer::CTcpSSLServer(CreateIoContextCallbackFunc callback,
     uint32 max_recv_size, 
     std::string ssl_server_password,
     std::string ssl_server_pem_file,
-    std::string ssl_server_dh_file) :
+    std::string ssl_server_dh_file,
+    CIo_List_Manager* io_list_manager) :
 context_(asio::ssl::context::sslv23),
 packet_parse_id_(packet_parse_id),
 max_recv_size_(max_recv_size),
 ssl_server_password_(ssl_server_password),
 ssl_server_pem_file_(ssl_server_pem_file),
-ssl_server_dh_file_(ssl_server_dh_file)
+ssl_server_dh_file_(ssl_server_dh_file),
+io_list_manager_(io_list_manager)
 {
     try
     {
@@ -26,6 +29,9 @@ ssl_server_dh_file_(ssl_server_dh_file)
             asio::ssl::context::default_workarounds
             | asio::ssl::context::no_sslv2
             | asio::ssl::context::single_dh_use);
+
+        server_ip_ = server_ip;
+        server_port_ = port;
         
         context_.set_password_callback(std::bind(&CTcpSSLServer::get_password, this));
         context_.use_certificate_chain_file(ssl_server_pem_file_);
@@ -43,6 +49,12 @@ ssl_server_dh_file_(ssl_server_dh_file)
     {
         PSS_LOGGER_DEBUG("[CTcpSSLServer::CTcpSSLServer]({0}:{1}) error={2}", server_ip, port, ex.what());
     }
+}
+
+void CTcpSSLServer::start()
+{
+    io_list_manager_->add_accept_net_io_event(server_ip_, server_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_SSL, shared_from_this());
+    do_accept();
 }
 
 void CTcpSSLServer::close() const
@@ -69,6 +81,7 @@ void CTcpSSLServer::do_accept()
             else
             {
                 PSS_LOGGER_DEBUG("[CTcpSSLServer::do_accept]listen error={0}", error.message());
+                return;
             }
 
             do_accept();
@@ -89,6 +102,8 @@ void CTcpSSLServer::send_accept_listen_fail(std::error_code ec) const
         acceptor_->local_endpoint().address().to_string(),
         acceptor_->local_endpoint().port(),
         ec.message());
+
+    io_list_manager_->del_accept_net_io_event(server_ip_, server_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_SSL);
 }
 
 #endif

@@ -195,6 +195,8 @@
     <ClInclude Include="Common\CoreTimer.hpp" />
     <ClInclude Include="Common\FrameObject.hpp" />
     <ClInclude Include="Common\ICommunicationService.h" />
+    <ClInclude Include="Common\IoListManager.h" />
+    <ClInclude Include="Common\IoNetServer.h" />
     <ClInclude Include="Common\ISession.h" />
     <ClInclude Include="Common\NetSvrManager.h" />
     <ClInclude Include="Common\SendBuffer.h" />

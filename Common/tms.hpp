@@ -91,6 +91,24 @@ private:
     uint32 m_u4ThreadID = 0;
 };
 
+//消息缓冲对象(当TMS没有启动的时候，需要将消息放入延时处理启动队列)
+enum class EM_TMS_EVENT_TYPE
+{
+    TMS_EVENT_IMMEDIATELY = 0,
+    TMS_EVENT_DELAY,
+    TMS_EVENT_TIMER
+};
+
+class CTMS_Event
+{
+public:
+    uint32 u4LogicID_ = 0;
+    task_function event_func_;
+    EM_TMS_EVENT_TYPE em_tms_event_type_ = EM_TMS_EVENT_TYPE::TMS_EVENT_IMMEDIATELY;
+    std::chrono::milliseconds millisecond_;
+    std::chrono::seconds delayseconds_;
+};
+
 class TMS
 {
 public:
@@ -177,9 +195,45 @@ public:
         }
     }
 
+    //设置TMS启动完成，遍历队列中的事件，添加到队列中
+    void Start()
+    {
+        tms_is_start_ = true;
+
+        for (auto& tms_event : m_tmsEvents)
+        {
+            if (EM_TMS_EVENT_TYPE::TMS_EVENT_IMMEDIATELY == tms_event.em_tms_event_type_)
+            {
+                AddMessage(tms_event.u4LogicID_, tms_event.event_func_);
+            }
+            else if (EM_TMS_EVENT_TYPE::TMS_EVENT_DELAY == tms_event.em_tms_event_type_)
+            {
+                AddMessage(tms_event.u4LogicID_, tms_event.millisecond_, tms_event.event_func_);
+            }
+            else if (EM_TMS_EVENT_TYPE::TMS_EVENT_TIMER == tms_event.em_tms_event_type_)
+            {
+                AddMessage_loop(tms_event.u4LogicID_, tms_event.delayseconds_, tms_event.millisecond_, tms_event.event_func_);
+            }
+        }
+
+        //m_tmsEvents.clear();
+    }
+
     //添加消息(即时)
     bool AddMessage(uint32 u4LogicID, task_function func)
     {
+        //判断tms是否已经启动
+        if (false == tms_is_start_)
+        {
+            //添加进队列
+            CTMS_Event tms_event;
+            tms_event.u4LogicID_ = u4LogicID;
+            tms_event.event_func_ = func;
+            tms_event.em_tms_event_type_ = EM_TMS_EVENT_TYPE::TMS_EVENT_IMMEDIATELY;
+            m_tmsEvents.emplace_back(tms_event);
+            return true;
+        }
+
         auto f = m_mapLogicList.find(u4LogicID);
         if (f != m_mapLogicList.end())
         {
@@ -198,6 +252,19 @@ public:
     brynet::Timer::WeakPtr AddMessage(uint32 u4LogicID, std::chrono::milliseconds millisecond, task_function func)
     {
         brynet::Timer::WeakPtr timer;
+        //判断tms是否已经启动
+        if (false == tms_is_start_)
+        {
+            //添加进队列
+            CTMS_Event tms_event;
+            tms_event.u4LogicID_ = u4LogicID;
+            tms_event.event_func_ = func;
+            tms_event.millisecond_ = millisecond;
+            tms_event.em_tms_event_type_ = EM_TMS_EVENT_TYPE::TMS_EVENT_DELAY;
+            m_tmsEvents.emplace_back(tms_event);
+            return timer;
+        }
+
         auto f = m_mapLogicList.find(u4LogicID);
         if (f != m_mapLogicList.end())
         {
@@ -219,6 +286,21 @@ public:
     brynet::Timer::WeakPtr AddMessage_loop(uint32 u4LogicID, std::chrono::seconds delayseconds, std::chrono::milliseconds millisecond, task_function func)
     {
         brynet::Timer::WeakPtr timer;
+
+        //判断tms是否已经启动
+        if (false == tms_is_start_)
+        {
+            //添加进队列
+            CTMS_Event tms_event;
+            tms_event.u4LogicID_ = u4LogicID;
+            tms_event.event_func_ = func;
+            tms_event.millisecond_ = millisecond;
+            tms_event.delayseconds_ = delayseconds;
+            tms_event.em_tms_event_type_ = EM_TMS_EVENT_TYPE::TMS_EVENT_TIMER;
+            m_tmsEvents.emplace_back(tms_event);
+            return timer;
+        }
+
         auto f = m_mapLogicList.find(u4LogicID);
         if (f != m_mapLogicList.end())
         {
@@ -246,6 +328,7 @@ public:
         //关闭定时器
         m_timerManager.Close();
         m_ttTimer.join();
+        tms_is_start_ = false;
     }
 
 private:
@@ -255,6 +338,9 @@ private:
     mapthreads m_mapLogicList;
     std::thread m_ttTimer;
     mapthreadidtologicid m_TidtologicidList;
+    bool tms_is_start_ = false;
+    using vecEvents = vector<CTMS_Event>;
+    vecEvents m_tmsEvents;
 };
 
 using App_tms = PSS_singleton<TMS>;

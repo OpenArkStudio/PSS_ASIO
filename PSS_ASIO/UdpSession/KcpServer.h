@@ -13,7 +13,8 @@
 #include "ModuleLogic.h"
 #include "kcp/ikcp.h"
 #include "Iobridge.h"
-
+#include "IoListManager.h"
+ 
 #if PSS_PLATFORM == PLATFORM_UNIX
 #include <sys/time.h>
 #endif
@@ -80,10 +81,10 @@ public:
     }
 };
 
-class CKcpServer : public std::enable_shared_from_this<CKcpServer>, public ISession
+class CKcpServer : public std::enable_shared_from_this<CKcpServer>, public ISession, public CIo_Net_server
 {
 public:
-    CKcpServer(asio::io_context* io_context, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size);
+    CKcpServer(asio::io_context* io_context, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size, CIo_List_Manager* io_list_manager);
 
     void start();
 
@@ -91,7 +92,7 @@ public:
 
     void close(uint32 connect_id) final;
 
-    void close_all();
+    void close();
 
     void set_write_buffer(uint32 connect_id, const char* data, size_t length) final;
 
@@ -169,5 +170,8 @@ private:
     EM_CONNECT_IO_TYPE io_type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_KCP;
     EM_SESSION_STATE io_state_ = EM_SESSION_STATE::SESSION_IO_LOGIC;
     CKcp_send_info kcp_send_info_;
+    CIo_List_Manager* io_list_manager_ = nullptr;
+    std::string server_ip_ = "";
+    io_port_type server_port_ = 0;
 };
 

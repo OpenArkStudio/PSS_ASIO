@@ -29,6 +29,24 @@ void CBaseCommand::Init(ISessionService* session_service)
     {
         PSS_LOGGER_DEBUG("[CBaseCommand::Init]tty listen {0}:{1}", io_type.ip_, io_type.port_);
     }
+
+    CConfigNetIO netio_test_tcp_10012;
+    CConfigNetIO netio_test_udp_10013;
+
+    netio_test_tcp_10012.ip_ = "127.0.0.1";
+    netio_test_tcp_10012.port_ = 10012;
+    netio_test_tcp_10012.packet_parse_id_ = 1;
+
+    netio_test_udp_10013.ip_ = "127.0.0.1";
+    netio_test_udp_10013.port_ = 10013;
+    netio_test_udp_10013.packet_parse_id_ = 1;
+    netio_test_udp_10013.protocol_type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_UDP;
+
+    session_service_->start_single_service(netio_test_tcp_10012);
+    session_service_->start_single_service(netio_test_udp_10013);
+    session_service_->close_single_service(netio_test_tcp_10012);
+    session_service_->close_single_service(netio_test_udp_10013);
+
 #ifdef GCOV_TEST
     session_service_->create_frame_work_thread(plugin_test_logic_thread_id);
 

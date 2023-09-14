@@ -12,6 +12,7 @@
 #include "ISession.h"
 #include "ModuleLogic.h"
 #include "Iobridge.h"
+#include "IoListManager.h"
 
 using asio::ip::udp;
 
@@ -36,10 +37,10 @@ public:
     EM_UDP_VALID udp_state = EM_UDP_VALID::UDP_INVALUD;
 };
 
-class CUdpServer : public std::enable_shared_from_this<CUdpServer>, public ISession
+class CUdpServer : public std::enable_shared_from_this<CUdpServer>, public ISession, public CIo_Net_server
 {
 public:
-    CUdpServer(asio::io_context* io_context, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size, EM_NET_TYPE em_net_type);
+    CUdpServer(asio::io_context* io_context, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size, EM_NET_TYPE em_net_type, CIo_List_Manager* io_list_manager);
 
     void start();
 
@@ -47,7 +48,7 @@ public:
 
     void close(uint32 connect_id) final;
 
-    void close_all();
+    void close();
 
     void set_write_buffer(uint32 connect_id, const char* data, size_t length) final;
 
@@ -112,5 +113,6 @@ private:
 
     string server_ip_;
     io_port_type server_port_;
+    CIo_List_Manager* io_list_manager_ = nullptr;
 };
 

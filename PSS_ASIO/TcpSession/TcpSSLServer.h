@@ -4,8 +4,9 @@
 
 #include "TcpSSLSession.h"
 #include "IoContextPool.h"
+#include "IoListManager.h"
 
-class CTcpSSLServer
+class CTcpSSLServer : public std::enable_shared_from_this<CTcpSSLServer>, public CIo_Net_server
 {
 public:
     CTcpSSLServer(CreateIoContextCallbackFunc callback, 
@@ -15,9 +16,12 @@ public:
         uint32 max_recv_size, 
         std::string ssl_server_password,
         std::string ssl_server_pem_file,
-        std::string ssl_server_dh_file);
+        std::string ssl_server_dh_file,
+        CIo_List_Manager* io_list_manager);
 
     void close() const;
+
+    void start();
 
 private:
     std::string get_password() const;
@@ -25,6 +29,9 @@ private:
     void do_accept();
 
     void send_accept_listen_fail(std::error_code ec) const;
+
+    std::string server_ip_ = "";
+    io_port_type server_port_ = 0;
 
     std::shared_ptr<tcp::acceptor> acceptor_;
     asio::ssl::context context_;
@@ -34,6 +41,7 @@ private:
     std::string ssl_server_pem_file_;
     std::string ssl_server_dh_file_;
     CreateIoContextCallbackFunc callback_;
+    CIo_List_Manager* io_list_manager_ = nullptr;
 };
 
 #endif

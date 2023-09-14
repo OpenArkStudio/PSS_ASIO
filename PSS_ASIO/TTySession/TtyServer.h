@@ -12,11 +12,12 @@
 #include "ISession.h"
 #include "ModuleLogic.h"
 #include "Iobridge.h"
+#include "IoListManager.h"
 
-class CTTyServer : public std::enable_shared_from_this<CTTyServer>, public ISession
+class CTTyServer : public std::enable_shared_from_this<CTTyServer>, public ISession, public CIo_Net_server
 {
 public:
-    CTTyServer(uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size);
+    CTTyServer(uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size, CIo_List_Manager* io_list_manager);
 
     void start(asio::io_context* io_context, const std::string& tty_name, uint16 tty_port, uint8 char_size, uint32 server_id);
 
@@ -29,6 +30,8 @@ public:
     void do_write_immediately(uint32 connect_id, const char* data, size_t length) final;
 
     void close(uint32 connect_id) final;
+
+    void close() final;
 
     void add_send_finish_size(uint32 connect_id, size_t send_length) final;
 
@@ -61,6 +64,7 @@ private:
 
     asio::io_context* io_context_ = nullptr;
     std::string tty_name_;
+    uint16 tty_port_ = 0;
     shared_ptr<asio::serial_port> serial_port_param_= nullptr;
     uint32 connect_id_ = 0;
     uint32 server_id_ = 0;
@@ -79,5 +83,7 @@ private:
 
     EM_CONNECT_IO_TYPE io_type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_TTY;
     EM_SESSION_STATE io_state_ = EM_SESSION_STATE::SESSION_IO_LOGIC;
+
+    CIo_List_Manager* io_list_manager_ = nullptr;
 };
 

@@ -92,7 +92,8 @@ void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
         auto tty_client_session = make_shared<CTTyServer>(
             connect_info.io_info_.packet_parse_id,
             connect_info.io_info_.recv_size,
-            connect_info.io_info_.send_size);
+            connect_info.io_info_.send_size,
+            App_NetSvrManager::instance());
         tty_client_session->start(callback_(),
             connect_info.io_info_.server_ip,
             connect_info.io_info_.server_port,

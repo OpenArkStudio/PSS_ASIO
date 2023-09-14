@@ -7,6 +7,7 @@
 #include "TtyServer.h"
 #include "tms.hpp"
 #include "CoreTimer.hpp"
+#include "NetSvrManager.h"
 
 //管理服务器间链接，自动重连的类
 //add by freeeyes

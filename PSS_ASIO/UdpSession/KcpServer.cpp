@@ -2,8 +2,8 @@
 
 static int kcp_udpOutPut(const char* buf, int len, ikcpcb* kcp, void* user);
 
-CKcpServer::CKcpServer(asio::io_context* io_context, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size)
-    : socket_(*io_context, udp::endpoint(asio::ip::address_v4::from_string(server_ip), port)), max_recv_size_(max_recv_size), max_send_size_(max_send_size), io_context_(io_context)
+CKcpServer::CKcpServer(asio::io_context* io_context, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size, CIo_List_Manager* io_list_manager)
+    : socket_(*io_context, udp::endpoint(asio::ip::address_v4::from_string(server_ip), port)), max_recv_size_(max_recv_size), max_send_size_(max_send_size), io_context_(io_context), io_list_manager_(io_list_manager)
 {
     //处理链接建立消息
     PSS_LOGGER_DEBUG("[CKcpServer::do_accept]{0}:{1} Begin Accept.", server_ip, port);
@@ -11,12 +11,17 @@ CKcpServer::CKcpServer(asio::io_context* io_context, const std::string& server_i
     session_recv_buffer_.Init(max_recv_size_);
     session_recv_data_buffer_.Init(max_recv_size_);
 
-    packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(packet_parse_id);
+    server_ip_ = server_ip;
+    server_port_ = port;
 
+    packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(packet_parse_id);
 }
 
 void CKcpServer::start()
 {
+    //注册给list对象
+    io_list_manager_->add_accept_net_io_event(server_ip_, server_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_KCP, shared_from_this());
+
     do_receive();
 }
 
@@ -42,7 +47,18 @@ void CKcpServer::do_receive()
         asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()), recv_endpoint_,
         [self](std::error_code ec, std::size_t length)
         { 
-            self->do_receive_from(ec, length);
+            if (!ec)
+            {
+                self->do_receive_from(ec, length);
+            }
+            else
+            {
+                PSS_LOGGER_DEBUG("[CKcpServer::do_receive]({}:{})async_receive_from error:{}.",
+                    self->server_ip_,
+                    self->server_port_,
+                    ec.message());
+                return;
+            }
         });
 }
 
@@ -166,10 +182,6 @@ void CKcpServer::do_receive_from(std::error_code ec, std::size_t length)
 
 void CKcpServer::close(uint32 connect_id)
 {
-    if(!socket_.is_open())
-    {
-        return;
-    }
     auto self(shared_from_this());
 
     io_context_->dispatch([self, connect_id]() 
@@ -182,18 +194,24 @@ void CKcpServer::close(uint32 connect_id)
         });
 }
 
-void CKcpServer::close_all()
+void CKcpServer::close()
 {
-    //释放所有kcp资源
-    for (const auto& session_info : udp_id_2_endpoint_list_)
-    {
-        session_info.second->close_kcp();
-        this->close(session_info.first);
-    }
+    auto self(shared_from_this());
+    io_context_->dispatch([self]()
+        {
+            //释放所有kcp资源
+            for (const auto& session_info : self->udp_id_2_endpoint_list_)
+            {
+                session_info.second->close_kcp();
+                self->close(session_info.first);
+            }
 
-    udp_id_2_endpoint_list_.clear();
-    udp_endpoint_2_id_list_.clear();
-    socket_.close();
+            self->udp_id_2_endpoint_list_.clear();
+            self->udp_endpoint_2_id_list_.clear();
+            self->socket_.close();
+
+            self->io_list_manager_->del_accept_net_io_event(self->server_ip_, self->server_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_KCP);
+        });
 }
 
 void CKcpServer::set_write_buffer(uint32 connect_id, const char* data, size_t length)
