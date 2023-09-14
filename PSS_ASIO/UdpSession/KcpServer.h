@@ -92,7 +92,7 @@ public:
 
     void close(uint32 connect_id) final;
 
-    void close();
+    void close() final;
 
     void set_write_buffer(uint32 connect_id, const char* data, size_t length) final;
 
