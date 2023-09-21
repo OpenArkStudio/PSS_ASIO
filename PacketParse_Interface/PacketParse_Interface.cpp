@@ -263,11 +263,11 @@ void packet_load(IIoBridge* io_bridge)
     //测试数据透传接口
     _ClientIPInfo from_io;
     from_io.m_strClientIP = "127.0.0.1";
-    from_io.m_u2Port = 10010;
+    from_io.m_u2Port = 10033;
 
     _ClientIPInfo to_io;
     to_io.m_strClientIP = "127.0.0.1";
-    to_io.m_u2Port = 10003;
+    to_io.m_u2Port = 10034;
 
     io_bridge->add_session_io_mapping(from_io,
         EM_CONNECT_IO_TYPE::CONNECT_IO_TCP,

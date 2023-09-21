@@ -20,10 +20,15 @@ const uint32 plugin_test_logic_thread_id = 1001;
 class CBaseCommand
 {
 public:
-	void Init(ISessionService* session_service);
+	void init(ISessionService* session_service);
+
+	void close();
 
 	void logic_connect_tcp();
 	void logic_connect_udp();
+	void test_io_2_io();
+	void test_create_io_listen();
+	void test_close_io_listen();
 
 	void logic_connect(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet);
 	void logic_disconnect(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet);

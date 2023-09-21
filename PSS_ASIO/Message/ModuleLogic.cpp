@@ -122,24 +122,6 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
         load_module_.load_plugin_module(logic_library.logic_path_, 
             logic_library.logic_file_name_, 
             logic_library.logic_param_);
-
-#ifdef GCOV_TEST
-        plugin_work_thread_buffer_message_list_.clear();
-        plugin_work_thread_buffer_Func_list_.clear();
-
-        //测试输出和关闭
-        PSS_LOGGER_DEBUG("[load_module_] module is exist = {0}", load_module_.get_module_exist(logic_library.logic_file_name_.c_str()));
-        PSS_LOGGER_DEBUG("[load_module_] name = {0}", load_module_.get_module_file_path(logic_library.logic_file_name_.c_str()));
-        PSS_LOGGER_DEBUG("[load_module_] name = {0}", load_module_.get_module_param(logic_library.logic_file_name_.c_str()));
-
-        //测试卸载模块
-        load_module_.unload_plugin_module(logic_library.logic_file_name_, true);
-
-        //测试重新加载模块
-        load_module_.load_plugin_module(logic_library.logic_path_,
-            logic_library.logic_file_name_,
-            logic_library.logic_param_);
-#endif
     }
 
 #ifdef GCOV_TEST

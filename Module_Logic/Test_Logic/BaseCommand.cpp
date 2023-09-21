@@ -1,6 +1,6 @@
 #include "BaseCommand.h"
 
-void CBaseCommand::Init(ISessionService* session_service)
+void CBaseCommand::init(ISessionService* session_service)
 {
     session_service_ = session_service;
 
@@ -9,43 +9,26 @@ void CBaseCommand::Init(ISessionService* session_service)
     session_service_->get_server_listen_info(io_list, EM_CONNECT_IO_TYPE::CONNECT_IO_TCP);
     for (const auto& io_type : io_list)
     {
-        PSS_LOGGER_DEBUG("[CBaseCommand::Init]tcp listen {0}:{1}", io_type.ip_, io_type.port_);
+        PSS_LOGGER_DEBUG("[CBaseCommand::init]tcp listen {0}:{1}", io_type.ip_, io_type.port_);
     }
 
     session_service_->get_server_listen_info(io_list, EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
     for (const auto& io_type : io_list)
     {
-        PSS_LOGGER_DEBUG("[CBaseCommand::Init]udp listen {0}:{1}", io_type.ip_, io_type.port_);
+        PSS_LOGGER_DEBUG("[CBaseCommand::init]udp listen {0}:{1}", io_type.ip_, io_type.port_);
     }
 
     session_service_->get_server_listen_info(io_list, EM_CONNECT_IO_TYPE::CONNECT_IO_KCP);
     for (const auto& io_type : io_list)
     {
-        PSS_LOGGER_DEBUG("[CBaseCommand::Init]kcp listen {0}:{1}", io_type.ip_, io_type.port_);
+        PSS_LOGGER_DEBUG("[CBaseCommand::init]kcp listen {0}:{1}", io_type.ip_, io_type.port_);
     }
 
     session_service_->get_server_listen_info(io_list, EM_CONNECT_IO_TYPE::CONNECT_IO_TTY);
     for (const auto& io_type : io_list)
     {
-        PSS_LOGGER_DEBUG("[CBaseCommand::Init]tty listen {0}:{1}", io_type.ip_, io_type.port_);
+        PSS_LOGGER_DEBUG("[CBaseCommand::init]tty listen {0}:{1}", io_type.ip_, io_type.port_);
     }
-
-    CConfigNetIO netio_test_tcp_10012;
-    CConfigNetIO netio_test_udp_10013;
-
-    netio_test_tcp_10012.ip_ = "127.0.0.1";
-    netio_test_tcp_10012.port_ = 10012;
-    netio_test_tcp_10012.packet_parse_id_ = 1;
-
-    netio_test_udp_10013.ip_ = "127.0.0.1";
-    netio_test_udp_10013.port_ = 10013;
-    netio_test_udp_10013.packet_parse_id_ = 1;
-    netio_test_udp_10013.protocol_type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_UDP;
-
-    session_service_->start_single_service(netio_test_tcp_10012);
-    session_service_->start_single_service(netio_test_udp_10013);
-    session_service_->close_single_service(netio_test_tcp_10012);
-    session_service_->close_single_service(netio_test_udp_10013);
 
 #ifdef GCOV_TEST
     session_service_->create_frame_work_thread(plugin_test_logic_thread_id);
@@ -66,9 +49,25 @@ void CBaseCommand::Init(ISessionService* session_service)
 
     //²âÊÔÁ¬½Ótcp
     logic_connect_tcp();
+
+
+    PSS_LOGGER_DEBUG("[CBaseCommand::init]****create listen begin.");
+    //²âÊÔ´´½¨¼àÌý
+    test_create_io_listen();
+    PSS_LOGGER_DEBUG("[CBaseCommand::init]****create listen end.");
 #endif
 
-    PSS_LOGGER_DEBUG("[load_module]({0})io thread count.", session_service_->get_io_work_thread_count());
+    PSS_LOGGER_DEBUG("[CBaseCommand::init]({0})io thread count.", session_service_->get_io_work_thread_count());
+}
+
+void CBaseCommand::close()
+{
+    PSS_LOGGER_DEBUG("[CBaseCommand::close]is close.");
+
+#ifdef GCOV_TEST
+    //²âÊÔ¹Ø±Õ¼àÌý
+    test_close_io_listen();
+#endif
 }
 
 void CBaseCommand::logic_connect_tcp()
@@ -103,6 +102,59 @@ void CBaseCommand::logic_connect_udp()
     io_info.packet_parse_id = 1;
 
     session_service_->connect_io_server(io_info, io_type);
+}
+
+void CBaseCommand::test_io_2_io()
+{
+    //²âÊÔio 2 to Í¸´«´úÂë
+    _ClientIPInfo from_io;
+    from_io.m_strClientIP = "127.0.0.1";
+    from_io.m_u2Port = 10012;
+
+    _ClientIPInfo to_io;
+    to_io.m_strClientIP = "127.0.0.1";
+    to_io.m_u2Port = 10003;
+
+    session_service_->add_session_io_mapping(from_io,
+        EM_CONNECT_IO_TYPE::CONNECT_IO_TCP,
+        to_io,
+        EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_TCP);
+}
+
+void CBaseCommand::test_create_io_listen()
+{
+    CConfigNetIO netio_test_tcp_10012;
+    CConfigNetIO netio_test_udp_10013;
+
+    netio_test_tcp_10012.ip_ = "127.0.0.1";
+    netio_test_tcp_10012.port_ = 10012;
+    netio_test_tcp_10012.packet_parse_id_ = 1;
+
+    netio_test_udp_10013.ip_ = "127.0.0.1";
+    netio_test_udp_10013.port_ = 10013;
+    netio_test_udp_10013.packet_parse_id_ = 1;
+    netio_test_udp_10013.protocol_type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_UDP;
+
+    session_service_->start_single_service(netio_test_tcp_10012);
+    session_service_->start_single_service(netio_test_udp_10013);
+}
+
+void CBaseCommand::test_close_io_listen()
+{
+    CConfigNetIO netio_test_tcp_10012;
+    CConfigNetIO netio_test_udp_10013;
+
+    netio_test_tcp_10012.ip_ = "127.0.0.1";
+    netio_test_tcp_10012.port_ = 10012;
+    netio_test_tcp_10012.packet_parse_id_ = 1;
+
+    netio_test_udp_10013.ip_ = "127.0.0.1";
+    netio_test_udp_10013.port_ = 10013;
+    netio_test_udp_10013.packet_parse_id_ = 1;
+    netio_test_udp_10013.protocol_type_ = EM_CONNECT_IO_TYPE::CONNECT_IO_UDP;
+
+    session_service_->close_single_service(netio_test_tcp_10012);
+    session_service_->close_single_service(netio_test_udp_10013);
 }
 
 void CBaseCommand::logic_connect(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)

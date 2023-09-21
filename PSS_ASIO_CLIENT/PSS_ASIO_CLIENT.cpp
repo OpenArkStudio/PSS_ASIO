@@ -134,6 +134,69 @@ void tcp_test_connect_asynchronous_server(std::string strIP, unsigned short port
     c->do_write();
 }
 
+//测试透传转发(tcp)
+void tcp_test_io_2_io(std::string strIP, unsigned short port, unsigned short remote_port, uint16 command_id, uint16 packt_count, asio::io_context& io_context)
+{
+    tcp::socket s(io_context);
+    tcp::resolver resolver(io_context);
+    tcp::endpoint end_point(asio::ip::address::from_string(strIP.c_str()), port);
+
+    asio::error_code connect_error;
+    asio::ip::tcp::endpoint localEndpoint(asio::ip::address::from_string(strIP.c_str()), remote_port);
+
+    s.open(asio::ip::tcp::v4(), connect_error);
+    if (connect_error)
+    {
+        std::cout << "[tcp_test_io_2_io]open error(" << connect_error.message() << std::endl;
+        return;
+    }
+
+    s.bind(localEndpoint, connect_error);
+    if (connect_error)
+    {
+        //链接失败
+        std::cout << "[tcp_test_io_2_io]bind error(" << connect_error.message() << std::endl;
+        return;
+    }
+
+    s.set_option(asio::ip::tcp::socket::reuse_address(true));
+    s.connect(end_point, connect_error);
+
+    if (connect_error)
+    {
+        //链接失败
+        std::cout << "[tcp_test_io_2_io]connect error(" << connect_error.message() << std::endl;
+        return;
+    }
+
+    std::cout << "[tcp_test_io_2_io](" << command_id << ")connect OK" << std::endl;
+
+    //发送数据
+    char* send_buffer = new char[240 * packt_count];
+    int nPos = 0;
+
+    unsigned short client_version = 1;
+    unsigned short client_command_id = command_id;
+    unsigned int client_packet_length = 200;
+
+    for (int i = 0; i < packt_count; i++)
+    {
+        std::memcpy(&send_buffer[nPos], &client_version, sizeof(short));
+        nPos += sizeof(short);
+        std::memcpy(&send_buffer[nPos], &client_command_id, sizeof(short));
+        nPos += sizeof(short);
+        std::memcpy(&send_buffer[nPos], &client_packet_length, sizeof(int));
+        nPos += sizeof(int);
+        nPos += 32;
+        nPos += 200;
+    }
+
+    std::size_t send_size = asio::write(s, asio::buffer(send_buffer, 240 * packt_count));
+
+    std::cout << "[tcp_test_io_2_io](" << command_id << ")send （" << send_size << ") OK" << std::endl;
+
+}
+
 //同步客户端(tcp)
 void tcp_test_connect_synchronize_server(std::string strIP, unsigned short port, unsigned short remote_port, uint16 command_id, uint16 packt_count, asio::io_context& io_context)
 {
@@ -280,12 +343,16 @@ int main()
             io_context.run();
         });
 
+    tcp_test_io_2_io("127.0.0.1", 10012, 10010, 0x2101, 1, io_context);
+
+    /*
     tcp_test_connect_synchronize_server("127.0.0.1", 10002, 10010, 0x2101, 1, io_context);
     tcp_test_connect_synchronize_server("127.0.0.1", 10002, 10011, 0x2102, 1, io_context);
 
     udp_test_connect_synchronize_server("127.0.0.1", 10005, 10012, 0x2101, io_context);
     udp_test_connect_synchronize_server("127.0.0.1", 10005, 10012, 0x2102, io_context);
     from_server_get_kcp_id("127.0.0.1", 10100);
+    */
 
     io_context.stop();
     tt.join();

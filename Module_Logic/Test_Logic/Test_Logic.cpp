@@ -84,7 +84,7 @@ int load_module(IFrame_Object* frame_object, string module_param)
 
     session_service = frame_object->get_session_service();
 
-    base_command->Init(session_service);
+    base_command->init(session_service);
 
     //测试注册api
     auto test_api = std::bind(&CBaseCommand::do_logic_api, base_command.get(), std::placeholders::_1);
@@ -94,7 +94,7 @@ int load_module(IFrame_Object* frame_object, string module_param)
 
     PSS_LOGGER_DEBUG("[load_module]({0})finish.", module_param);
 
-    //测试服务器间通讯
+    //测试进程间通讯
     shm_queue::shm_key key = 11111;
     bool ret = session_service->create_queue(key, 100, 10);
     if (ret)
@@ -129,6 +129,7 @@ int load_module(IFrame_Object* frame_object, string module_param)
 //卸载插件
 void unload_module()
 {
+    base_command->close();
     PSS_LOGGER_DEBUG("[unload_module]finish.");
 }
 
