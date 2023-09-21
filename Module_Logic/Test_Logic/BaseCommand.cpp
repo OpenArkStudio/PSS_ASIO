@@ -50,11 +50,11 @@ void CBaseCommand::init(ISessionService* session_service)
     //测试连接tcp
     logic_connect_tcp();
 
-
-    PSS_LOGGER_DEBUG("[CBaseCommand::init]****create listen begin.");
     //测试创建监听
     test_create_io_listen();
-    PSS_LOGGER_DEBUG("[CBaseCommand::init]****create listen end.");
+
+    //建立点对点的透传连接
+    test_io_2_io();
 #endif
 
     PSS_LOGGER_DEBUG("[CBaseCommand::init]({0})io thread count.", session_service_->get_io_work_thread_count());
@@ -106,10 +106,10 @@ void CBaseCommand::logic_connect_udp()
 
 void CBaseCommand::test_io_2_io()
 {
-    //测试io 2 to 透传代码
+    //测试io 2 to 透传代码(将10092 桥接到 10003上)
     _ClientIPInfo from_io;
     from_io.m_strClientIP = "127.0.0.1";
-    from_io.m_u2Port = 10012;
+    from_io.m_u2Port = 10092;
 
     _ClientIPInfo to_io;
     to_io.m_strClientIP = "127.0.0.1";
