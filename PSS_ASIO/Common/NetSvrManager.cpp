@@ -91,35 +91,62 @@ void CNetSvrManager::start_default_service()
     }
 }
 
+void CNetSvrManager::close_accept_list(std::vector<shared_ptr<CIo_Net_server>>& io_listen_list)
+{
+    for (const auto& io_listen : io_listen_list)
+    {
+        io_listen->close();
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    io_listen_list.clear();
+}
+
 void CNetSvrManager::close_all_service()
 {
     PSS_LOGGER_DEBUG("[CNetSvrManager::close_all_service]begin.");
 
+    std::vector<shared_ptr<CIo_Net_server>> tcp_listen_list;
+    std::vector<shared_ptr<CIo_Net_server>> tcp_listen_ssl_list;
+    std::vector<shared_ptr<CIo_Net_server>> udp_listen_list;
+    std::vector<shared_ptr<CIo_Net_server>> kcp_listen_list;
+    std::vector<shared_ptr<CIo_Net_server>> tty_listen_list;
+
     //停止所有的TCP监听(TCP)
     for (const auto& tcp_service : tcp_service_list_)
     {
-        tcp_service.second->close();
+        tcp_listen_list.emplace_back(tcp_service.second);
     }
+    close_accept_list(tcp_listen_list);
 
 #ifdef SSL_SUPPORT
     //停止所有的SSL监听
     for (const auto& tcp_ssl_service : tcp_ssl_service_map_)
     {
-        tcp_ssl_service.second->close();
+        tcp_listen_ssl_list.emplace_back(tcp_ssl_service.second);
     }
+    close_accept_list(tcp_listen_ssl_list);
 #endif
 
     //清理所有kcp资源
     for (const auto& kcp_service : kcp_service_list_)
     {
-        kcp_service.second->close();
+        kcp_listen_list.emplace_back(kcp_service.second);
     }
+    close_accept_list(kcp_listen_list);
 
     //清理所有udp资源
     for (const auto& udp_service : udp_service_list_)
     {
-        udp_service.second->close();
+        udp_listen_list.emplace_back(udp_service.second);
     }
+    close_accept_list(udp_listen_list);
+
+    //清理所有tty资源
+    for (const auto& tty_service : tty_service_list_)
+    {
+        tty_listen_list.emplace_back(tty_service.second);
+    }
+    close_accept_list(tty_listen_list);
 
     tcp_service_list_.clear();
 
@@ -130,6 +157,7 @@ void CNetSvrManager::close_all_service()
 #ifdef SSL_SUPPORT
     tcp_ssl_service_map_.clear();
 #endif
+
     PSS_LOGGER_DEBUG("[CNetSvrManager::close_all_service]end.");
 }
 

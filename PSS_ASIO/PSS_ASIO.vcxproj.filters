@@ -263,6 +263,9 @@
     <ClInclude Include="Common\IoNetServer.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="Common\IoContextPool.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Build\Windows\server_config.json">

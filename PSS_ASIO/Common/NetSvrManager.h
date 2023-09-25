@@ -31,6 +31,8 @@ public:
     void start_single_service(const CConfigNetIO& netio);
     void close_single_service(const CConfigNetIO& netio);
 
+    void close_accept_list(std::vector<shared_ptr<CIo_Net_server>>& io_listen_list);
+
 private:
     using map_tcp_server_list = unordered_map<string,shared_ptr<CIo_Net_server>>;
     map_tcp_server_list tcp_service_list_;

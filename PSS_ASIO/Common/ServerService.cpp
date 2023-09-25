@@ -93,6 +93,7 @@ bool CServerService::init_service(const std::string& pss_config_file_name)
     ::SetConsoleCtrlHandler(ConsoleHandlerRoutine, TRUE);
 #endif
 
+    App_IoContextPool::instance()->init();
     asio::io_context* io_contex = App_IoContextPool::instance()->getIOContext();
     //注册监控中断事件(LINUX)
     asio::signal_set signals(*io_contex, SIGINT, SIGTERM);
@@ -100,7 +101,7 @@ bool CServerService::init_service(const std::string& pss_config_file_name)
         [this](std::error_code ec, int)
         {
             PSS_LOGGER_DEBUG("[CServerService::init_service] server is error({0}).", ec.message());
-            App_IoContextPool::instance()->stop();
+            App_ServerService::instance()->stop_service();
         });
 
     //测试记录二进制
@@ -146,7 +147,6 @@ bool CServerService::init_service(const std::string& pss_config_file_name)
     App_IoContextPool::instance()->run();
 
     PSS_LOGGER_DEBUG("[CServerService::init_service] server is over.");
-    close_service();
 
     return true;
 }
@@ -155,14 +155,14 @@ void CServerService::close_service()
 {
     PSS_LOGGER_DEBUG("[CServerService::close_service]begin.");
 
+    //停止所有网络服务
+    App_NetSvrManager::instance()->close_all_service();
+
     //关闭框架定时器
     App_TimerManager::instance()->Close();
 
     //停止服务间消息队列数据接收
     App_QueueSessionManager::instance()->close();
-
-    //停止所有网络服务
-    App_NetSvrManager::instance()->close_all_service();
 
     App_SessionService::instance()->close();
 
@@ -175,6 +175,12 @@ void CServerService::close_service()
 
 void CServerService::stop_service()
 {
+    PSS_LOGGER_DEBUG("[CServerService::stop_service]begin.");
+    //停止所有的服务
+    close_service();
+
+    PSS_LOGGER_DEBUG("[CServerService::stop_service]end.");
+
     //停止，回收清理
     App_IoContextPool::instance()->stop();
 }

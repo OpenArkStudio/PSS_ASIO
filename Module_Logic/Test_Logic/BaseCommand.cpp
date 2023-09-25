@@ -276,9 +276,18 @@ void CBaseCommand::logic_test_connect_error(const CMessage_Source& source, std::
 
 void CBaseCommand::logic_test_listen_error(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)
 {
-    PSS_LOGGER_DEBUG("[CBaseCommand::logic_test_listen_error]{0}:{1}",
-        source.local_ip_.m_strClientIP,
-        source.local_ip_.m_u2Port);
+    if (source.type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_TCP)
+    {
+        PSS_LOGGER_DEBUG("[CBaseCommand::logic_test_listen_error]TCP {0}:{1}",
+            source.local_ip_.m_strClientIP,
+            source.local_ip_.m_u2Port);
+    }
+    else if(source.type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_UDP)
+    {
+        PSS_LOGGER_DEBUG("[CBaseCommand::logic_test_listen_error]UDP {0}:{1}",
+            source.local_ip_.m_strClientIP,
+            source.local_ip_.m_u2Port);
+    }
 }
 
 void CBaseCommand::logic_http_post(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)

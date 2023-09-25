@@ -23,6 +23,7 @@ CTcpServer::CTcpServer(const CreateIoContextCallbackFunc& callback, const std::s
 void CTcpServer::start()
 {
     io_list_manager_->add_accept_net_io_event(server_ip_, server_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_TCP, shared_from_this());
+    PSS_LOGGER_INFO("[CTcpServer::start]tcp accept start[{0}:{1}]", server_ip_, server_port_);
     do_accept();
 }
 
