@@ -164,21 +164,13 @@ void CUdpServer::do_receive_from(std::error_code ec, std::size_t length)
 void CUdpServer::close(uint32 connect_id)
 {
     PSS_LOGGER_DEBUG("[CUdpServer::close]start connect_id={0}",connect_id);
-    auto self(shared_from_this());
-    io_context_->dispatch([self, connect_id]() 
-        {
-            self->close_udp_endpoint_by_id(connect_id);
-        });
+    close_udp_endpoint_by_id(connect_id);
     PSS_LOGGER_DEBUG("[CUdpServer::close]end connect_id={0}",connect_id);
 }
 
 void CUdpServer::close()
 {
-    auto self(shared_from_this());
-    io_context_->dispatch([self]()
-        {
-            self->close_server();
-        });
+    close_server();
 }
 
 void CUdpServer::close_server()
@@ -195,6 +187,7 @@ void CUdpServer::close_server()
 
     udp_id_2_endpoint_list_.clear();
     udp_endpoint_2_id_list_.clear();
+    PSS_LOGGER_DEBUG("[CUdpServer::close_server]close [{0}:{1}]", server_ip_, server_port_);
     socket_.close();
 }
 

@@ -96,8 +96,9 @@ void CNetSvrManager::close_accept_list(std::vector<shared_ptr<CIo_Net_server>>& 
     for (const auto& io_listen : io_listen_list)
     {
         io_listen->close();
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     io_listen_list.clear();
 }
 
@@ -117,6 +118,7 @@ void CNetSvrManager::close_all_service()
         tcp_listen_list.emplace_back(tcp_service.second);
     }
     close_accept_list(tcp_listen_list);
+    PSS_LOGGER_DEBUG("[CNetSvrManager::close_all_service]!!!!({0})tcp close.", tcp_service_list_.size());
 
 #ifdef SSL_SUPPORT
     //停止所有的SSL监听
@@ -133,6 +135,7 @@ void CNetSvrManager::close_all_service()
         kcp_listen_list.emplace_back(kcp_service.second);
     }
     close_accept_list(kcp_listen_list);
+    PSS_LOGGER_DEBUG("[CNetSvrManager::close_all_service]!!!!({0})kcp close.", kcp_service_list_.size());
 
     //清理所有udp资源
     for (const auto& udp_service : udp_service_list_)
@@ -140,6 +143,7 @@ void CNetSvrManager::close_all_service()
         udp_listen_list.emplace_back(udp_service.second);
     }
     close_accept_list(udp_listen_list);
+    PSS_LOGGER_DEBUG("[CNetSvrManager::close_all_service]!!!!({0})udp close.", udp_service_list_.size());
 
     //清理所有tty资源
     for (const auto& tty_service : tty_service_list_)
@@ -147,6 +151,7 @@ void CNetSvrManager::close_all_service()
         tty_listen_list.emplace_back(tty_service.second);
     }
     close_accept_list(tty_listen_list);
+    PSS_LOGGER_DEBUG("[CNetSvrManager::close_all_service]!!!!({0})tty close.", tty_service_list_.size());
 
     tcp_service_list_.clear();
 
@@ -173,6 +178,10 @@ void CNetSvrManager::add_accept_net_io_event(string io_ip, io_port_type io_port,
     {
         udp_service_list_[io_key] = Io_Net_server;
     }
+    else if (EM_CONNECT_IO_TYPE::CONNECT_IO_KCP == em_io_net_type)
+    {
+        udp_service_list_[io_key] = Io_Net_server;
+    }
     else if (EM_CONNECT_IO_TYPE::CONNECT_IO_TTY == em_io_net_type)
     {
         tty_service_list_[io_key] = Io_Net_server;
@@ -190,6 +199,10 @@ void CNetSvrManager::del_accept_net_io_event(string io_ip, io_port_type io_port,
     else if (EM_CONNECT_IO_TYPE::CONNECT_IO_UDP == em_io_net_type)
     {
         udp_service_list_.erase(io_key);
+    }
+    else if (EM_CONNECT_IO_TYPE::CONNECT_IO_KCP == em_io_net_type)
+    {
+        kcp_service_list_.erase(io_key);
     }
     else if (EM_CONNECT_IO_TYPE::CONNECT_IO_TTY == em_io_net_type)
     {

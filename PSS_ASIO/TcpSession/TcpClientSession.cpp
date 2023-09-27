@@ -318,6 +318,7 @@ void CTcpClientSession::do_read_some(std::error_code ec, std::size_t length)
         //链接断开
         App_WorkThreadLogic::instance()->close_session_event(connect_id_);
         is_connect_ = false;
+        return;
     }
 }
 

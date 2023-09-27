@@ -57,6 +57,14 @@ void CKcpServer::do_receive()
                     self->server_ip_,
                     self->server_port_,
                     ec.message());
+
+                App_WorkThreadLogic::instance()->add_frame_events(LOGIC_LISTEN_SERVER_ERROR,
+                    0,
+                    self->server_ip_,
+                    self->server_port_,
+                    EM_CONNECT_IO_TYPE::CONNECT_IO_KCP);
+
+                self->io_list_manager_->del_accept_net_io_event(self->server_ip_, self->server_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_KCP);
                 return;
             }
         });
@@ -184,34 +192,29 @@ void CKcpServer::close(uint32 connect_id)
 {
     auto self(shared_from_this());
 
-    io_context_->dispatch([self, connect_id]() 
-        {
-            //释放kcp资源
-            auto session_info = self->find_udp_endpoint_by_id(connect_id);
-            session_info->close_kcp();
+    //释放kcp资源
+    auto session_info = self->find_udp_endpoint_by_id(connect_id);
+    session_info->close_kcp();
 
-            self->close_udp_endpoint_by_id(connect_id);
-        });
+    self->close_udp_endpoint_by_id(connect_id);
 }
 
 void CKcpServer::close()
 {
-    auto self(shared_from_this());
-    io_context_->dispatch([self]()
-        {
-            //释放所有kcp资源
-            for (const auto& session_info : self->udp_id_2_endpoint_list_)
-            {
-                session_info.second->close_kcp();
-                self->close(session_info.first);
-            }
+    //释放所有kcp资源
+    std::vector<uint32> kcp_client_list;
+    for (const auto& session_info : udp_id_2_endpoint_list_)
+    {
+        kcp_client_list.emplace_back(session_info.first);
+    }
 
-            self->udp_id_2_endpoint_list_.clear();
-            self->udp_endpoint_2_id_list_.clear();
-            self->socket_.close();
+    for (const auto& client_session_id : kcp_client_list)
+    {
+        close(client_session_id);
+    }
 
-            self->io_list_manager_->del_accept_net_io_event(self->server_ip_, self->server_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_KCP);
-        });
+    PSS_LOGGER_DEBUG("[close::close_server]close [{0}:{1}]", server_ip_, server_port_);
+    socket_.close();
 }
 
 void CKcpServer::set_write_buffer(uint32 connect_id, const char* data, size_t length)
