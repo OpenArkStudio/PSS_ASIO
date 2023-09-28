@@ -52,9 +52,6 @@ void CBaseCommand::init(ISessionService* session_service)
 
     //测试创建监听
     test_create_io_listen();
-
-    //建立点对点的透传连接
-    test_io_2_io();
 #endif
 
     PSS_LOGGER_DEBUG("[CBaseCommand::init]({0})io thread count.", session_service_->get_io_work_thread_count());
@@ -193,8 +190,10 @@ void CBaseCommand::logic_connect(const CMessage_Source& source, std::shared_ptr<
         PSS_LOGGER_DEBUG("[logic_connect]connectid={}, CONNECT_IO_SERVER_TCP", source.connect_id_);
         PSS_LOGGER_DEBUG("[logic_connect]connectid={}, server_id={}", source.connect_id_, source.connect_mark_id_);
 
-        //测试关闭链接
-        //session_service_->close_io_session(source.connect_id_);
+#ifdef GCOV_TEST
+        //建立点对点的透传连接
+        test_io_2_io();
+#endif
     }
     else if (source.type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_UDP)
     {
