@@ -67,6 +67,8 @@ void CBaseCommand::close()
 #ifdef GCOV_TEST
     //²âÊÔ¹Ø±Õ¼àÌý
     test_close_io_listen();
+
+    test_close_io_2_io_connect();
 #endif
 }
 
@@ -155,6 +157,15 @@ void CBaseCommand::test_close_io_listen()
 
     session_service_->close_single_service(netio_test_tcp_10012);
     session_service_->close_single_service(netio_test_udp_10013);
+}
+
+void CBaseCommand::test_close_io_2_io_connect()
+{
+    _ClientIPInfo from_io;
+    from_io.m_strClientIP = "127.0.0.1";
+    from_io.m_u2Port = 10092;
+
+    session_service_->delete_session_io_mapping(from_io, EM_CONNECT_IO_TYPE::CONNECT_IO_TCP);
 }
 
 void CBaseCommand::logic_connect(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet)

@@ -29,6 +29,7 @@ public:
 	void test_io_2_io();
 	void test_create_io_listen();
 	void test_close_io_listen();
+	void test_close_io_2_io_connect();
 
 	void logic_connect(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet);
 	void logic_disconnect(const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet);
