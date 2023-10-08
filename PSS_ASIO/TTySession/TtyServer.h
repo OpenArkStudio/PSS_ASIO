@@ -19,6 +19,8 @@ class CTTyServer : public std::enable_shared_from_this<CTTyServer>, public ISess
 public:
     CTTyServer(uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size, CIo_List_Manager* io_list_manager);
 
+    ~CTTyServer() = default;
+
     void start(asio::io_context* io_context, const std::string& tty_name, uint16 tty_port, uint8 char_size, uint32 server_id);
 
     _ClientIPInfo get_remote_ip(uint32 connect_id) final;
