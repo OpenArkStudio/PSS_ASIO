@@ -170,19 +170,15 @@ void CTcpSession::do_write(uint32 connect_id)
                 {
                     //发送写入消息失败信息
                     PSS_LOGGER_DEBUG("[CTcpSession::do_write]({0})write error({1}).", connect_id, ec.message());
-
                     self->send_write_fail_to_logic(send_buffer->data_, length);
-
                     if (true == self->is_active_close_)
                     {
-                        //关闭客户端
                         self->close_immediaterly();
                     }
                 }
                 else
                 {
                     self->add_send_finish_size(connect_id, length);
-
                     if (true == self->is_active_close_
                         && self->send_buffer_size_ == self->send_data_size_)
                     {

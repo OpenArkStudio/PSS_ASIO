@@ -9,7 +9,7 @@ class CTcpServer : public std::enable_shared_from_this<CTcpServer>, public CIo_N
 public:
     CTcpServer(const CreateIoContextCallbackFunc& callback, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_recv_size, CIo_List_Manager* io_list_manager);
 
-    ~CTcpServer() = default;
+    virtual ~CTcpServer() = default;
 
     void close() final;
 
