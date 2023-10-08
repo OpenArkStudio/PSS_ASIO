@@ -54,6 +54,8 @@ public:
 
     void do_read();
 
+    void close_immediaterly();
+
     void clear_write_buffer();
 
     void do_read_some(std::error_code ec, std::size_t length);
@@ -70,11 +72,13 @@ private:
     shared_ptr<_Packet_Parse_Info> packet_parse_interface_ = nullptr;
 
     std::mutex send_thread_mutex_;
-    bool is_send_finish_ = true;
     uint32 io_send_count_ = 0;
 
     size_t recv_data_size_ = 0;
     size_t send_data_size_ = 0;
+    size_t send_buffer_size_ = 0;
+
+    bool is_active_close_ = false;
 
     _ClientIPInfo remote_ip_;
     _ClientIPInfo local_ip_;

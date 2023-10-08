@@ -65,9 +65,11 @@ void CSessionInterface::check_session_io_timeout(uint32 connect_timeout, vector<
 {
     auto check_connect_time_ = std::chrono::steady_clock::now();
 
+    PSS_LOGGER_INFO("[CSessionInterface::check_session_io_timeout]****sessions_list_.size={}.", sessions_list_.size());
     for (const auto& session_io : sessions_list_)
     {
-        //目前只检查tcp
+        //检查tcp
+        PSS_LOGGER_INFO("[CSessionInterface::check_session_io_timeout]****sessions id={}.", session_io.second.session_->get_connect_id());
         if (session_io.second.session_->get_io_type() == EM_CONNECT_IO_TYPE::CONNECT_IO_TCP)
         {
             std::chrono::duration<double, std::ratio<1, 1>> elapsed = check_connect_time_ - session_io.second.session_->get_recv_time();
@@ -85,6 +87,7 @@ void CSessionInterface::check_session_io_timeout(uint32 connect_timeout, vector<
         }
         else if (session_io.second.session_->get_io_type() == EM_CONNECT_IO_TYPE::CONNECT_IO_UDP)
         {
+            //检查UDP
             std::chrono::duration<double, std::ratio<1, 1>> elapsed = check_connect_time_ - session_io.second.session_->get_recv_time(session_io.first);
             if (elapsed.count() >= connect_timeout)
             {

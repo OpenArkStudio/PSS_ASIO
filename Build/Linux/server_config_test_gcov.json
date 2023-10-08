@@ -2,9 +2,9 @@
   "work thread": {
 	"linux daemonize": 1,
     "work thread count": 3,
-    "work time check": 60,
+    "work time check": 10,
     "server to server time check": 30,
-    "client connect timeout" : 60,
+    "client connect timeout" : 8,
 	"IO send data check": 0,
 	"logic thread bind cpu": 0
   },

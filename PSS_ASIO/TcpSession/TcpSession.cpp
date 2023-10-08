@@ -70,7 +70,23 @@ _ClientIPInfo CTcpSession::get_remote_ip(uint32 connect_id)
 
 void CTcpSession::close(uint32 connect_id)
 {
-    if(!socket_.is_open())
+    //如果缓冲中不存在等待发送的数据，则直接关闭
+    if (send_buffer_size_ == send_data_size_)
+    {
+        close_immediaterly();
+    }
+    else
+    {
+        //如果缓冲区有数据，直接发送
+        do_write(connect_id_);
+
+        is_active_close_ = true;
+    }
+}
+
+void CTcpSession::close_immediaterly()
+{
+    if (!socket_.is_open())
     {
         return;
     }
@@ -90,18 +106,18 @@ void CTcpSession::close(uint32 connect_id)
     }
 
     //关闭链接放到IO收发线程里去做
-    io_context_->dispatch([self, connect_id, io_type, remote_ip, recv_data_size, send_data_size, io_send_count]()
+    io_context_->dispatch([self, io_type, remote_ip, recv_data_size, send_data_size, io_send_count]()
         {
             //输出接收发送字节数
             PSS_LOGGER_DEBUG("[CTcpSession::Close]connect_id={0}, recv:{1}, send:{2} io_send_count:{3}",
-                connect_id, recv_data_size, send_data_size, io_send_count);
+            self->connect_id_, recv_data_size, send_data_size, io_send_count);
 
-            self->socket_.close();
+    self->socket_.close();
 
-            //断开连接
-            self->packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type, App_IoBridge::instance());
+    //断开连接
+    self->packet_parse_interface_->packet_disconnect_ptr_(self->connect_id_, io_type, App_IoBridge::instance());
 
-            App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
+    App_WorkThreadLogic::instance()->delete_thread_session(self->connect_id_, self);
         });
 }
 
@@ -127,20 +143,22 @@ void CTcpSession::do_write(uint32 connect_id)
 {
     std::lock_guard<std::mutex> lck(send_thread_mutex_);
 
-    if (is_send_finish_ == false || session_send_buffer_.size() == 0)
-    {
-        //上次发送没有完成或者已经发送完成
-        return;
-    }
-
-    is_send_finish_ = false;
-
     //组装发送数据
     auto send_buffer = make_shared<CSendBuffer>();
     send_buffer->data_ = session_send_buffer_;
     send_buffer->buffer_length_ = session_send_buffer_.size();
 
+    //记录存储的地址
+    send_buffer_size_+= session_send_buffer_.size();
+
     clear_write_buffer();
+
+    //如果此链接已经主动关闭，不在接受之后的发送请求
+    if (is_active_close_)
+    {
+        send_write_fail_to_logic(send_buffer->data_, send_buffer->buffer_length_);
+        return;
+    }
 
     //异步发送
     auto self(shared_from_this());
@@ -154,13 +172,23 @@ void CTcpSession::do_write(uint32 connect_id)
                     PSS_LOGGER_DEBUG("[CTcpSession::do_write]({0})write error({1}).", connect_id, ec.message());
 
                     self->send_write_fail_to_logic(send_buffer->data_, length);
+
+                    if (true == self->is_active_close_)
+                    {
+                        //关闭客户端
+                        self->close_immediaterly();
+                    }
                 }
                 else
                 {
                     self->add_send_finish_size(connect_id, length);
 
-                    //继续发送
-                    self->do_write(connect_id);
+                    if (true == self->is_active_close_
+                        && self->send_buffer_size_ == self->send_data_size_)
+                    {
+                        //关闭客户端
+                        self->close_immediaterly();
+                    }
                 }
             });
     });
@@ -254,8 +282,6 @@ void CTcpSession::add_send_finish_size(uint32 connect_id, size_t send_length)
     send_data_size_ += send_length;
 
     io_send_count_++;
-
-    is_send_finish_ = true;
 }
 
 EM_CONNECT_IO_TYPE CTcpSession::get_io_type()

@@ -65,7 +65,7 @@ jobs:
         ./pss_asio_test_client
         sleep 5
         killall pss_asio
-        sleep 5
+        sleep 20
         echo "close pss_asio"
         echo "gcov********************" 
         cd ${{github.workspace}}
