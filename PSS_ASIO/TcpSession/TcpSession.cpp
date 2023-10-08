@@ -166,28 +166,33 @@ void CTcpSession::do_write(uint32 connect_id)
         asio::async_write(self->socket_, asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
             [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
             {
-                if (ec)
-                {
-                    //发送写入消息失败信息
-                    PSS_LOGGER_DEBUG("[CTcpSession::do_write]({0})write error({1}).", connect_id, ec.message());
-                    self->send_write_fail_to_logic(send_buffer->data_, length);
-                    if (true == self->is_active_close_)
-                    {
-                        self->close_immediaterly();
-                    }
-                }
-                else
-                {
-                    self->add_send_finish_size(connect_id, length);
-                    if (true == self->is_active_close_
-                        && self->send_buffer_size_ == self->send_data_size_)
-                    {
-                        //关闭客户端
-                        self->close_immediaterly();
-                    }
-                }
+                self->do_write_finish(ec, connect_id, send_buffer, length);
             });
     });
+}
+
+void CTcpSession::do_write_finish(std::error_code& ec, uint32 connect_id, std::shared_ptr<CSendBuffer> send_buffer, std::size_t length)
+{
+    if (ec)
+    {
+        //发送写入消息失败信息
+        PSS_LOGGER_DEBUG("[CTcpSession::do_write]({0})write error({1}).", connect_id, ec.message());
+        send_write_fail_to_logic(send_buffer->data_, length);
+        if (true == is_active_close_)
+        {
+            close_immediaterly();
+        }
+    }
+    else
+    {
+        add_send_finish_size(connect_id, length);
+        if (true == is_active_close_
+            && send_buffer_size_ == send_data_size_)
+        {
+            //关闭客户端
+            close_immediaterly();
+        }
+    }
 }
 
 void CTcpSession::do_write_immediately(uint32 connect_id, const char* data, size_t length)

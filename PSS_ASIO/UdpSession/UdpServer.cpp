@@ -86,7 +86,6 @@ void CUdpServer::do_receive()
                     EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
 
                 self->io_list_manager_->del_accept_net_io_event(self->server_ip_, self->server_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
-                return;
             }
         });
 }
