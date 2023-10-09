@@ -41,7 +41,7 @@ public:
 
     void check_session_io_timeout(uint32 connect_timeout, vector<CSessionIO_Cancel>& session_list);
 
-    bool is_need_check_session(std::chrono::steady_clock::time_point& check_connect_time, uint32& connect_timeout);
+    bool is_need_check_session(const std::chrono::steady_clock::time_point& check_connect_time, const uint32& connect_timeout);
 
     void start_check();
 

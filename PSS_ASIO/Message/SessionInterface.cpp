@@ -109,7 +109,7 @@ void CSessionInterface::check_session_io_timeout(uint32 connect_timeout, vector<
 
 }
 
-bool CSessionInterface::is_need_check_session(std::chrono::steady_clock::time_point& check_connect_time, uint32& connect_timeout)
+bool CSessionInterface::is_need_check_session(const std::chrono::steady_clock::time_point& check_connect_time, const uint32& connect_timeout)
 {
     std::chrono::duration<double, std::ratio<1, 1>> elapsed = check_connect_time - check_connect_time_;
     if (elapsed.count() >= connect_timeout)

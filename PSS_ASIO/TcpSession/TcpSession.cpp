@@ -148,7 +148,7 @@ void CTcpSession::do_write(uint32 connect_id)
     send_buffer->data_ = session_send_buffer_;
     send_buffer->buffer_length_ = session_send_buffer_.size();
 
-    //记录存储的地址
+    //记录放入缓存的大小
     send_buffer_size_+= session_send_buffer_.size();
 
     clear_write_buffer();

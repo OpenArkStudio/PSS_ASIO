@@ -62,12 +62,10 @@ void CTcpServer::do_accept()
 void CTcpServer::send_accept_listen_fail(std::error_code ec)
 {
     //发送监听失败消息
-    auto server_ip = server_ip_;
-    auto server_port = server_port_;
     App_WorkThreadLogic::instance()->add_frame_events(LOGIC_LISTEN_SERVER_ERROR,
         0,
-        server_ip,
-        server_port,
+        server_ip_,
+        server_port_,
         EM_CONNECT_IO_TYPE::CONNECT_IO_TCP);
 
     //监听失败，查看错误信息

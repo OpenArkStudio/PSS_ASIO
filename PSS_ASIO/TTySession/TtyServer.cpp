@@ -85,6 +85,13 @@ void CTTyServer::do_receive()
                     self->tty_name_, 
                     self->tty_port_, 
                     ec.message());
+
+                App_WorkThreadLogic::instance()->add_frame_events(LOGIC_LISTEN_SERVER_ERROR,
+                    self->server_id_,
+                    self->tty_name_,
+                    self->tty_port_,
+                    EM_CONNECT_IO_TYPE::CONNECT_IO_TTY);
+
                 return;
             }
         });
@@ -149,6 +156,9 @@ void CTTyServer::do_write(uint32 connect_id)
     send_buffer->data_.append(session_send_buffer_.read(), session_send_buffer_.get_write_size());
     send_buffer->buffer_length_ = session_send_buffer_.get_write_size();
 
+    //记录放入缓存的大小
+    send_buffer_size_ += send_buffer->buffer_length_;
+
     clear_write_buffer();
     
     //异步发送
@@ -156,20 +166,37 @@ void CTTyServer::do_write(uint32 connect_id)
     serial_port_param_->async_write_some(asio::buffer(send_buffer->data_.c_str(), send_buffer->buffer_length_),
         [self, send_buffer, connect_id](std::error_code ec, std::size_t length)
         {
-            if (ec)
-            {
-                //回调消息处理失败信息
-                PSS_LOGGER_DEBUG("[CTTyServer::do_write]({0})write error({1}).", connect_id, ec.message());
-
-                self->send_write_fail_to_logic(send_buffer->data_, length);
-            }
-            else
-            {
-                self->add_send_finish_size(connect_id, length);
-            }
+            self->do_write_finish(ec, connect_id, send_buffer, length);
         });
 
     clear_write_buffer();
+}
+
+void CTTyServer::do_write_finish(std::error_code& ec, uint32 connect_id, std::shared_ptr<CSendBuffer> send_buffer, std::size_t length)
+{
+    if (ec)
+    {
+        //回调消息处理失败信息
+        PSS_LOGGER_DEBUG("[CTTyServer::do_write]({0})write error({1}).", connect_id, ec.message());
+
+        send_write_fail_to_logic(send_buffer->data_, length);
+
+        if (true == is_active_close_)
+        {
+            close_immediaterly();
+        }
+    }
+    else
+    {
+        add_send_finish_size(connect_id, length);
+
+        if (true == is_active_close_
+            && send_buffer_size_ == send_data_size_)
+        {
+            //关闭客户端
+            close_immediaterly();
+        }
+    }
 }
 
 void CTTyServer::do_write_immediately(uint32 connect_id, const char* data, size_t length)
@@ -217,18 +244,34 @@ EM_CONNECT_IO_TYPE CTTyServer::get_io_type()
 
 void CTTyServer::close(uint32 connect_id)
 {
+    //如果缓冲中不存在等待发送的数据，则直接关闭
+    if (send_buffer_size_ == send_data_size_)
+    {
+        close_immediaterly();
+    }
+    else
+    {
+        //如果缓冲区有数据，直接发送
+        do_write(connect_id_);
+
+        is_active_close_ = true;
+    }
+}
+
+void CTTyServer::close_immediaterly()
+{
     auto self(shared_from_this());
 
     auto io_type = io_type_;
     _ClientIPInfo remote_ip = remote_ip_;
 
-    io_context_->dispatch([self, connect_id, io_type, remote_ip]()
+    io_context_->dispatch([self, io_type, remote_ip]()
         {
-            PSS_UNUSED_ARG(connect_id);
-            self->packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type, App_IoBridge::instance());
+            PSS_UNUSED_ARG(self->connect_id_);
+            self->packet_parse_interface_->packet_disconnect_ptr_(self->connect_id_, io_type, App_IoBridge::instance());
 
             //删除映射关系
-            App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
+            App_WorkThreadLogic::instance()->delete_thread_session(self->connect_id_, self);
 
             self->io_list_manager_->del_accept_net_io_event(self->tty_name_, self->tty_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_TTY);
         });

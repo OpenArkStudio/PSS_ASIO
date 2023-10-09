@@ -150,6 +150,18 @@ void CUdpServer::do_receive_from(std::error_code ec, std::size_t length)
 
             session_recv_buffer_.move(length);
 
+#ifdef GCOV_TEST
+            //测试代码
+            auto remote_ip_info = get_remote_ip(connect_id);
+            PSS_LOGGER_WARN("[CUdpServer::do_receive_from]client udp {}:{} is connect server",
+                remote_ip_info.m_strClientIP,
+                remote_ip_info.m_u2Port);
+
+            set_io_bridge_connect_id(connect_id, 3);
+            regedit_bridge_session_id(connect_id);
+            set_io_bridge_connect_id(connect_id, 0);
+#endif
+
             //持续接收数据
             do_receive();
         }

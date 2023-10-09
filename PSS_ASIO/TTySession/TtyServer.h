@@ -58,11 +58,15 @@ public:
     void send_write_fail_to_logic(const std::string write_fail_buffer, std::size_t buffer_length);
 
 private:
+    void do_write_finish(std::error_code& ec, uint32 connect_id, std::shared_ptr<CSendBuffer> send_buffer, std::size_t length);
+
     void do_receive();
 
     void clear_write_buffer();
 
     bool add_serial_port(asio::io_context* io_context, const std::string& tty_name, uint16 tty_port, uint8 char_size);
+
+    void close_immediaterly();
 
     asio::io_context* io_context_ = nullptr;
     std::string tty_name_;
@@ -77,6 +81,9 @@ private:
 
     size_t recv_data_size_ = 0;
     size_t send_data_size_ = 0;
+    size_t send_buffer_size_ = 0;
+
+    bool is_active_close_ = false;
     std::chrono::steady_clock::time_point recv_data_time_ = std::chrono::steady_clock::now();
 
     CSessionBuffer session_recv_buffer_;

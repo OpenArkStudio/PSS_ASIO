@@ -101,6 +101,8 @@ void CBaseCommand::logic_connect_udp()
     io_info.server_ip = "127.0.0.1";
     io_info.server_port = 10005;
     io_info.server_id = 1002;
+    io_info.client_ip = "127.0.0.1";
+    io_info.client_port = 10094;
     io_info.packet_parse_id = 1;
 
     session_service_->connect_io_server(io_info, io_type);
