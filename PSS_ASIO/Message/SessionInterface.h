@@ -39,7 +39,11 @@ public:
 
     void delete_session_interface(uint32 connect_id);
 
-    void check_session_io_timeout(uint32 connect_timeout, vector<CSessionIO_Cancel>& session_list) const;
+    void check_session_io_timeout(uint32 connect_timeout, vector<CSessionIO_Cancel>& session_list);
+
+    bool is_need_check_session(std::chrono::steady_clock::time_point& check_connect_time, uint32& connect_timeout);
+
+    void start_check();
 
     template<class session_function>
     void each_session_id(const session_function& session_fn) const
@@ -52,4 +56,5 @@ public:
 private:
     using hashmapsessions = unordered_map<uint32, CSessionIOInfo>;
     hashmapsessions sessions_list_;
+    std::chrono::steady_clock::time_point check_connect_time_;
 };

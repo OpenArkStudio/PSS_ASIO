@@ -68,7 +68,7 @@ public:
 
     int get_work_thread_timeout() const;
 
-    void check_session_io_timeout(uint32 connect_timeout) const;
+    void check_session_io_timeout(uint32 connect_timeout);
 
     uint16 get_last_dispose_command_id() const;
 

@@ -4,6 +4,8 @@ void CModuleLogic::init_logic(const command_to_module_function& command_to_modul
 {
     modules_interface_.copy_from_module_list(command_to_module_function);
     work_thread_id_ = work_thread_id;
+
+    sessions_interface_.start_check();
 }
 
 void CModuleLogic::add_session(uint32 connect_id, shared_ptr<ISession> session, const _ClientIPInfo& local_info, const _ClientIPInfo& romote_info)
@@ -67,7 +69,7 @@ int CModuleLogic::get_work_thread_timeout() const
     }
 }
 
-void CModuleLogic::check_session_io_timeout(uint32 connect_timeout) const
+void CModuleLogic::check_session_io_timeout(uint32 connect_timeout)
 {
     vector<CSessionIO_Cancel> session_list;
     sessions_interface_.check_session_io_timeout(connect_timeout, session_list);

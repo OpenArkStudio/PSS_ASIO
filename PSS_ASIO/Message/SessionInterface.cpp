@@ -56,14 +56,17 @@ _ClientIPInfo CSessionInterface::get_session_remote_ip(uint32 connect_id)
 
 void CSessionInterface::delete_session_interface(uint32 connect_id)
 {
-    PSS_LOGGER_DEBUG("[CSessionInterface::delete_session_interface]connect_id={0}.", connect_id);
     sessions_list_.erase(connect_id);
     PSS_LOGGER_DEBUG("[CSessionInterface::delete_session_interface]connect_id={0} OK.", connect_id);
 }
 
-void CSessionInterface::check_session_io_timeout(uint32 connect_timeout, vector<CSessionIO_Cancel>& session_list) const
+void CSessionInterface::check_session_io_timeout(uint32 connect_timeout, vector<CSessionIO_Cancel>& session_list)
 {
-    auto check_connect_time_ = std::chrono::steady_clock::now();
+    auto check_connect_time = std::chrono::steady_clock::now();
+    if (!is_need_check_session(check_connect_time, connect_timeout))
+    {
+        return;
+    }
 
     PSS_LOGGER_DEBUG("[CSessionInterface::check_session_io_timeout]****sessions_list_.size={}, connect_timeout={}.", sessions_list_.size(), connect_timeout);
     for (const auto& session_io : sessions_list_)
@@ -105,3 +108,24 @@ void CSessionInterface::check_session_io_timeout(uint32 connect_timeout, vector<
     }
 
 }
+
+bool CSessionInterface::is_need_check_session(std::chrono::steady_clock::time_point& check_connect_time, uint32& connect_timeout)
+{
+    std::chrono::duration<double, std::ratio<1, 1>> elapsed = check_connect_time - check_connect_time_;
+    if (elapsed.count() >= connect_timeout)
+    {
+        check_connect_time_ = check_connect_time;
+        return true;
+    }
+    else
+    {
+        PSS_LOGGER_DEBUG("[CSessionInterface::is_need_check_session]****time elapsed={}.", elapsed.count());
+        return false;
+    }
+}
+
+void CSessionInterface::start_check()
+{
+    check_connect_time_ = std::chrono::steady_clock::now();
+}
+
