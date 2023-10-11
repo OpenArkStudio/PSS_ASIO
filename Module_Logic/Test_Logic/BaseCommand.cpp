@@ -30,6 +30,8 @@ void CBaseCommand::init(ISessionService* session_service)
         PSS_LOGGER_DEBUG("[CBaseCommand::init]tty listen {0}:{1}", io_type.ip_, io_type.port_);
     }
 
+    PSS_LOGGER_DEBUG("[CBaseCommand::init]work thread count = {0}", session_service_->get_io_work_thread_count());
+
 #ifdef GCOV_TEST
     session_service_->create_frame_work_thread(plugin_test_logic_thread_id);
 
@@ -192,8 +194,13 @@ void CBaseCommand::logic_connect(const CMessage_Source& source, std::shared_ptr<
     }
     else if (source.type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_TCP)
     {
+        PSS_LOGGER_DEBUG("[logic_connect]connectid={}, FROM SERVER_ID", session_service_->get_connect_id(source.connect_mark_id_));
         PSS_LOGGER_DEBUG("[logic_connect]connectid={}, CONNECT_IO_SERVER_TCP", source.connect_id_);
         PSS_LOGGER_DEBUG("[logic_connect]connectid={}, server_id={}", source.connect_id_, source.connect_mark_id_);
+
+#ifdef GCOV_TEST
+        session_service_->regedit_bridge_session_id(source.connect_id_);
+#endif
     }
     else if (source.type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_UDP)
     {
