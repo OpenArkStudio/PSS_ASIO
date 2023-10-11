@@ -58,10 +58,6 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size)
             message_list,
             shared_from_this());
     }
-
-    set_io_bridge_connect_id(connect_id_, 3);
-    regedit_bridge_session_id(connect_id_);
-    set_io_bridge_connect_id(connect_id_, 0);
 #endif
     do_read();
 }
