@@ -691,6 +691,11 @@ void CWorkThreadLogic::send_io_buffer() const
 
 bool CWorkThreadLogic::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id)
 {
+    if (thread_count_ == 0 || thread_module_list_.size() == 0)
+    {
+        return false;
+    }
+
     auto curr_post_thread_index = to_io_connect_id % thread_count_;
     auto post_module_logic = thread_module_list_[curr_post_thread_index];
 

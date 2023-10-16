@@ -10,25 +10,37 @@ bool CIoBridge::add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_
     auto connect_info = iotoio_.find_io_to_io_list(from_io, from_io_type);
     if (nullptr != connect_info && connect_info->from_session_id_ > 0 && connect_info->to_session_id_ > 0)
     {
-        PSS_LOGGER_DEBUG("[CIoBridge::add_session_io_mapping]connect_info->from_session_id:{} connect_info->to_session_id_:{}",
-            connect_info->from_session_id_, connect_info->to_session_id_);
-        if (bridge_type == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH)
-        {
-            //两边的链接已经存在了
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_info->from_session_id_, connect_info->to_session_id_);
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_info->to_session_id_, connect_info->from_session_id_);
-        }
-        else if (bridge_type == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_FROM)
-        {
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_info->from_session_id_, connect_info->to_session_id_);
-        }
-        else
-        {
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_info->to_session_id_, connect_info->from_session_id_);
-        }
+        do_bridge_io_2_io(connect_info->from_session_id_, connect_info->to_session_id_, bridge_type);
     }
 
+#ifdef GCOV_TEST
+    //测试代码
+    do_bridge_io_2_io(100, 200, ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH);
+    do_bridge_io_2_io(100, 200, ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_FROM);
+    do_bridge_io_2_io(100, 200, ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_TO);
+#endif
+
     return ret;
+}
+
+void CIoBridge::do_bridge_io_2_io(uint32 from_session_id, uint32 to_session_id, ENUM_IO_BRIDGE_TYPE bridge_type)
+{
+    PSS_LOGGER_DEBUG("[CIoBridge::add_session_io_mapping]connect_info->from_session_id:{} connect_info->to_session_id_:{}",
+        from_session_id, to_session_id);
+    if (bridge_type == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH)
+    {
+        //两边的链接已经存在了
+        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(from_session_id, to_session_id);
+        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(to_session_id, from_session_id);
+    }
+    else if (bridge_type == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_FROM)
+    {
+        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(from_session_id, to_session_id);
+    }
+    else
+    {
+        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(to_session_id, from_session_id);
+    }
 }
 
 bool CIoBridge::delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type)
