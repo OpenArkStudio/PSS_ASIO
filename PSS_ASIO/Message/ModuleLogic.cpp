@@ -411,6 +411,8 @@ int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, c
     //测试连接自检
     uint32 check_timeout = 120;
     run_check_task(check_timeout);
+
+    send_io_buffer();
 #endif
     return 0;
 }
@@ -499,7 +501,7 @@ void CWorkThreadLogic::do_work_thread_module_logic(shared_ptr<ISession> session,
     }
 }
 
-void CWorkThreadLogic::send_io_buffer(uint32 connect_id, std::shared_ptr<ISession> session, std::shared_ptr<CMessage_Packet> format_packet)
+void CWorkThreadLogic::send_io_buffer(uint32 connect_id, std::shared_ptr<ISession> session, std::shared_ptr<CMessage_Packet> format_packet) const
 {
     if (io_send_time_check_ > 0)
     {

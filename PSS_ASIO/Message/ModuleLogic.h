@@ -162,7 +162,7 @@ public:
     int do_io_bridge_data(uint32 connect_id, uint32 io_bridge_connect_id_, CSessionBuffer& session_recv_buffer, std::size_t length, shared_ptr<ISession> session);
 
 private:
-    void send_io_buffer(uint32 connect_id, std::shared_ptr<ISession> session, std::shared_ptr<CMessage_Packet> format_packet);
+    void send_io_buffer(uint32 connect_id, std::shared_ptr<ISession> session, std::shared_ptr<CMessage_Packet> format_packet) const;
     void do_work_thread_timeout(uint16 work_thread_id, uint16 last_dispose_command_id, int work_thread_timeout);
 
     using hashmappluginworkthread = unordered_map<uint32, shared_ptr<CModuleLogic>>;
