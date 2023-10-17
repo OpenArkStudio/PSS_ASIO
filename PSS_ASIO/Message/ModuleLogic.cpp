@@ -219,6 +219,10 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
                 });
         });
     
+#ifdef GCOV_TEST
+    //测试线程死锁消息
+    do_work_thread_timeout(1, 1001, 30);
+#endif
 }
 
 void CWorkThreadLogic::init_communication_service(ICommunicationInterface* communicate_service)
@@ -495,6 +499,22 @@ void CWorkThreadLogic::do_work_thread_module_logic(shared_ptr<ISession> session,
     }
 }
 
+void CWorkThreadLogic::send_io_buffer(uint32 connect_id, std::shared_ptr<ISession> session, std::shared_ptr<CMessage_Packet> format_packet)
+{
+    if (io_send_time_check_ > 0)
+    {
+        session->set_write_buffer(connect_id,
+            format_packet->buffer_.c_str(),
+            format_packet->buffer_.size());
+    }
+    else
+    {
+        session->do_write_immediately(connect_id,
+            format_packet->buffer_.c_str(),
+            format_packet->buffer_.size());
+    }
+}
+
 void CWorkThreadLogic::do_io_message_delivery(uint32 connect_id, std::shared_ptr<CMessage_Packet> send_packet, shared_ptr<CModuleLogic> module_logic)
 {
     auto session = module_logic->get_session_interface(connect_id);
@@ -510,34 +530,11 @@ void CWorkThreadLogic::do_io_message_delivery(uint32 connect_id, std::shared_ptr
                 return;
             }
 
-            if (io_send_time_check_ > 0)
-            {
-                session->set_write_buffer(connect_id,
-                    format_packet->buffer_.c_str(),
-                    format_packet->buffer_.size());
-            }
-            else
-            {
-                session->do_write_immediately(connect_id,
-                    format_packet->buffer_.c_str(),
-                    format_packet->buffer_.size());
-            }
+            send_io_buffer(connect_id, session, format_packet);
         }
         else
         {
-            if (io_send_time_check_ > 0)
-            {
-                session->set_write_buffer(connect_id,
-                    send_packet->buffer_.c_str(),
-                    send_packet->buffer_.size());
-            }
-            else
-            {
-                //不需要格式化数据，直接发送
-                session->do_write_immediately(connect_id,
-                    send_packet->buffer_.c_str(),
-                    send_packet->buffer_.size());
-            }
+            send_io_buffer(connect_id, session, send_packet);
         }
     }
     else
@@ -691,7 +688,7 @@ void CWorkThreadLogic::send_io_buffer() const
 
 bool CWorkThreadLogic::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id)
 {
-    if (thread_count_ == 0 || thread_module_list_.size() == 0)
+    if (thread_count_ == 0 || thread_module_list_.empty())
     {
         return false;
     }
@@ -831,33 +828,37 @@ uint32 CWorkThreadLogic::get_io_server_id(uint32 connect_id)
     return communicate_service_->get_server_id(connect_id);
 }
 
-void CWorkThreadLogic::run_check_task(uint32 timeout_seconds) const
+void CWorkThreadLogic::do_work_thread_timeout(uint16 work_thread_id, uint16 last_dispose_command_id, int work_thread_timeout)
+{
+    PSS_LOGGER_ERROR("[CWorkThreadLogic::run_check_task]work thread{0} is block, timeout={1}, last_command_id={2}.",
+        work_thread_id,
+        work_thread_timeout,
+        last_dispose_command_id);
+
+    //发送消息通知插件
+    CMessage_Source source;
+    source.work_thread_id_ = work_thread_id;
+
+    auto recv_packet = std::make_shared<CMessage_Packet>();
+    auto send_packet = std::make_shared<CMessage_Packet>();
+
+    recv_packet->command_id_ = LOGIC_THREAD_DEAD_LOCK;
+    recv_packet->buffer_ = JSON_MODULE_THREAD_ID + std::to_string(work_thread_id)
+        + JSON_MODULE_COMMAND_ID + std::to_string(last_dispose_command_id)
+        + JSON_MODULE_WORK_THREAD_TIMEOUT + std::to_string(work_thread_timeout) + JSON_MODULE_END;
+
+    thread_module_list_[0]->do_thread_module_logic(source, recv_packet, send_packet);
+}
+
+void CWorkThreadLogic::run_check_task(uint32 timeout_seconds)
 {
     //检测所有工作线程状态
-    for (auto module_logic : thread_module_list_)
+    for (const auto& module_logic : thread_module_list_)
     {
         auto work_thread_timeout = module_logic->get_work_thread_timeout();
         if (work_thread_timeout > (int)timeout_seconds)
         {
-            PSS_LOGGER_ERROR("[CWorkThreadLogic::run_check_task]work thread{0} is block, timeout={1}, last_command_id={2}.", 
-                module_logic->get_work_thread_id(),
-                work_thread_timeout,
-                module_logic->get_last_dispose_command_id());
-
-            //发送消息通知插件
-            CMessage_Source source;
-            source.work_thread_id_ = module_logic->get_work_thread_id();
-
-            auto recv_packet = std::make_shared<CMessage_Packet>();
-            auto send_packet = std::make_shared<CMessage_Packet>();
-
-            recv_packet->command_id_ = LOGIC_THREAD_DEAD_LOCK;
-            recv_packet->buffer_ = JSON_MODULE_THREAD_ID + std::to_string(module_logic->get_work_thread_id())
-                + JSON_MODULE_COMMAND_ID + std::to_string(module_logic->get_last_dispose_command_id())
-                + JSON_MODULE_WORK_THREAD_TIMEOUT + std::to_string(work_thread_timeout) + JSON_MODULE_END;
-
-            thread_module_list_[0]->do_thread_module_logic(source, recv_packet, send_packet);
-
+            do_work_thread_timeout(module_logic->get_work_thread_id(), module_logic->get_last_dispose_command_id(), work_thread_timeout);
         }
     }
 

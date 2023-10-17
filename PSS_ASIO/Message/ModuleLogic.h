@@ -125,7 +125,7 @@ public:
 
     uint32 get_io_server_id(uint32 connect_id);
 
-    void run_check_task(uint32 timeout_seconds) const;
+    void run_check_task(uint32 timeout_seconds);
 
     bool send_frame_message(uint16 tag_thread_id, const std::string& message_tag, std::shared_ptr<CMessage_Packet> send_packet, CFrame_Message_Delay delay_timer);
 
@@ -162,6 +162,9 @@ public:
     int do_io_bridge_data(uint32 connect_id, uint32 io_bridge_connect_id_, CSessionBuffer& session_recv_buffer, std::size_t length, shared_ptr<ISession> session);
 
 private:
+    void send_io_buffer(uint32 connect_id, std::shared_ptr<ISession> session, std::shared_ptr<CMessage_Packet> format_packet);
+    void do_work_thread_timeout(uint16 work_thread_id, uint16 last_dispose_command_id, int work_thread_timeout);
+
     using hashmappluginworkthread = unordered_map<uint32, shared_ptr<CModuleLogic>>;
     using hashmaplogictimer = unordered_map<uint64, brynet::Timer::WeakPtr>;
     vector<shared_ptr<CModuleLogic>> thread_module_list_;

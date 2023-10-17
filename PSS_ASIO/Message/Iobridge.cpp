@@ -23,7 +23,7 @@ bool CIoBridge::add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_
     return ret;
 }
 
-void CIoBridge::do_bridge_io_2_io(uint32 from_session_id, uint32 to_session_id, ENUM_IO_BRIDGE_TYPE bridge_type)
+void CIoBridge::do_bridge_io_2_io(uint32 from_session_id, uint32 to_session_id, ENUM_IO_BRIDGE_TYPE bridge_type) const
 {
     PSS_LOGGER_DEBUG("[CIoBridge::add_session_io_mapping]connect_info->from_session_id:{} connect_info->to_session_id_:{}",
         from_session_id, to_session_id);

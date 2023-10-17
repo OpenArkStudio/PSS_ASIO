@@ -18,7 +18,7 @@ public:
     void unregedit_bridge_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type);
     uint32 get_to_session_id(uint32 session_id, const _ClientIPInfo& from_io);
 
-    void do_bridge_io_2_io(uint32 from_session_id, uint32 to_session_id, ENUM_IO_BRIDGE_TYPE bridge_type);
+    void do_bridge_io_2_io(uint32 from_session_id, uint32 to_session_id, ENUM_IO_BRIDGE_TYPE bridge_type) const;
 
 private:
     CIotoIo iotoio_;
