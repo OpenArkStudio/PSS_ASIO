@@ -412,7 +412,7 @@ int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, c
     uint32 check_timeout = 120;
     run_check_task(check_timeout);
 
-    send_io_buffer();
+    //send_io_buffer();
 #endif
     return 0;
 }

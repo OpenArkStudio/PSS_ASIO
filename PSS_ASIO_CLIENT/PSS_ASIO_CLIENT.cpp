@@ -57,6 +57,8 @@ void from_server_get_kcp_id(std::string strIP, unsigned short port)
 
     init(&send);//初始化send,主要是设置与服务器通信的套接字对象
 
+    std::cout << "[from_server_get_kcp_id]send kcp buffer." << std::endl;
+
     std::string kcp_key_id_create = "kcp key id create";
     sendto(send.sockfd, kcp_key_id_create.c_str(), kcp_key_id_create.length(), 0, (struct sockaddr*)&send.addr, sizeof(struct sockaddr_in));
 
@@ -70,6 +72,8 @@ void from_server_get_kcp_id(std::string strIP, unsigned short port)
             std::memcpy(&kcp_id, &buf[0], (int)sizeof(int));
         }
     }
+
+    std::cout << "[from_server_get_kcp_id]recv kcp buffer." << std::endl;
 
     kcp_test_connect_server(kcp_id, send);
 }
@@ -350,6 +354,7 @@ int main()
 
     udp_test_connect_synchronize_server("127.0.0.1", 10005, 10012, 0x2101, io_context);
     udp_test_connect_synchronize_server("127.0.0.1", 10005, 10012, 0x2102, io_context);
+
     from_server_get_kcp_id("127.0.0.1", 10100);
 
     io_context.stop();
