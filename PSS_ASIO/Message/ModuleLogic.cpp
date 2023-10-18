@@ -501,7 +501,7 @@ void CWorkThreadLogic::do_work_thread_module_logic(shared_ptr<ISession> session,
     }
 }
 
-void CWorkThreadLogic::send_io_buffer(uint32 connect_id, std::shared_ptr<ISession> session, std::shared_ptr<CMessage_Packet> format_packet) const
+void CWorkThreadLogic::send_io_buffer_to_session(uint32 connect_id, std::shared_ptr<ISession> session, std::shared_ptr<CMessage_Packet> format_packet) const
 {
     if (io_send_time_check_ > 0)
     {
@@ -532,11 +532,11 @@ void CWorkThreadLogic::do_io_message_delivery(uint32 connect_id, std::shared_ptr
                 return;
             }
 
-            send_io_buffer(connect_id, session, format_packet);
+            send_io_buffer_to_session(connect_id, session, format_packet);
         }
         else
         {
-            send_io_buffer(connect_id, session, send_packet);
+            send_io_buffer_to_session(connect_id, session, send_packet);
         }
     }
     else
