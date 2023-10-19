@@ -1,13 +1,18 @@
 ﻿#include "TcpServer.h"
 
-CTcpServer::CTcpServer(const CreateIoContextCallbackFunc& callback, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_buffer_size, CIo_List_Manager* io_list_manager)
-    : packet_parse_id_(packet_parse_id), max_recv_size_(max_buffer_size),server_ip_(server_ip),server_port_(port), io_list_manager_(io_list_manager)
+CTcpServer::CTcpServer(const CreateIoContextCallbackFunc& callback, const CConfigNetIO& config_io, CIo_List_Manager* io_list_manager)
+    : io_list_manager_(io_list_manager)
 {
     try
     {
+        packet_parse_id_ = config_io.packet_parse_id_;
+        max_recv_size_ = config_io.recv_buff_size_;
+        server_ip_ = config_io.ip_;
+        server_port_ = config_io.port_;
+
         callback_ = callback;
         asio::io_context* iocontext = callback_();
-        acceptor_ = std::make_shared<tcp::acceptor>(*iocontext, tcp::endpoint(asio::ip::address_v4::from_string(server_ip), port));
+        acceptor_ = std::make_shared<tcp::acceptor>(*iocontext, tcp::endpoint(asio::ip::address_v4::from_string(server_ip_), server_port_));
 
         //处理链接建立消息
         PSS_LOGGER_INFO("[CTcpServer::do_accept]({0}:{1}) Begin Accept.",
@@ -16,7 +21,7 @@ CTcpServer::CTcpServer(const CreateIoContextCallbackFunc& callback, const std::s
     }
     catch (std::system_error const& ex)
     {
-        PSS_LOGGER_WARN("[CTcpServer::do_accept]({0}:{1}) accept error {2}.", server_ip, port, ex.what());
+        PSS_LOGGER_WARN("[CTcpServer::do_accept]({0}:{1}) accept error {2}.", server_ip_, server_port_, ex.what());
     }
 }
 

@@ -170,7 +170,7 @@ void CTcpSession::do_write(uint32 connect_id)
     });
 }
 
-void CTcpSession::do_write_finish(std::error_code& ec, uint32 connect_id, std::shared_ptr<CSendBuffer> send_buffer, std::size_t length)
+void CTcpSession::do_write_finish(const std::error_code& ec, uint32 connect_id, std::shared_ptr<CSendBuffer> send_buffer, std::size_t length)
 {
     if (ec)
     {

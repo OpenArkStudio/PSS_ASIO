@@ -40,7 +40,7 @@ public:
 class CUdpServer : public std::enable_shared_from_this<CUdpServer>, public ISession, public CIo_Net_server
 {
 public:
-    CUdpServer(asio::io_context* io_context, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size, EM_NET_TYPE em_net_type, CIo_List_Manager* io_list_manager);
+    CUdpServer(asio::io_context* io_context, const CConfigNetIO& config_io, CIo_List_Manager* io_list_manager);
 
     ~CUdpServer() override = default;
 

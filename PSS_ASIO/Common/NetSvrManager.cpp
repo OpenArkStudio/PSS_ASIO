@@ -14,21 +14,21 @@ void CNetSvrManager::start_default_service()
     string stripport;
 
     //加载Tcp监听
-    for(auto& tcp_server : App_ServerConfig::instance()->get_config_tcp_list())
+    for(auto& tcp_server_config : App_ServerConfig::instance()->get_config_tcp_list())
     {
-        if (tcp_server.ssl_server_password_ != ""
-            && tcp_server.ssl_server_pem_file_ != ""
-            && tcp_server.ssl_dh_pem_file_ != "")
+        if (tcp_server_config.ssl_server_password_ != ""
+            && tcp_server_config.ssl_server_pem_file_ != ""
+            && tcp_server_config.ssl_dh_pem_file_ != "")
         {
 #ifdef SSL_SUPPORT
             auto tcp_ssl_service = make_shared<CTcpSSLServer>(CreateIoContextFunctor,
-                tcp_server.ip_,
-                tcp_server.port_,
-                tcp_server.packet_parse_id_,
-                tcp_server.recv_buff_size_,
-                tcp_server.ssl_server_password_,
-                tcp_server.ssl_server_pem_file_,
-                tcp_server.ssl_dh_pem_file_,
+                tcp_server_config.ip_,
+                tcp_server_config.port_,
+                tcp_server_config.packet_parse_id_,
+                tcp_server_config.recv_buff_size_,
+                tcp_server_config.ssl_server_password_,
+                tcp_server_config.ssl_server_pem_file_,
+                tcp_server_config.ssl_dh_pem_file_,
                 this);
             tcp_ssl_service->start();
 #else
@@ -39,25 +39,17 @@ void CNetSvrManager::start_default_service()
         {
             //正常的tcp链接
             auto tcp_service = make_shared<CTcpServer>(CreateIoContextFunctor,
-                tcp_server.ip_,
-                tcp_server.port_,
-                tcp_server.packet_parse_id_,
-                tcp_server.recv_buff_size_,
+                tcp_server_config,
                 this);
             tcp_service->start();
         }
     }
 
     //加载UDP监听
-    for (auto& udp_server : App_ServerConfig::instance()->get_config_udp_list())
+    for (auto& udp_server_config : App_ServerConfig::instance()->get_config_udp_list())
     {
         auto udp_service = make_shared<CUdpServer>(CreateIoContextFunctor(), 
-            udp_server.ip_,
-            udp_server.port_,
-            udp_server.packet_parse_id_,
-            udp_server.recv_buff_size_,
-            udp_server.send_buff_size_,
-            udp_server.em_net_type_,
+            udp_server_config,
             this);
         udp_service->start();
     }
@@ -250,10 +242,7 @@ void CNetSvrManager::start_single_service(const CConfigNetIO& netio)
         App_tms::instance()->AddMessage(0, [this, netio]() {
             PSS_LOGGER_INFO("[CNetSvrManager::start_single_service]create tcp service[{}:{}]", netio.ip_, netio.port_);
             auto tcp_service = make_shared<CTcpServer>(CreateIoContextFunctor,
-                netio.ip_,
-                netio.port_,
-                netio.packet_parse_id_,
-                netio.recv_buff_size_,
+                netio,
                 this);
             tcp_service->start();
             });
@@ -263,12 +252,7 @@ void CNetSvrManager::start_single_service(const CConfigNetIO& netio)
         App_tms::instance()->AddMessage(0, [this, netio]() {
             PSS_LOGGER_INFO("[CNetSvrManager::start_single_service]create udp service[{}:{}]", netio.ip_, netio.port_);
             auto udp_service = make_shared<CUdpServer>(CreateIoContextFunctor(),
-                netio.ip_,
-                netio.port_,
-                netio.packet_parse_id_,
-                netio.recv_buff_size_,
-                netio.send_buff_size_,
-                netio.em_net_type_, 
+                netio, 
                 this);
             udp_service->start();
             });

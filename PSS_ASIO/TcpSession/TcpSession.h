@@ -62,7 +62,7 @@ public:
 
     void send_write_fail_to_logic(const std::string& write_fail_buffer, std::size_t buffer_length);
 
-    void do_write_finish(std::error_code& ec, uint32 connect_id, std::shared_ptr<CSendBuffer> send_buffer, std::size_t length);
+    void do_write_finish(const std::error_code& ec, uint32 connect_id, std::shared_ptr<CSendBuffer> send_buffer, std::size_t length);
 
 private:
     tcp::socket socket_;

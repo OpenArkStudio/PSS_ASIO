@@ -1,10 +1,15 @@
 ﻿#include "UdpServer.h"
 
-CUdpServer::CUdpServer(asio::io_context* io_context, const std::string& server_ip, io_port_type port, uint32 packet_parse_id, uint32 max_recv_size, uint32 max_send_size, EM_NET_TYPE em_net_type, CIo_List_Manager* io_list_manager)
-    : socket_(*io_context), max_recv_size_(max_recv_size), max_send_size_(max_send_size), io_context_(io_context),server_ip_(server_ip),server_port_(port), io_list_manager_(io_list_manager)
+CUdpServer::CUdpServer(asio::io_context* io_context, const CConfigNetIO& config_io, CIo_List_Manager* io_list_manager)
+    : socket_(*io_context), io_context_(io_context), io_list_manager_(io_list_manager)
 {
     //处理链接建立消息
-    PSS_LOGGER_DEBUG("[CUdpServer::do_accept]{0}:{1} Begin Accept.", server_ip, port);
+    max_recv_size_ = config_io.recv_buff_size_;
+    max_send_size_ = config_io.send_buff_size_;
+    server_ip_ = config_io.ip_;
+    server_port_ = config_io.port_;
+
+    PSS_LOGGER_DEBUG("[CUdpServer::do_accept]{0}:{1} Begin Accept.", server_ip_, server_port_);
 
     try
     {
@@ -16,15 +21,15 @@ CUdpServer::CUdpServer(asio::io_context* io_context, const std::string& server_i
         socket_.set_option(recvoption);
         socket_.set_option(sendoption);
     
-        udp::endpoint local_endpoint(asio::ip::address_v4::from_string(server_ip), port); 
+        udp::endpoint local_endpoint(asio::ip::address_v4::from_string(server_ip_), server_port_);
         socket_.bind(local_endpoint);    // 将套接字绑定到本地地址和端口
     }
     catch (std::system_error const& ex)
     {
-        PSS_LOGGER_ERROR("[CUdpServer::do_accept] bind addr error local:[{}:{}] ex.what:{}.", server_ip, port,ex.what());
+        PSS_LOGGER_ERROR("[CUdpServer::do_accept] bind addr error local:[{}:{}] ex.what:{}.", server_ip_, server_port_, ex.what());
     }
 
-    if (em_net_type == EM_NET_TYPE::NET_TYPE_BROADCAST)
+    if (config_io.em_net_type_ == EM_NET_TYPE::NET_TYPE_BROADCAST)
     {
         //处理UDP的广播监听
         asio::error_code ec;
@@ -32,13 +37,13 @@ CUdpServer::CUdpServer(asio::io_context* io_context, const std::string& server_i
         socket_.set_option(option, ec);
         if (ec)
         {
-            PSS_LOGGER_DEBUG("[CUdpServer::do_accept]{0}:{1} error bind Accept{2}.", server_ip, port, ec.message());
+            PSS_LOGGER_DEBUG("[CUdpServer::do_accept]{0}:{1} error bind Accept{2}.", server_ip_, server_port_, ec.message());
         }
     }
 
     session_recv_buffer_.Init(max_recv_size_);
 
-    packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(packet_parse_id);
+    packet_parse_interface_ = App_PacketParseLoader::instance()->GetPacketParseInfo(config_io.packet_parse_id_);
 }
 
 void CUdpServer::start()
