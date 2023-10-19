@@ -164,6 +164,7 @@ public:
 private:
     void send_io_buffer_to_session(uint32 connect_id, std::shared_ptr<ISession> session, std::shared_ptr<CMessage_Packet> format_packet) const;
     void do_work_thread_timeout(uint16 work_thread_id, uint16 last_dispose_command_id, int work_thread_timeout);
+    void send_io_bridge_message_fail(uint32 connect_id, std::shared_ptr<CMessage_Packet> bridge_packet, shared_ptr<ISession> session);
 
     using hashmappluginworkthread = unordered_map<uint32, shared_ptr<CModuleLogic>>;
     using hashmaplogictimer = unordered_map<uint64, brynet::Timer::WeakPtr>;

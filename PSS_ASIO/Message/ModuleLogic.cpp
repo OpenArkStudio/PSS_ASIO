@@ -340,6 +340,15 @@ void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession
 
         module_logic->do_thread_module_logic(source, recv_packet, send_packet);
         });
+
+#ifdef GCOV_TEST
+    //测试发送链接建立消息
+    if (connect_id == 2)
+    {
+        auto bridge_packet = std::make_shared<CMessage_Packet>();
+        send_io_bridge_message_fail(connect_id, bridge_packet, session);
+    }
+#endif
 }
 
 void CWorkThreadLogic::delete_thread_session(uint32 connect_id, shared_ptr<ISession> session)
@@ -411,8 +420,6 @@ int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, c
     //测试连接自检
     uint32 check_timeout = 120;
     run_check_task(check_timeout);
-
-    //send_io_buffer();
 #endif
     return 0;
 }
@@ -712,6 +719,16 @@ bool CWorkThreadLogic::set_io_bridge_connect_id(uint32 from_io_connect_id, uint3
     }
 }
 
+void CWorkThreadLogic::send_io_bridge_message_fail(uint32 connect_id, std::shared_ptr<CMessage_Packet> bridge_packet, shared_ptr<ISession> session)
+{
+    vector<std::shared_ptr<CMessage_Packet>> message_error_list;
+    bridge_packet->command_id_ = LOGIC_IOTOIO_DATA_ERROR;
+    message_error_list.emplace_back(bridge_packet);
+
+    //添加消息处理
+    assignation_thread_module_logic(connect_id, message_error_list, session);
+}
+
 int CWorkThreadLogic::do_io_bridge_data(uint32 connect_id, uint32 io_bridge_connect_id_, CSessionBuffer& session_recv_buffer, std::size_t length, shared_ptr<ISession> session)
 {
     int ret = 0;
@@ -722,12 +739,7 @@ int CWorkThreadLogic::do_io_bridge_data(uint32 connect_id, uint32 io_bridge_conn
         if (false == send_io_bridge_message(io_bridge_connect_id_, bridge_packet))
         {
             //发送失败，将数据包会给业务逻辑去处理
-            vector<std::shared_ptr<CMessage_Packet>> message_error_list;
-            bridge_packet->command_id_ = LOGIC_IOTOIO_DATA_ERROR;
-            message_error_list.emplace_back(bridge_packet);
-
-            //添加消息处理
-            assignation_thread_module_logic(connect_id, message_error_list, session);
+            send_io_bridge_message_fail(connect_id, bridge_packet, session);
             ret = 1;
         }
         else
@@ -738,12 +750,7 @@ int CWorkThreadLogic::do_io_bridge_data(uint32 connect_id, uint32 io_bridge_conn
     else
     {
         //发送失败，将数据包会给业务逻辑去处理
-        vector<std::shared_ptr<CMessage_Packet>> message_error_list;
-        bridge_packet->command_id_ = LOGIC_IOTOIO_DATA_ERROR;
-        message_error_list.emplace_back(bridge_packet);
-
-        //添加消息处理
-        assignation_thread_module_logic(connect_id, message_error_list, session);
+        send_io_bridge_message_fail(connect_id, bridge_packet, session);
         ret = 2;
     }
 
