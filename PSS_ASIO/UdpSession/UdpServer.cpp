@@ -1,14 +1,9 @@
 ﻿#include "UdpServer.h"
 
 CUdpServer::CUdpServer(asio::io_context* io_context, const CConfigNetIO& config_io, CIo_List_Manager* io_list_manager)
-    : socket_(*io_context), io_context_(io_context), io_list_manager_(io_list_manager)
+    :socket_(*io_context), max_recv_size_(config_io.recv_buff_size_), max_send_size_(config_io.send_buff_size_), io_context_(io_context), server_ip_(config_io.ip_), server_port_(config_io.port_), io_list_manager_(io_list_manager)
 {
     //处理链接建立消息
-    max_recv_size_ = config_io.recv_buff_size_;
-    max_send_size_ = config_io.send_buff_size_;
-    server_ip_ = config_io.ip_;
-    server_port_ = config_io.port_;
-
     PSS_LOGGER_DEBUG("[CUdpServer::do_accept]{0}:{1} Begin Accept.", server_ip_, server_port_);
 
     try
