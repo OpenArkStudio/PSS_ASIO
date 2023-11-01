@@ -185,6 +185,7 @@ public:
     uint32 recv_size = 1024;         //接收数据最大缓冲
     uint32 send_size = 1024;         //发送数据最大缓冲
     std::string client_pem_file;     //对应客户端的pem文件
+    bool is_need_reconnect = false;  //是否需要断线重连      
 };
 
 //定义输出屏幕函数接口

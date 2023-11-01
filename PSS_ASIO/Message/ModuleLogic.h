@@ -103,7 +103,7 @@ public:
 
     void delete_thread_session(uint32 connect_id, shared_ptr<ISession> session);
 
-    void close_session_event(uint32 connect_id);
+    void close_session_event(uint32 connect_id, shared_ptr<ISession> session);
 
     int assignation_thread_module_logic(const uint32 connect_id, const vector<shared_ptr<CMessage_Packet>>& message_list, shared_ptr<ISession> session);
 
@@ -160,6 +160,8 @@ public:
     bool set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id);
 
     int do_io_bridge_data(uint32 connect_id, uint32 io_bridge_connect_id_, CSessionBuffer& session_recv_buffer, std::size_t length, shared_ptr<ISession> session);
+
+    shared_ptr<ISession> get_session_interface(uint32 connect_id);
 
 private:
     void send_io_buffer_to_session(uint32 connect_id, std::shared_ptr<ISession> session, std::shared_ptr<CMessage_Packet> format_packet) const;

@@ -129,7 +129,7 @@ void CUdpClientSession::do_receive()
     if (session_recv_buffer_.get_buffer_size() == 0)
     {
         //链接断开(缓冲撑满了)
-        App_WorkThreadLogic::instance()->close_session_event(connect_id_);
+        App_WorkThreadLogic::instance()->close_session_event(connect_id_, shared_from_this());
     }
 
     auto self(shared_from_this());
@@ -327,7 +327,7 @@ void CUdpClientSession::do_receive_from(std::error_code ec, std::size_t length)
             {
                 //链接断开(解析包不正确)
                 session_recv_buffer_.move(length);
-                App_WorkThreadLogic::instance()->close_session_event(connect_id_);
+                App_WorkThreadLogic::instance()->close_session_event(connect_id_, shared_from_this());
             }
             else
             {
@@ -346,7 +346,7 @@ void CUdpClientSession::do_receive_from(std::error_code ec, std::size_t length)
     else
     {
         //链接断开
-        App_WorkThreadLogic::instance()->close_session_event(connect_id_);
+        App_WorkThreadLogic::instance()->close_session_event(connect_id_, shared_from_this());
     }
 }
 

@@ -275,7 +275,7 @@ void CTcpSSLClientSession::do_read_some(std::error_code ec, std::size_t length)
             if (!ret)
             {
                 //链接断开(解析包不正确)
-                App_WorkThreadLogic::instance()->close_session_event(connect_id_);
+                App_WorkThreadLogic::instance()->close_session_event(connect_id_, shared_from_this());
             }
             else
             {
@@ -294,7 +294,7 @@ void CTcpSSLClientSession::do_read_some(std::error_code ec, std::size_t length)
     else
     {
         //链接断开
-        App_WorkThreadLogic::instance()->close_session_event(connect_id_);
+        App_WorkThreadLogic::instance()->close_session_event(connect_id_, shared_from_this());
     }
 }
 

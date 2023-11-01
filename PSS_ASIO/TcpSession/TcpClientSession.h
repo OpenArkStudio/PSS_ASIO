@@ -77,6 +77,8 @@ private:
     _ClientIPInfo remote_ip_;
     _ClientIPInfo local_ip_;
 
+    bool is_need_reconnect_ = false;
+
     shared_ptr<_Packet_Parse_Info> packet_parse_interface_ = nullptr;
 
     size_t recv_data_size_  = 0;

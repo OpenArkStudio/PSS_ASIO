@@ -13,6 +13,8 @@ bool CTcpClientSession::start(const CConnect_IO_Info& io_info)
     session_recv_buffer_.Init(io_info.recv_size);
     session_send_buffer_.Init(io_info.send_size);
 
+    is_need_reconnect_ = io_info.is_need_reconnect;
+
     //建立连接
     tcp::endpoint end_point(asio::ip::address::from_string(io_info.server_ip.c_str()), io_info.server_port);
     asio::error_code connect_error;
@@ -299,7 +301,7 @@ void CTcpClientSession::do_read_some(std::error_code ec, std::size_t length)
             if (!ret)
             {
                 //链接断开(解析包不正确)
-                App_WorkThreadLogic::instance()->close_session_event(connect_id_);
+                App_WorkThreadLogic::instance()->close_session_event(connect_id_, shared_from_this());
             }
             else
             {
@@ -316,7 +318,7 @@ void CTcpClientSession::do_read_some(std::error_code ec, std::size_t length)
     else
     {
         //链接断开
-        App_WorkThreadLogic::instance()->close_session_event(connect_id_);
+        App_WorkThreadLogic::instance()->close_session_event(connect_id_, shared_from_this());
         is_connect_ = false;
         return;
     }

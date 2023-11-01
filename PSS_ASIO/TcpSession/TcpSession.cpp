@@ -127,7 +127,7 @@ void CTcpSession::do_read()
     if (session_recv_buffer_.get_buffer_size() == 0)
     {
         //链接断开(缓冲撑满了)
-        App_WorkThreadLogic::instance()->close_session_event(connect_id_);
+        App_WorkThreadLogic::instance()->close_session_event(connect_id_, shared_from_this());
     }
 
     auto self(shared_from_this());
@@ -239,7 +239,7 @@ void CTcpSession::do_read_some(std::error_code ec, std::size_t length)
             if (!ret)
             {
                 //链接断开(解析包不正确)
-                App_WorkThreadLogic::instance()->close_session_event(connect_id_);
+                App_WorkThreadLogic::instance()->close_session_event(connect_id_, shared_from_this());
             }
             else
             {
@@ -257,7 +257,7 @@ void CTcpSession::do_read_some(std::error_code ec, std::size_t length)
     else
     {
         //链接断开
-        App_WorkThreadLogic::instance()->close_session_event(connect_id_);
+        App_WorkThreadLogic::instance()->close_session_event(connect_id_, shared_from_this());
     }
 }
 

@@ -76,7 +76,7 @@ void CModuleLogic::check_session_io_timeout(uint32 connect_timeout)
     for (const auto& session_io : session_list)
     {
         PSS_LOGGER_DEBUG("[CModuleLogic::check_session_io_timeout]work_thread_id_={0}, session_id={1} is timeout.", work_thread_id_, session_io.session_id_);
-        App_WorkThreadLogic::instance()->close_session_event(session_io.session_id_);
+        App_WorkThreadLogic::instance()->close_session_event(session_io.session_id_, session_io.session_);
     }
 }
 
@@ -243,7 +243,7 @@ void CWorkThreadLogic::close()
         App_tms::instance()->AddMessage(f->get_work_thread_id(), [this, f]() {
             f->each_session_id([this, f](uint32 session_id) {
                 PSS_LOGGER_DEBUG("[CWorkThreadLogic::close]session_id ({0}) is close", session_id);
-                close_session_event(session_id);
+                close_session_event(session_id, f->get_session_interface(session_id));
                 });
             });
     }
@@ -386,15 +386,14 @@ void CWorkThreadLogic::delete_thread_session(uint32 connect_id, shared_ptr<ISess
         });
 }
 
-void CWorkThreadLogic::close_session_event(uint32 connect_id)
+void CWorkThreadLogic::close_session_event(uint32 connect_id, shared_ptr<ISession> session)
 {
     //session 关闭事件分发
     uint16 curr_thread_index = connect_id % thread_count_;
     auto module_logic = thread_module_list_[curr_thread_index];
 
-    App_tms::instance()->AddMessage(curr_thread_index, [module_logic, connect_id]() {
-        auto session = module_logic->get_session_interface(connect_id);
-        if (session != nullptr)
+    App_tms::instance()->AddMessage(curr_thread_index, [module_logic, connect_id, session]() {
+        if (nullptr != session)
         {
             session->close(connect_id);
         }
@@ -993,5 +992,13 @@ bool CWorkThreadLogic::run_work_thread_logic(uint16 tag_thread_id, CFrame_Messag
     }
 
     return do_work_thread_logic(tag_thread_id, delay_timer, func);
+}
+
+shared_ptr<ISession> CWorkThreadLogic::get_session_interface(uint32 connect_id)
+{
+    uint16 curr_thread_index = connect_id % thread_count_;
+    auto module_logic = thread_module_list_[curr_thread_index];
+
+    return module_logic->get_session_interface(connect_id);
 }
 

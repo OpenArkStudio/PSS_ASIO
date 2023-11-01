@@ -161,7 +161,7 @@ void CCommunicationService::run_check_task()
     PSS_LOGGER_DEBUG("[CCommunicationService::run_check_task]begin size={}.", communication_list_.size());
 
     each([this](CCommunicationIOInfo& io_info) {
-        if (io_info.session_ == nullptr || false == io_info.session_->is_connect())
+        if ((io_info.session_ == nullptr || false == io_info.session_->is_connect()) && true == io_info.io_info_.is_need_reconnect)
         {
             //重新建立链接
             io_connect(io_info);
