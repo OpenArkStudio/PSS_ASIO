@@ -59,8 +59,11 @@ void CSessionService::close_io_session(uint32 connect_id)
     }
 
     //关闭链接
-    
-    App_WorkThreadLogic::instance()->close_session_event(connect_id, App_WorkThreadLogic::instance()->get_session_interface(connect_id));
+    auto session = App_WorkThreadLogic::instance()->get_session_interface(connect_id);
+    if (nullptr != session)
+    {
+        App_WorkThreadLogic::instance()->close_session_event(connect_id, session);
+    }
 
 }
 

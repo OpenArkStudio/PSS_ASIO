@@ -44,8 +44,10 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size)
     App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip_, remote_ip_);
 
 #ifdef GCOV_TEST
+    PSS_LOGGER_DEBUG("[CTcpSession::open]****connect_id={0}***", connect_id_);
+    
     //测试发送写入失败回调消息
-    if (connect_id_ == 5)
+    if (connect_id_ == 4)
     {
         std::string write_fail_text = "test write fail";
         send_write_fail_to_logic(write_fail_text, write_fail_text.length());

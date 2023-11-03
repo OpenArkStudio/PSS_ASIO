@@ -62,8 +62,6 @@ public:
 
     void send_write_fail_to_logic(const std::string& write_fail_buffer, std::size_t buffer_length);
 
-    void do_io_bridge_error_to_logic(std::shared_ptr<CMessage_Packet> bridge_packet);
-
 private:
     tcp::socket socket_;
     asio::io_context* io_context_ = nullptr;
