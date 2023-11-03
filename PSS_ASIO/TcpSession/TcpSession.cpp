@@ -44,7 +44,7 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size)
     App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip_, remote_ip_);
 
 #ifdef GCOV_TEST
-    PSS_LOGGER_DEBUG("[CTcpSession::open]****connect_id={0}***", connect_id_);
+    PSS_LOGGER_DEBUG("[CTcpSession::open]{test}****connect_id={0}***", connect_id_);
     
     //测试发送写入失败回调消息
     if (connect_id_ == 4)
@@ -59,8 +59,22 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size)
             connect_id_,
             message_list,
             shared_from_this());
+
+        //测试设置点对点连接
+        set_io_bridge_connect_id(100, 101);
+        set_io_bridge_connect_id(0, 0);
+
+        PSS_LOGGER_DEBUG("[CTcpSession::open]{test}connect_id={0} is get", get_connect_id());
+        get_recv_time();
+
+        //测试格式化数据
+        std::shared_ptr<CMessage_Packet> packet_format_before = std::make_shared<CMessage_Packet>();
+        std::shared_ptr<CMessage_Packet> packet_format_behand = std::make_shared<CMessage_Packet>();
+        format_send_packet(4, packet_format_before, packet_format_behand);
     }
 #endif
+
+
     do_read();
 }
 

@@ -67,6 +67,7 @@ void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
     if (false == communication_is_run_)
     {
         //还在初始化中，不启动链接
+        PSS_LOGGER_DEBUG("[CCommunicationService::io_connect]CCommunicationService is not run");
         return;
     }
 

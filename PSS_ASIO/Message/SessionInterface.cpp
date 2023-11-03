@@ -119,7 +119,6 @@ bool CSessionInterface::is_need_check_session(const std::chrono::steady_clock::t
     }
     else
     {
-        PSS_LOGGER_DEBUG("[CSessionInterface::is_need_check_session]****time elapsed={}.", elapsed.count());
         return false;
     }
 }
