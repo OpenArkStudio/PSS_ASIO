@@ -52,7 +52,9 @@ public:
 
     void run_server_to_server();
 
-    void each(Communication_funtion communication_funtion);
+    void each_io_connect(Communication_funtion communication_funtion);
+
+    void run_first_io_connect();
 
 private:
     using communication_list = unordered_map<uint32, CCommunicationIOInfo>;

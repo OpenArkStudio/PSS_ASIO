@@ -68,8 +68,8 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size)
         get_recv_time();
 
         //测试格式化数据
-        std::shared_ptr<CMessage_Packet> packet_format_before = std::make_shared<CMessage_Packet>();
-        std::shared_ptr<CMessage_Packet> packet_format_behand = std::make_shared<CMessage_Packet>();
+        auto packet_format_before = std::make_shared<CMessage_Packet>();
+        auto packet_format_behand = std::make_shared<CMessage_Packet>();
         format_send_packet(4, packet_format_before, packet_format_behand);
     }
 #endif

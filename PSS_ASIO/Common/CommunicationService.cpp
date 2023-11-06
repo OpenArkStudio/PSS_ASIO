@@ -119,7 +119,7 @@ void CCommunicationService::run_server_to_server()
     //开始运行
     communication_is_run_ = true;
 
-    run_check_task();
+    run_first_io_connect();
 }
 
 void CCommunicationService::close_connect(uint32 server_id)
@@ -148,7 +148,7 @@ bool CCommunicationService::is_exist(uint32 server_id)
     }
 }
 
-void CCommunicationService::each(Communication_funtion communication_funtion)
+void CCommunicationService::each_io_connect(Communication_funtion communication_funtion)
 {
     for (auto& client_info : communication_list_)
     {
@@ -161,7 +161,7 @@ void CCommunicationService::run_check_task()
     std::lock_guard <std::recursive_mutex> lock(mutex_);
     PSS_LOGGER_DEBUG("[CCommunicationService::run_check_task]begin size={}.", communication_list_.size());
 
-    each([this](CCommunicationIOInfo& io_info) {
+    each_io_connect([this](CCommunicationIOInfo& io_info) {
         if ((io_info.session_ == nullptr || false == io_info.session_->is_connect()) && true == io_info.io_info_.is_need_reconnect)
         {
             //重新建立链接
@@ -170,6 +170,17 @@ void CCommunicationService::run_check_task()
         });
 
     PSS_LOGGER_DEBUG("[CCommunicationService::run_check_task]end.");
+}
+
+void CCommunicationService::run_first_io_connect()
+{
+    std::lock_guard <std::recursive_mutex> lock(mutex_);
+
+    //第一次建立所有的连接
+    each_io_connect([this](CCommunicationIOInfo& io_info) {
+        //重新建立链接
+        io_connect(io_info);
+        });
 }
 
 void CCommunicationService::close()
