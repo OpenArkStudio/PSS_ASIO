@@ -246,6 +246,12 @@ uint32 CIotoIo::get_endpoint_session_id(const _ClientIPInfo& from_io, const CIo_
 
 bool CIotoIo::compare_connect_io(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type, const _ClientIPInfo& target_io, EM_CONNECT_IO_TYPE target_io_type) const
 {
+    PSS_LOGGER_DEBUG("[CIotoIo::compare_connect_io]<*****>from_io={0}:{1} target_io={2}:{3}.", 
+        from_io.m_strClientIP, 
+        from_io.m_u2Port,
+        target_io.m_strClientIP,
+        target_io.m_u2Port);
+
     if (from_io.m_strClientIP == target_io.m_strClientIP &&
         from_io.m_u2Port == target_io.m_u2Port &&
         from_io_type == target_io_type)

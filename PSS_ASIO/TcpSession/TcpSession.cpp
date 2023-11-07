@@ -322,10 +322,10 @@ uint32 CTcpSession::get_connect_id()
 void CTcpSession::regedit_bridge_session_id(uint32 connect_id)
 {
     PSS_UNUSED_ARG(connect_id);
-    PSS_LOGGER_DEBUG("[CSessionService::regedit_bridge_session_id]<*****>connect_id={}.", connect_id);
+    PSS_LOGGER_DEBUG("[CTcpSession::regedit_bridge_session_id]<*****>connect_id={}.", connect_id);
     if (EM_SESSION_STATE::SESSION_IO_BRIDGE != io_state_)
     {
-        PSS_LOGGER_DEBUG("[CSessionService::regedit_bridge_session_id]<*****>connect_id={} SESSION_IO_BRIDGE.", connect_id);
+        PSS_LOGGER_DEBUG("[CTcpSession::regedit_bridge_session_id]<*****>connect_id={} SESSION_IO_BRIDGE.", connect_id);
         //添加点对点映射
         if (true == App_IoBridge::instance()->regedit_bridge_session_id(remote_ip_, io_type_, connect_id_))
         {
