@@ -35,6 +35,7 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size)
 
     //查看这个链接是否有桥接信息
     io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip_);
+    PSS_LOGGER_DEBUG("[CTcpSession::open]<test>****connect_id={0},io_bridge_connect_id_={1}", connect_id_, io_bridge_connect_id_);
     if (io_bridge_connect_id_ > 0)
     {
         App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bridge_connect_id_);
