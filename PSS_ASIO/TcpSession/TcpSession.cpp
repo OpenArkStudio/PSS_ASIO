@@ -325,7 +325,7 @@ void CTcpSession::regedit_bridge_session_id(uint32 connect_id)
     PSS_LOGGER_DEBUG("[CTcpSession::regedit_bridge_session_id]<*****>connect_id={}.", connect_id);
     if (EM_SESSION_STATE::SESSION_IO_BRIDGE != io_state_)
     {
-        PSS_LOGGER_DEBUG("[CTcpSession::regedit_bridge_session_id]<*****>connect_id={} SESSION_IO_BRIDGE.", connect_id);
+        PSS_LOGGER_DEBUG("[CTcpSession::regedit_bridge_session_id]<*****>connect_id={} SESSION_IO_BRIDGE remote_ip_={}:{}.", connect_id, remote_ip_.m_strClientIP, remote_ip_.m_u2Port);
         //添加点对点映射
         if (true == App_IoBridge::instance()->regedit_bridge_session_id(remote_ip_, io_type_, connect_id_))
         {
