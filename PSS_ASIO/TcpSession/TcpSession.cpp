@@ -44,7 +44,7 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size)
     App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip_, remote_ip_);
 
 #ifdef GCOV_TEST
-    PSS_LOGGER_DEBUG("[CTcpSession::open]{test}****connect_id={0}***", connect_id_);
+    PSS_LOGGER_DEBUG("[CTcpSession::open]<test>****connect_id={0}***", connect_id_);
     
     //测试发送写入失败回调消息
     if (connect_id_ == 4)
@@ -64,7 +64,7 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size)
         set_io_bridge_connect_id(100, 101);
         set_io_bridge_connect_id(0, 0);
 
-        PSS_LOGGER_DEBUG("[CTcpSession::open]{test}connect_id={0} is get", get_connect_id());
+        PSS_LOGGER_DEBUG("[CTcpSession::open]<test>connect_id={0} is get", get_connect_id());
         get_recv_time();
 
         //测试格式化数据
@@ -239,6 +239,8 @@ void CTcpSession::do_read_some(std::error_code ec, std::size_t length)
         if (EM_SESSION_STATE::SESSION_IO_BRIDGE == io_state_)
         {
             recv_data_time_ = std::chrono::steady_clock::now();
+
+            PSS_LOGGER_INFO("[CTcpSession::do_read_some]***(SESSION_IO_BRIDGE)connect_id={0},io_bridge_connect_id_={1}", connect_id_, io_bridge_connect_id_);
             //将数据转发给桥接接口
             auto ret = App_WorkThreadLogic::instance()->do_io_bridge_data(connect_id_, io_bridge_connect_id_, session_recv_buffer_, length, shared_from_this());
             if (1 == ret)
@@ -335,6 +337,8 @@ void CTcpSession::regedit_bridge_session_id(uint32 connect_id)
         {
             App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bridge_connect_id_);
         }
+
+        PSS_LOGGER_DEBUG("[CSessionService::regedit_bridge_session_id]<*****>io_bridge_connect_id_={} SESSION_IO_BRIDGE.", io_bridge_connect_id_);
     }
 }
 

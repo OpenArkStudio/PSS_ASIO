@@ -283,6 +283,7 @@ void CTcpClientSession::do_read_some(std::error_code ec, std::size_t length)
         if (EM_SESSION_STATE::SESSION_IO_BRIDGE == io_state_)
         {
             recv_data_time_ = std::chrono::steady_clock::now();
+
             //将数据转发给桥接接口
             auto ret = App_WorkThreadLogic::instance()->do_io_bridge_data(connect_id_, io_bridge_connect_id_, session_recv_buffer_, length, shared_from_this());
             if (1 == ret)
