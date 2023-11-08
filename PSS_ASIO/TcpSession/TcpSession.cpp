@@ -28,8 +28,10 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size)
     packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip_, local_ip_, io_type_, App_IoBridge::instance());
 
     //添加点对点映射
+    PSS_LOGGER_DEBUG("[CTcpClientSession::open]<*****>connect_id={}, remote_ip_={}:{}.", connect_id_, remote_ip_.m_strClientIP, remote_ip_.m_u2Port);
     if (true == App_IoBridge::instance()->regedit_bridge_session_id(remote_ip_, io_type_, connect_id_))
     {
+        PSS_LOGGER_DEBUG("[CTcpClientSession::open]<*****>connect_id={}, remote_ip_={}:{} is true.", connect_id_, remote_ip_.m_strClientIP, remote_ip_.m_u2Port);
         io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
     }
 

@@ -216,6 +216,7 @@ void CTcpClientSession::regedit_bridge_session_id(uint32 connect_id)
     if (EM_SESSION_STATE::SESSION_IO_BRIDGE != io_state_)
     {
         //添加点对点映射
+        PSS_LOGGER_DEBUG("[CTcpClientSession::regedit_bridge_session_id]<*****>connect_id={}.", connect_id_);
         if (true == App_IoBridge::instance()->regedit_bridge_session_id(remote_ip_, io_type_, connect_id_))
         {
             io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
@@ -223,6 +224,7 @@ void CTcpClientSession::regedit_bridge_session_id(uint32 connect_id)
 
         //查看这个链接是否有桥接信息
         io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip_);
+        PSS_LOGGER_DEBUG("[CTcpClientSession::regedit_bridge_session_id]<*****>connect_id={},io_bridge_connect_id_={}.", connect_id_, io_bridge_connect_id_);
         if (io_bridge_connect_id_ > 0)
         {
             App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bridge_connect_id_);
@@ -351,12 +353,14 @@ void CTcpClientSession::handle_connect(const asio::error_code& ec, tcp::resolver
         PSS_LOGGER_DEBUG("[CTcpClientSession::handle_connect]<*****>connect_id={}, remote_ip_={}:{}.", connect_id_, remote_ip_.m_strClientIP, remote_ip_.m_u2Port);
         if (true == App_IoBridge::instance()->regedit_bridge_session_id(remote_ip_, io_type_, connect_id_))
         {
+            PSS_LOGGER_DEBUG("[CTcpClientSession::handle_connect]<*****>connect_id={}, remote_ip_={}:{} is true.", connect_id_, remote_ip_.m_strClientIP, remote_ip_.m_u2Port);
             io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
         }
 
         //查看这个链接是否有桥接信息
 
         io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip_);
+        PSS_LOGGER_DEBUG("[CTcpSession::handle_connect]<test>****connect_id={0},io_bridge_connect_id_={1}", io_bridge_connect_id_);
         if (io_bridge_connect_id_ > 0)
         {
             App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bridge_connect_id_);
