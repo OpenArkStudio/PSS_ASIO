@@ -238,7 +238,15 @@ void CTcpSession::do_read_some(std::error_code ec, std::size_t length)
         recv_data_size_ += length;
         session_recv_buffer_.set_write_data(length);
 
-        PSS_LOGGER_INFO("[CTcpSession::do_read_some]***(SESSION_IO_BRIDGE)connect_id={0},io_bridge_connect_id_={1},io_state_={2}", connect_id_, io_bridge_connect_id_, io_state_);
+        if (EM_SESSION_STATE::SESSION_IO_BRIDGE == io_state_)
+        {
+            PSS_LOGGER_INFO("[CTcpSession::do_read_some]***(SESSION_IO_BRIDGE)connect_id={0},io_bridge_connect_id_={1},io_state_=SESSION_IO_BRIDGE", connect_id_, io_bridge_connect_id_);
+        }
+        else
+        {
+            PSS_LOGGER_INFO("[CTcpSession::do_read_some]***(SESSION_IO_BRIDGE)connect_id={0},io_bridge_connect_id_={1},io_state_=SESSION_IO_LOGIC", connect_id_, io_bridge_connect_id_);
+        }
+
         //判断是否有桥接
         if (EM_SESSION_STATE::SESSION_IO_BRIDGE == io_state_)
         {
