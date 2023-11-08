@@ -348,12 +348,14 @@ void CTcpClientSession::handle_connect(const asio::error_code& ec, tcp::resolver
         packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip_, local_ip_, io_type_, App_IoBridge::instance());
 
         //添加点对点映射
+        PSS_LOGGER_DEBUG("[CTcpClientSession::handle_connect]<*****>connect_id={}, remote_ip_={}:{}.", connect_id_, remote_ip_.m_strClientIP, remote_ip_.m_u2Port);
         if (true == App_IoBridge::instance()->regedit_bridge_session_id(remote_ip_, io_type_, connect_id_))
         {
             io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
         }
 
         //查看这个链接是否有桥接信息
+
         io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip_);
         if (io_bridge_connect_id_ > 0)
         {
