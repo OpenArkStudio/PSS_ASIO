@@ -50,7 +50,7 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size)
     PSS_LOGGER_DEBUG("[CTcpSession::open]<test>****connect_id={0}***", connect_id_);
     
     //测试发送写入失败回调消息
-    if (connect_id_ == 4)
+    if (connect_id_ == 5)
     {
         std::string write_fail_text = "test write fail";
         send_write_fail_to_logic(write_fail_text, write_fail_text.length());
