@@ -32,6 +32,9 @@ private:
     std::vector<shared_ptr<CIoThread>> io_thread_list_;
     std::vector<std::shared_ptr<asio::io_context>> io_contexts_list_;
     std::size_t next_io_context_;
+
+    using io_context_work = asio::executor_work_guard<asio::io_context::executor_type>;
+    std::list<io_context_work> works_;
 };
 
 using App_IoContextPool = PSS_singleton<CIoContextPool>;

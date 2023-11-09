@@ -14,6 +14,7 @@ void CIoContextPool::init(std::size_t io_size)
     {
         auto io_context = std::make_shared<asio::io_context>(1);
         io_contexts_list_.push_back(io_context);
+        works_.push_back(asio::make_work_guard(*io_context));
     }
 }
 
