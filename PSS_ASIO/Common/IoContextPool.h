@@ -34,7 +34,7 @@ private:
     std::size_t next_io_context_;
 
     using io_context_work = asio::executor_work_guard<asio::io_context::executor_type>;
-    std::list<io_context_work> works_;
+    std::vector<io_context_work> works_;
 };
 
 using App_IoContextPool = PSS_singleton<CIoContextPool>;

@@ -30,7 +30,9 @@ void CIoContextPool::run()
         auto curr_thread_id = thread_index;
         io_thread->io_thread_ = std::thread([&, curr_thread_id]()
             {
+                PSS_LOGGER_DEBUG("[CIoContextPool::run]curr_thread_id = {0} io_context is begin run", curr_thread_id);
                 io_context->run();
+                PSS_LOGGER_DEBUG("[CIoContextPool::run]curr_thread_id = {0} io_context is stop", curr_thread_id);
             });
 
         io_thread_list_.push_back(io_thread);
@@ -69,6 +71,12 @@ asio::io_context* CIoContextPool::getIOContext()
 
 void CIoContextPool::stop()
 {
+    for (auto iter = works_.begin(); iter != works_.end(); iter++)
+    {
+        iter->reset();
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
     for (const auto& io_context : io_contexts_list_)
     {
         io_context->stop();
