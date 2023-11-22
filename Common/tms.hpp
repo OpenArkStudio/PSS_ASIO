@@ -74,8 +74,6 @@ public:
                 break;
             }
         }
-
-        //PSS_LOGGER_DEBUG("[Close]Thread({0}) is over.", m_u4ThreadID);
     }
 
     std::thread::id get_thread_id()

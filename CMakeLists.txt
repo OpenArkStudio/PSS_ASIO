@@ -12,6 +12,10 @@ if(UNIX)
 	if(COMPILER_SUPPORTS_CXX11)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 	endif()
+	
+	message("build jemalloc begin")
+	execute_process(COMMAND sh jemalloc.sh WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+	message("build jemalloc end")
 endif()
 
 set(ROOT_DIR ${PROJECT_SOURCE_DIR})
