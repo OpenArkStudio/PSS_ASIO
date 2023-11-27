@@ -12,7 +12,7 @@ if [ ! -f ${libdir}/libjemalloc.so ];then
     ./autogen.sh
     ./configure
     make
-    cp lib/libjemalloc.so.2 ${libdir}/libjemalloc.so
-    make clean
+    cp lib/libjemalloc.so.2 lib/libjemalloc.so ${libdir}
+    #make clean
     cd ${crtdir}
 fi

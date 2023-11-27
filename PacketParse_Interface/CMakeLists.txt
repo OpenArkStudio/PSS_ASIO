@@ -3,6 +3,11 @@ PROJECT(PacketParse_Interface)
 if(UNIX)
 	set(BIN_OUTPUT_DIR ${ROOT_DIR}/Build/Linux/)
 	set(LIB_OUTPUT_DIR ${ROOT_DIR}/Build/Linux/)
+	
+	if (NOT ${libjemalloc} STREQUAL libjemalloc-NOTFOUND)
+		set(jemalloc_path ${PROJECT_SOURCE_DIR}/../Build/Linux/commonlib)
+		link_directories(${jemalloc_path})
+	endif()		
 else()
 	set(BIN_OUTPUT_DIR ${ROOT_DIR}/Build/Windows/)
 	set(LIB_OUTPUT_DIR ${ROOT_DIR}/Build/Windows/)
@@ -43,6 +48,14 @@ endif()
 
 if(UNIX)
 	target_link_libraries(${PROJECT_NAME} -lpthread)
+	
+	if (${libjemalloc} STREQUAL libjemalloc-NOTFOUND)
+		message("[packet parse] jemalloc is not find")
+	else()
+		set(jemalloc_path ${PROJECT_SOURCE_DIR}/Build/Linux/commonlib)
+		message("[packet parse] jemalloc path= ${jemalloc_path}")
+		target_link_libraries(${PROJECT_NAME}  -ljemalloc)
+	endif()		
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES 
