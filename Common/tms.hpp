@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 //线程处理队列，处理消息队列和定时消息
 //add by freeeyes
@@ -148,7 +148,7 @@ public:
         }
 
         return true;
-    };
+    }
 
     uint32 GetLogicThreadID()
     {
@@ -244,7 +244,7 @@ public:
         {
             return false;
         }
-    };
+    }
 
     //添加消息(延时)
     brynet::Timer::WeakPtr AddMessage(uint32 u4LogicID, std::chrono::milliseconds millisecond, task_function func)

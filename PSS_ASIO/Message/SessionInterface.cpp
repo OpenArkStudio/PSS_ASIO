@@ -1,4 +1,4 @@
-﻿#include "SessionInterface.h"
+#include "SessionInterface.h"
 
 void CSessionInterface::add_session_interface(uint32 connect_id, shared_ptr<ISession> session, const _ClientIPInfo& local_info, const _ClientIPInfo& romote_info)
 {
@@ -68,14 +68,12 @@ void CSessionInterface::check_session_io_timeout(uint32 connect_timeout, vector<
         return;
     }
 
-    PSS_LOGGER_DEBUG("[CSessionInterface::check_session_io_timeout]****sessions_list_.size={}, connect_timeout={}.", sessions_list_.size(), connect_timeout);
     for (const auto& session_io : sessions_list_)
     {
         //检查tcp
         if (session_io.second.session_->get_io_type() == EM_CONNECT_IO_TYPE::CONNECT_IO_TCP)
         {
             std::chrono::duration<double, std::ratio<1, 1>> elapsed = check_connect_time_ - session_io.second.session_->get_recv_time();
-            PSS_LOGGER_DEBUG("[CSessionInterface::check_session_io_timeout]****tcp sessions id={}, elapsed={}.", session_io.second.session_->get_connect_id(), elapsed.count());
             if (elapsed.count() >= connect_timeout)
             {
                 PSS_LOGGER_DEBUG("[CSessionInterface::check_session_io_timeout]connectid={},elapsed={}.",session_io.first, elapsed.count());
@@ -92,7 +90,6 @@ void CSessionInterface::check_session_io_timeout(uint32 connect_timeout, vector<
         {
             //检查UDP
             std::chrono::duration<double, std::ratio<1, 1>> elapsed = check_connect_time_ - session_io.second.session_->get_recv_time(session_io.first);
-            PSS_LOGGER_DEBUG("[CSessionInterface::check_session_io_timeout]****udp sessions id={}, elapsed={}.", session_io.second.session_->get_connect_id(), elapsed.count());
             if (elapsed.count() >= connect_timeout)
             {
                 PSS_LOGGER_DEBUG("[CSessionInterface::check_session_io_timeout]connectid={},elapsed={}.",session_io.first, elapsed.count());

@@ -154,7 +154,6 @@ void CNetSvrManager::close_all_service()
 #ifdef SSL_SUPPORT
     tcp_ssl_service_map_.clear();
 #endif
-
     PSS_LOGGER_DEBUG("[CNetSvrManager::close_all_service]end.");
 }
 

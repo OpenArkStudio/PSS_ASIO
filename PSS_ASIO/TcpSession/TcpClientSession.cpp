@@ -225,7 +225,8 @@ void CTcpClientSession::regedit_bridge_session_id(uint32 connect_id)
         io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip_);
         if (io_bridge_connect_id_ > 0)
         {
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bridge_connect_id_);
+            PSS_LOGGER_INFO("[CTcpClientSession::regedit_bridge_session_id]connect_id={}, io_bridge_connect_id:{},the bridge is set successfully.", 
+                connect_id, io_bridge_connect_id_);
         }
     }
     return;
@@ -242,7 +243,7 @@ void CTcpClientSession::set_io_bridge_connect_id(uint32 from_io_connect_id, uint
     if (to_io_connect_id > 0)
     {
         io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
-        io_bridge_connect_id_ = from_io_connect_id;
+        io_bridge_connect_id_ = to_io_connect_id;
     }
     else
     {
@@ -299,6 +300,7 @@ void CTcpClientSession::do_read_some(std::error_code ec, std::size_t length)
             bool ret = packet_parse_interface_->packet_from_recv_buffer_ptr_(connect_id_, &session_recv_buffer_, message_list, io_type_);
             if (!ret)
             {
+                PSS_LOGGER_ERROR("[CTcpClientSession::do_read_some]connect_id={} packet error.", connect_id_);
                 //链接断开(解析包不正确)
                 App_WorkThreadLogic::instance()->close_session_event(connect_id_, shared_from_this());
             }
@@ -354,11 +356,11 @@ void CTcpClientSession::handle_connect(const asio::error_code& ec, tcp::resolver
         }
 
         //查看这个链接是否有桥接信息
-
         io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip_);
         if (io_bridge_connect_id_ > 0)
         {
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bridge_connect_id_);
+            PSS_LOGGER_INFO("[CTcpClientSession::handle_connect]connect_id={}, io_bridge_connect_id:{},the bridge is set successfully.", 
+                connect_id_, io_bridge_connect_id_);
         }
 
 #ifdef GCOV_TEST
@@ -371,7 +373,6 @@ void CTcpClientSession::handle_connect(const asio::error_code& ec, tcp::resolver
         App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip_, remote_ip_);
 
         do_read();
-
     }
     else
     {

@@ -1,4 +1,4 @@
-﻿#ifndef PSS_CONSOLE_OUTPUT_H
+#ifndef PSS_CONSOLE_OUTPUT_H
 #define PSS_CONSOLE_OUTPUT_H
 
 //屏幕输出管控
@@ -92,7 +92,7 @@ public:
         console->set_level(console_level);
         console->flush_on(console_level);
         spdlog::set_default_logger(console);
-    };
+    }
 
 private:
     Console_Output_Info m_Console_Output_Info;

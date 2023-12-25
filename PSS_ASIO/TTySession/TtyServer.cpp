@@ -54,7 +54,8 @@ void CTTyServer::start(asio::io_context* io_context, const std::string& tty_name
         io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip_);
         if (io_bridge_connect_id_ > 0)
         {
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bridge_connect_id_);
+            PSS_LOGGER_INFO("[CTTyServer::start]connect_id={}, io_bridge_connect_id:{},the bridge is set successfully.", 
+                connect_id_, io_bridge_connect_id_);
         }
 
         io_list_manager_->add_accept_net_io_event(tty_name_, tty_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_TTY, std::dynamic_pointer_cast<CIo_Net_server>(shared_from_this()));
@@ -320,7 +321,7 @@ void CTTyServer::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_i
     if (to_io_connect_id > 0)
     {
         io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
-        io_bridge_connect_id_ = from_io_connect_id;
+        io_bridge_connect_id_ = to_io_connect_id;
     }
     else
     {

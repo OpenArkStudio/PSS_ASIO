@@ -33,7 +33,8 @@ void CTcpSSLSession::open(uint32 packet_parse_id, uint32 recv_size)
     io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip_);
     if (io_bridge_connect_id_ > 0)
     {
-        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bridge_connect_id_);
+        PSS_LOGGER_INFO("[CTcpSSLSession::open]connect_id={}, io_bridge_connect_id:{},the bridge is set successfully.", 
+            connect_id_, io_bridge_connect_id_);
     }
 
     //¼ÓÈësession Ó³Éä
@@ -259,7 +260,7 @@ void CTcpSSLSession::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 
     if (to_io_connect_id > 0)
     {
         io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
-        io_bridge_connect_id_ = from_io_connect_id;
+        io_bridge_connect_id_ = to_io_connect_id;
     }
     else
     {
@@ -280,19 +281,19 @@ bool CTcpSSLSession::is_need_send_format()
 
 void CTcpSSLSession::do_handshake()
 {
-  	std::cout << "[do_handshake] Begin" << std::endl;
+    std::cout << "[do_handshake] Begin" << std::endl;
     auto self(shared_from_this());
     ssl_socket_.async_handshake(asio::ssl::stream_base::server, 
         [this, self](const std::error_code& error)
         {
           if (!error)
           {
-          	std::cout << "[do_handshake] read" << std::endl;
+            std::cout << "[do_handshake] read" << std::endl;
             do_read();
           }
           else
           {
-          	std::cout << "[do_handshake] error:" << error.message() << std::endl;
+            std::cout << "[do_handshake] error:" << error.message() << std::endl;
           }
         });
 }

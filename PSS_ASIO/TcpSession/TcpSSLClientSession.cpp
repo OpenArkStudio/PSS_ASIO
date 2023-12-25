@@ -360,7 +360,8 @@ void CTcpSSLClientSession::handshake()
                 self->io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(self->connect_id_, self->remote_ip_);
                 if (self->io_bridge_connect_id_ > 0)
                 {
-                    App_WorkThreadLogic::instance()->set_io_bridge_connect_id(self->connect_id_, self->io_bridge_connect_id_);
+                    PSS_LOGGER_INFO("[CTcpSSLClientSession::handshake]connect_id={}, io_bridge_connect_id:{},the bridge is set successfully.", 
+                        self->connect_id_, self->io_bridge_connect_id_);
                 }
 
                 //添加映射关系

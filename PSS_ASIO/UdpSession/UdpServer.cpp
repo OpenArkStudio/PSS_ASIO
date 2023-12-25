@@ -74,7 +74,7 @@ void CUdpServer::do_receive()
             }
             else
             {
-                PSS_LOGGER_DEBUG("[CUdpServer::do_receive]({}:{})async_receive_from error:{}.",
+                PSS_LOGGER_DEBUG("[CUdpServer::do_receive]({}:{})async_receive_from:{}.",
                     self->server_ip_,
                     self->server_port_,
                     ec.message());
@@ -126,6 +126,7 @@ void CUdpServer::do_receive_from(std::error_code ec, std::size_t length)
                 {
                     //远程IO链接已断开
                     session_info->io_bridge_connect_id_ = 0;
+                    session_info->io_state_ = EM_SESSION_STATE::SESSION_IO_LOGIC;
                 }
             }
             else
@@ -353,7 +354,8 @@ uint32 CUdpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t l
         session_info->io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id, remote_ip);
         if (session_info->io_bridge_connect_id_ > 0)
         {
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(session_info->connect_id_, session_info->io_bridge_connect_id_);
+            PSS_LOGGER_INFO("[CUdpServer::add_udp_endpoint]connect_id={}, io_bridge_connect_id:{},the bridge is set successfully.",
+                    connect_id, session_info->io_bridge_connect_id_);
         }
 
         //添加映射关系
@@ -449,7 +451,8 @@ void CUdpServer::regedit_bridge_session_id(uint32 connect_id)
         session_info->io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id, remote_ip);
         if (session_info->io_bridge_connect_id_ > 0)
         {
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(session_info->connect_id_, session_info->io_bridge_connect_id_);
+            PSS_LOGGER_INFO("[CUdpServer::regedit_bridge_session_id]connect_id={}, io_bridge_connect_id:{},the bridge is set successfully.", 
+                connect_id, session_info->io_bridge_connect_id_);
         }
     }
     return;
@@ -478,11 +481,11 @@ bool CUdpServer::is_need_send_format()
 
 void CUdpServer::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id)
 {
-    auto session_info = find_udp_endpoint_by_id(to_io_connect_id);
+    auto session_info = find_udp_endpoint_by_id(from_io_connect_id);
 
     if (session_info == nullptr)
     {
-        PSS_LOGGER_DEBUG("[CUdpServer::set_io_bridge_connect_id]({}) is not find.", to_io_connect_id);
+        PSS_LOGGER_DEBUG("[CUdpServer::set_io_bridge_connect_id]({}) is not find.", from_io_connect_id);
         return;
     }
     else
@@ -490,7 +493,7 @@ void CUdpServer::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_i
         if (to_io_connect_id > 0)
         {
             session_info->io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
-            session_info->io_bridge_connect_id_ = from_io_connect_id;
+            session_info->io_bridge_connect_id_ = to_io_connect_id;
         }
         else
         {

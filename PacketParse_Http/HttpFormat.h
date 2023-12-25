@@ -7,8 +7,8 @@
 #include <map>
 #include "http_parser.h"
 
-// httpĞ­Òé½âÎö
-// µ±Ç°Ö»´¦ÀípostÇëÇóµÄÊı¾İ
+// httpåè®®è§£æ
+// å½“å‰åªå¤„ç†postè¯·æ±‚çš„æ•°æ®
 // add by freeeyes
 
 class CHttpHeadInfo
@@ -20,17 +20,17 @@ public:
 class CHttpTextBuffer
 {
 public:
-    std::string http_func_name_;     //µ±Ç°Ö´ĞĞ»Øµ÷º¯ÊıµÄÃû³Æ
-    std::string http_request_text_;  //µ±Ç°µÄhttpÏûÏ¢ÎÄ±¾
-    std::string http_post_text_;     //µ±Ç°µÄpostÏûÏ¢ÎÄ±¾
-    bool is_completed_ = false;      //ÊÇ·ñ½ÓÊÕÍê³É
-    int buffer_parse_pos_ = 0;       //µ±Ç°½âÎöµ½µÄ×Ö½ÚÎ»ÖÃ
-    bool is_post_length_ = false;    //ÊÇ·ñ»ñµÃÁËContent-Length±êÇ©
-    int content_length_ = 0;         //½ÓÊÕpostÏûÏ¢µÄ³¤¶È 
-    bool is_upgrade = false;         //ÊÇ·ñÊÇ°æ±¾Éı¼¶
-    std::string upgrade_;            //°æ±¾Éı¼¶×Ö¶Î
-    bool is_websocket_key_ = false;  //ÊÇ·ñÓĞwebsocket_key×Ö¶Î
-    std::string websocket_key_;      //websocket_keyÄÚÈİ
+    std::string http_func_name_;     //å½“å‰æ‰§è¡Œå›è°ƒå‡½æ•°çš„åç§°
+    std::string http_request_text_;  //å½“å‰çš„httpæ¶ˆæ¯æ–‡æœ¬
+    std::string http_post_text_;     //å½“å‰çš„postæ¶ˆæ¯æ–‡æœ¬
+    bool is_completed_ = false;      //æ˜¯å¦æ¥æ”¶å®Œæˆ
+    int buffer_parse_pos_ = 0;       //å½“å‰è§£æåˆ°çš„å­—èŠ‚ä½ç½®
+    bool is_post_length_ = false;    //æ˜¯å¦è·å¾—äº†Content-Lengthæ ‡ç­¾
+    int content_length_ = 0;         //æ¥æ”¶postæ¶ˆæ¯çš„é•¿åº¦ 
+    bool is_upgrade = false;         //æ˜¯å¦æ˜¯ç‰ˆæœ¬å‡çº§
+    std::string upgrade_;            //ç‰ˆæœ¬å‡çº§å­—æ®µ
+    bool is_websocket_key_ = false;  //æ˜¯å¦æœ‰websocket_keyå­—æ®µ
+    std::string websocket_key_;      //websocket_keyå†…å®¹
 
     std::map<std::string, std::string> head_info_list_;
     CHttpHeadInfo http_head_info_;

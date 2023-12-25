@@ -407,13 +407,13 @@ int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, c
     auto module_logic = thread_module_list_[curr_thread_index];
 
 #ifdef GCOV_TEST
-        PSS_LOGGER_DEBUG("[CWorkThreadLogic::assignation_thread_module_logic]({0}) curr_thread_index={1}).", connect_id, curr_thread_index);
+    PSS_LOGGER_DEBUG("[CWorkThreadLogic::assignation_thread_module_logic]({0}) curr_thread_index={1}).", connect_id, curr_thread_index);
 #endif
-        //添加到数据队列处理
-        App_tms::instance()->AddMessage(curr_thread_index, [this, session, connect_id, message_list, module_logic]() {
-            //插件逻辑处理
-            do_work_thread_module_logic(session, connect_id, message_list, module_logic);
-            });
+    //添加到数据队列处理
+    App_tms::instance()->AddMessage(curr_thread_index, [this, session, connect_id, message_list, module_logic]() {
+        //插件逻辑处理
+        do_work_thread_module_logic(session, connect_id, message_list, module_logic);
+        });
 
 #ifdef GCOV_TEST
     //测试连接自检
@@ -701,10 +701,10 @@ bool CWorkThreadLogic::set_io_bridge_connect_id(uint32 from_io_connect_id, uint3
         return false;
     }
 
-    auto curr_post_thread_index = to_io_connect_id % thread_count_;
+    auto curr_post_thread_index = from_io_connect_id % thread_count_;
     auto post_module_logic = thread_module_list_[curr_post_thread_index];
 
-    auto session_io = post_module_logic->get_session_interface(to_io_connect_id);
+    auto session_io = post_module_logic->get_session_interface(from_io_connect_id);
     if (nullptr == session_io)
     {
         //没找到对应链接
@@ -782,6 +782,7 @@ bool CWorkThreadLogic::send_io_bridge_message(uint32 io_bridge_connect_id, std::
     }
     else
     {
+        PSS_LOGGER_WARN("[CWorkThreadLogic::send_io_bridge_message]io_bridge_connect_id={0} get_session_interface failed.",io_bridge_connect_id);
         return false;
     }
 }
@@ -805,7 +806,7 @@ uint32 CWorkThreadLogic::get_connect_id(uint32 server_id) const
     //寻找当前server_id是否存在
     if (true == communicate_service_->is_exist(server_id))
     {
-        PSS_LOGGER_DEBUG("[CWorkThreadLogic::get_connect_id]server_id={0} is exist.",server_id);
+        //PSS_LOGGER_DEBUG("[CWorkThreadLogic::get_connect_id]server_id={0} is exist.",server_id);
         return communicate_service_->get_connect_id(server_id);
     }
     else

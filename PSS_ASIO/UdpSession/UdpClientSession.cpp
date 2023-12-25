@@ -80,7 +80,8 @@ void CUdpClientSession::start(const CConnect_IO_Info& io_type)
         io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip);
         if (io_bridge_connect_id_ > 0)
         {
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bridge_connect_id_);
+            PSS_LOGGER_INFO("[CUdpClientSession::start]connect_id={}, io_bridge_connect_id:{},the bridge is set successfully.", 
+                connect_id_, io_bridge_connect_id_);
         }
 
         //添加映射关系
@@ -267,7 +268,8 @@ void CUdpClientSession::regedit_bridge_session_id(uint32 connect_id)
         io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip);
         if (io_bridge_connect_id_ > 0)
         {
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bridge_connect_id_);
+            PSS_LOGGER_INFO("[CUdpClientSession::regedit_bridge_session_id]connect_id={}, io_bridge_connect_id:{},the bridge is set successfully.", 
+                    connect_id_, io_bridge_connect_id_);
         }
     }
     return;
@@ -278,7 +280,7 @@ void CUdpClientSession::set_io_bridge_connect_id(uint32 from_io_connect_id, uint
     if (to_io_connect_id > 0)
     {
         io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
-        io_bridge_connect_id_ = from_io_connect_id;
+        io_bridge_connect_id_ = to_io_connect_id;
     }
     else
     {

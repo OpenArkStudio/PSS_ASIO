@@ -1,4 +1,4 @@
-﻿#include "define.h"
+#include "define.h"
 //#include "asio/detail/socket_ops.hpp"
 
 inline uint64 ntohll_uint64(uint64 val)
@@ -46,7 +46,7 @@ public:
         }
 
         return *this;
-    };
+    }
 
     CReadBuffer& operator >> (uint16& u2Data)
     {
@@ -67,7 +67,7 @@ public:
 #endif
 
         return *this;
-    };
+    }
 
     CReadBuffer& operator >> (uint32& u4Data)
     {
@@ -89,7 +89,7 @@ public:
 #endif
 
         return *this;
-    };
+    }
 
     CReadBuffer& operator >> (uint64& u8Data)
     {
@@ -111,7 +111,7 @@ public:
 #endif
 
         return *this;
-    };
+    }
 
     CReadBuffer& operator >> (int8& n1Data)
     {
@@ -124,7 +124,7 @@ public:
         }
 
         return *this;
-    };
+    }
 
     CReadBuffer& operator >> (int16& n2Data)
     {
@@ -146,7 +146,7 @@ public:
 #endif
 
         return *this;
-    };
+    }
 
     CReadBuffer& operator >> (int32& n4Data)
     {
@@ -168,7 +168,7 @@ public:
 #endif
 
         return *this;
-    };
+    }
 
     CReadBuffer& operator >> (int64& n8Data)
     {
@@ -190,7 +190,7 @@ public:
 #endif
 
         return *this;
-    };
+    }
 
     CReadBuffer& operator >> (float32& f4Data)
     {
@@ -204,7 +204,7 @@ public:
         }
 
         return *this;
-    };
+    }
 
     CReadBuffer& operator >> (float64& f8Data)
     {
@@ -218,7 +218,7 @@ public:
         }
 
         return *this;
-    };
+    }
 
     CReadBuffer& operator >> (std::string& str)
     {
@@ -233,7 +233,7 @@ public:
         }
 
         return *this;
-    };
+    }
 
     void read_data(char* data, uint32 size, uint32 length)
     {
@@ -249,7 +249,7 @@ public:
 
         std::memcpy(data, read_ptr(), length);
         read_ptr_ += length;
-    };
+    }
 
     void read_data_to_string(std::string& data, int length = -1)
     {
@@ -265,7 +265,7 @@ public:
 
         data.append(read_ptr(), length);
         read_ptr_ += length;
-    };
+    }
 
     bool read_offset(int offset_size)
     {
@@ -295,13 +295,13 @@ public:
     void set_net_sort(bool net_sort)
     {
         is_net_sort_ = net_sort;
-    };
+    }
 
 private:
     const char* read_ptr()
     {
         return buffer_->c_str() + read_ptr_;
-    };
+    }
 
     const std::string* buffer_ = nullptr;
     uint32 read_ptr_ = 0;

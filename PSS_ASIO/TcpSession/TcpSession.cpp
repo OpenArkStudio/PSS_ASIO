@@ -37,7 +37,8 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size)
     io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip_);
     if (io_bridge_connect_id_ > 0)
     {
-        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bridge_connect_id_);
+        PSS_LOGGER_INFO("[CTcpSession::open]connect_id={}, io_bridge_connect_id:{},the bridge is set successfully.", 
+                connect_id_, io_bridge_connect_id_);
     }
 
     //加入session 映射
@@ -74,7 +75,6 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size)
     }
 #endif
 
-
     do_read();
 }
 
@@ -94,7 +94,6 @@ void CTcpSession::close(uint32 connect_id)
     {
         //如果缓冲区有数据，直接发送
         do_write(connect_id_);
-
         is_active_close_ = true;
     }
 }
@@ -124,15 +123,15 @@ void CTcpSession::close_immediaterly()
     io_context_->dispatch([self, io_type, remote_ip, recv_data_size, send_data_size, io_send_count]()
         {
             //输出接收发送字节数
-            PSS_LOGGER_DEBUG("[CTcpSession::Close]connect_id={0}, recv:{1}, send:{2} io_send_count:{3}",
-            self->connect_id_, recv_data_size, send_data_size, io_send_count);
+            PSS_LOGGER_DEBUG("[CTcpSession::close]connect_id={0}, recv:{1}, send:{2} io_send_count:{3}",
+                self->connect_id_, recv_data_size, send_data_size, io_send_count);
 
-    self->socket_.close();
+            self->socket_.close();
 
-    //断开连接
-    self->packet_parse_interface_->packet_disconnect_ptr_(self->connect_id_, io_type, App_IoBridge::instance());
+            //断开连接
+            self->packet_parse_interface_->packet_disconnect_ptr_(self->connect_id_, io_type, App_IoBridge::instance());
 
-    App_WorkThreadLogic::instance()->delete_thread_session(self->connect_id_, self);
+            App_WorkThreadLogic::instance()->delete_thread_session(self->connect_id_, self);
         });
 }
 
@@ -332,7 +331,8 @@ void CTcpSession::regedit_bridge_session_id(uint32 connect_id)
         io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip_);
         if (io_bridge_connect_id_ > 0)
         {
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id_, io_bridge_connect_id_);
+            PSS_LOGGER_INFO("[CTcpSession::regedit_bridge_session_id]connect_id={}, io_bridge_connect_id:{},the bridge is set successfully.", 
+                connect_id_, io_bridge_connect_id_);
         }
 
     }
@@ -359,7 +359,7 @@ void CTcpSession::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_
     if (to_io_connect_id > 0)
     {
         io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
-        io_bridge_connect_id_ = from_io_connect_id;
+        io_bridge_connect_id_ = to_io_connect_id;
     }
     else
     {

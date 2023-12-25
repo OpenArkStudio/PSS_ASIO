@@ -1,6 +1,6 @@
 #pragma once
 
-//规范化接口服务器指针
+//瑙勮寖鍖栨帴鍙ｆ湇鍔″櫒鎸囬拡
 //add by freeeyes
 
 #include "define.h"

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "define.h"
 
@@ -39,7 +39,7 @@ public:
 #else
         return dlopen(pFilePath, nMode);
 #endif
-    };
+    }
 
     static void* PSS_dlsym(Pss_Library_Handler h, const char* pFuncName)
     {
@@ -48,7 +48,7 @@ public:
 #else
         return dlsym(h, pFuncName);
 #endif
-    };
+    }
 
     static char* PSS_dlerror()
     {
@@ -66,7 +66,7 @@ public:
 #else
         return dlerror();
 #endif
-    };
+    }
 
     static void PSS_dlClose(Pss_Library_Handler h)
     {
@@ -75,5 +75,5 @@ public:
 #else
         dlclose(h);
 #endif
-    };
+    }
 };

@@ -358,7 +358,8 @@ uint32 CKcpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t l
         io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id, remote_ip);
         if (io_bridge_connect_id_ > 0)
         {
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(connect_id, io_bridge_connect_id_);
+            PSS_LOGGER_INFO("[CKcpServer::add_udp_endpoint]connect_id={}, io_bridge_connect_id:{},the bridge is set successfully.", 
+                connect_id, io_bridge_connect_id_);
         }
 
         //添加映射关系
@@ -481,7 +482,7 @@ void CKcpServer::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_i
     if (to_io_connect_id > 0)
     {
         io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
-        io_bridge_connect_id_ = from_io_connect_id;
+        io_bridge_connect_id_ = to_io_connect_id;
     }
     else
     {

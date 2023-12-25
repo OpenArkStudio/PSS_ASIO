@@ -8,7 +8,7 @@
 #include <thread>
 #include <functional>
 
-//自动判定操作系统
+//鑷姩鍒ゅ畾鎿嶄綔绯荤粺
 #define PLATFORM_WIN     0
 #define PLATFORM_UNIX    1
 #define PLATFORM_APPLE   2

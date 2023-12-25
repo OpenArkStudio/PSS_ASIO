@@ -1,6 +1,6 @@
 #pragma once
 
-//性能统计类，提供性能统计输出
+//鎬ц兘缁熻绫伙紝鎻愪緵鎬ц兘缁熻杈撳嚭
 //add by freeeyes
 
 #include <iostream>
@@ -10,7 +10,7 @@
 #include<random>
 #include<time.h>
 
-//一个采样器
+//涓�涓噰鏍峰櫒
 class CRandom_Sample
 {
 public:

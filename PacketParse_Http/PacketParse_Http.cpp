@@ -7,6 +7,8 @@
 
 #include "define.h"
 #include "SessionBuffer.hpp"
+#include "IIoBridge.hpp"
+
 #include "HttpFormat.h"
 #include "WebsocketFormat.hpp"
 
@@ -27,11 +29,11 @@ using namespace std;
 DECLDIR bool parse_packet_from_recv_buffer(uint32 connect_id, CSessionBuffer* buffer, vector<std::shared_ptr<CMessage_Packet>>& message_list, EM_CONNECT_IO_TYPE emIOType);
 DECLDIR bool parse_packet_format_send_buffer(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, std::shared_ptr<CMessage_Packet> format_message, EM_CONNECT_IO_TYPE emIOType);
 DECLDIR bool is_need_send_format();
-DECLDIR bool connect(uint32 connect_id, const _ClientIPInfo& remote_ip, const _ClientIPInfo& local_ip, EM_CONNECT_IO_TYPE emIOType);
-DECLDIR void disConnect(uint32 connect_id, EM_CONNECT_IO_TYPE emIOType);
+DECLDIR bool connect(uint32 connect_id, const _ClientIPInfo& remote_ip, const _ClientIPInfo& local_ip, EM_CONNECT_IO_TYPE emIOType, IIoBridge* io_bridge);
+DECLDIR void disconnect(uint32 connect_id, EM_CONNECT_IO_TYPE emIOType, IIoBridge* io_bridge);
+DECLDIR void packet_load(IIoBridge* io_bridge);
+DECLDIR void packet_close(IIoBridge* io_bridge);
 DECLDIR void set_output(shared_ptr<spdlog::logger> logger);
-DECLDIR void packet_load();
-DECLDIR void packet_close();
 
 //协议类型和状态
 enum class ENUM_Protocol
@@ -246,9 +248,8 @@ bool parse_packet_format_send_buffer(uint32 connect_id, std::shared_ptr<CMessage
     }
 }
 
-bool connect(uint32 u4ConnectID, const _ClientIPInfo& remote_ip, const _ClientIPInfo& local_ip, EM_CONNECT_IO_TYPE emIOType)
+bool connect(uint32 u4ConnectID, const _ClientIPInfo& remote_ip, const _ClientIPInfo& local_ip, EM_CONNECT_IO_TYPE emIOType, IIoBridge* io_bridge)
 {
-
     PSS_UNUSED_ARG(emIOType);
     PSS_LOGGER_INFO("[Connect]u4ConnectID = {}, {}:{} ==> {}:{}",
         u4ConnectID,
@@ -272,10 +273,10 @@ bool connect(uint32 u4ConnectID, const _ClientIPInfo& remote_ip, const _ClientIP
     return true;
 }
 
-void disConnect(uint32 u4ConnectID, EM_CONNECT_IO_TYPE emIOType)
+void disconnect(uint32 u4ConnectID, EM_CONNECT_IO_TYPE emIOType, IIoBridge* io_bridge)
 {
     PSS_UNUSED_ARG(emIOType);
-    PSS_LOGGER_DEBUG("[DisConnect]u4ConnectID={}.",
+    PSS_LOGGER_DEBUG("[disconnect]u4ConnectID={}.",
         u4ConnectID);
 
     http_list_lock_.lock();
@@ -289,12 +290,12 @@ void set_output(shared_ptr<spdlog::logger> logger)
     spdlog::set_default_logger(logger);
 }
 
-void packet_load()
+void packet_load(IIoBridge* io_bridge)
 {
     //Packet_Parse初始化调用
 }
 
-void packet_close()
+void packet_close(IIoBridge* io_bridge)
 {
     //Packet_Parse关闭调用
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-//´¦ÀíwebsocketÏà¹ØÊı¾İµÄÎÕÊÖ£¬²ğ½âºÍÆ´×°
+//å¤„ç†websocketç›¸å…³æ•°æ®çš„æ¡æ‰‹ï¼Œæ‹†è§£å’Œæ‹¼è£…
 //add by freeeyes
 
 #include <stdint.h>
