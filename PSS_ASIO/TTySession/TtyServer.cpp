@@ -392,7 +392,7 @@ void CTTyServer::do_read_some(std::error_code ec, std::size_t length)
     }
 }
 
-void CTTyServer::send_write_fail_to_logic(const std::string write_fail_buffer, std::size_t buffer_length)
+void CTTyServer::send_write_fail_to_logic(const std::string& write_fail_buffer, std::size_t buffer_length)
 {
     vector<std::shared_ptr<CMessage_Packet>> message_tty_list;
     auto tty_write_fail_packet = std::make_shared<CMessage_Packet>();

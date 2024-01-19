@@ -88,7 +88,7 @@ private:
     uint32 add_udp_endpoint(const udp::endpoint& recv_endpoint_, size_t length, uint32 max_buffer_length);
 
     shared_ptr<CUdp_Session_Info> find_udp_endpoint_by_id(uint32 connect_id);
-   
+
     void close_udp_endpoint_by_id(uint32 connect_id);
 
     udp::socket socket_;
@@ -99,6 +99,8 @@ private:
     using mapudpendpoint2id = map<udp::endpoint, uint32>;
     mapudpid2endpoint udp_id_2_endpoint_list_;
     mapudpendpoint2id udp_endpoint_2_id_list_;
+
+    std::recursive_mutex udp_session_mutex_;
 
     uint32 max_recv_size_ = 0;
     uint32 max_send_size_ = 0;

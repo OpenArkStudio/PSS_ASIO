@@ -203,7 +203,7 @@ void CSessionService::regedit_bridge_session_id(uint32 connect_id)
 {
     if(connect_id == 0)
     {
-        PSS_LOGGER_WARN("[CSessionService::regedit_bridge_session_id]server id must over 0, regedit_bridge_session_id fail.");
+        PSS_LOGGER_WARN("[CSessionService::regedit_bridge_session_id]connect_id must over 0, regedit_bridge_session_id fail.");
         return;
     }
     else

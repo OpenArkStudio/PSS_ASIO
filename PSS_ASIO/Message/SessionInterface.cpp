@@ -76,7 +76,7 @@ void CSessionInterface::check_session_io_timeout(uint32 connect_timeout, vector<
             std::chrono::duration<double, std::ratio<1, 1>> elapsed = check_connect_time_ - session_io.second.session_->get_recv_time();
             if (elapsed.count() >= connect_timeout)
             {
-                PSS_LOGGER_DEBUG("[CSessionInterface::check_session_io_timeout]connectid={},elapsed={}.",session_io.first, elapsed.count());
+                PSS_LOGGER_DEBUG("[CSessionInterface::check_session_io_timeout]connect_id={},elapsed={}.",session_io.first, elapsed.count());
                 
                 CSessionIO_Cancel session_cancel;
                 session_cancel.session_id_ = session_io.first;
@@ -92,7 +92,7 @@ void CSessionInterface::check_session_io_timeout(uint32 connect_timeout, vector<
             std::chrono::duration<double, std::ratio<1, 1>> elapsed = check_connect_time_ - session_io.second.session_->get_recv_time(session_io.first);
             if (elapsed.count() >= connect_timeout)
             {
-                PSS_LOGGER_DEBUG("[CSessionInterface::check_session_io_timeout]connectid={},elapsed={}.",session_io.first, elapsed.count());
+                PSS_LOGGER_DEBUG("[CSessionInterface::check_session_io_timeout]connect_id={},elapsed={}.",session_io.first, elapsed.count());
                 
                 CSessionIO_Cancel session_cancel;
                 session_cancel.session_id_ = session_io.first;

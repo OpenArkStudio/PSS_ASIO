@@ -6,7 +6,7 @@ CKcpServer::CKcpServer(asio::io_context* io_context, const std::string& server_i
     : socket_(*io_context, udp::endpoint(asio::ip::address_v4::from_string(server_ip), port)), max_recv_size_(max_recv_size), max_send_size_(max_send_size), io_context_(io_context), io_list_manager_(io_list_manager)
 {
     //处理链接建立消息
-    PSS_LOGGER_DEBUG("[CKcpServer::do_accept]{0}:{1} Begin Accept.", server_ip, port);
+    PSS_LOGGER_DEBUG("[CKcpServer::CKcpServer]{0}:{1} Begin Accept.", server_ip, port);
 
     session_recv_buffer_.Init(max_recv_size_);
     session_recv_data_buffer_.Init(max_recv_size_);
@@ -77,7 +77,7 @@ void CKcpServer::do_receive_from(std::error_code ec, std::size_t length)
 
     auto session_kcp = find_udp_endpoint_by_id(connect_id);
 
-    if (!ec && length > 0)
+    if (!ec && length > 0 && session_kcp != nullptr)
     {
         //处理数据包
         auto self(shared_from_this());
@@ -261,7 +261,7 @@ void CKcpServer::do_write(uint32 connect_id)
     set_kcp_send_info(connect_id, session_info->send_endpoint);
 
     //将要处理的数据封装为kcp数据包再发送出去
-    int	ret = ikcp_send(session_info->kcpcb_, session_info->session_send_buffer_.read(), (long)session_info->session_send_buffer_.get_write_size());
+    int ret = ikcp_send(session_info->kcpcb_, session_info->session_send_buffer_.read(), (long)session_info->session_send_buffer_.get_write_size());
     if (ret != 0)
     {
         PSS_LOGGER_DEBUG("[CKcpServer::do_write]({}) send error ret={}.", connect_id, ret);

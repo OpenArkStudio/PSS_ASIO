@@ -123,29 +123,29 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
     }
 
 #ifdef GCOV_TEST
-    PSS_LOGGER_DEBUG("[load_module_] count = {0}", load_module_.get_module_count());
+    PSS_LOGGER_DEBUG("[CWorkThreadLogic::init_work_thread_logic]count = {0}", load_module_.get_module_count());
     vector<std::string> modeinfo_list;
     load_module_.get_all_module_name(modeinfo_list);
     if (modeinfo_list.size() != (uint32)load_module_.get_module_count())
     {
-        PSS_LOGGER_DEBUG("[load_module_] count is fail", load_module_.get_module_count());
+        PSS_LOGGER_DEBUG("[CWorkThreadLogic::init_work_thread_logic]count is fail", load_module_.get_module_count());
     }
 
     //查询指定的消息
     auto module_info = load_module_.find_module_info("libTest_Logic.so");
     if (nullptr == module_info)
     {
-        PSS_LOGGER_DEBUG("[load_module_]no find libTest_Logic.so");
+        PSS_LOGGER_DEBUG("[CWorkThreadLogic::init_work_thread_logic]no find libTest_Logic.so");
     }
 #endif
 
     //显示所有的注册消息以及对应的模块
-    PSS_LOGGER_DEBUG("[load_module_]>>>>>>>>>>>>>>>>>");
+    PSS_LOGGER_DEBUG("[CWorkThreadLogic::init_work_thread_logic]>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
     for (const auto& command_info : load_module_.get_module_function_list())
     {
-        PSS_LOGGER_DEBUG("[load_module_]register command id={0}", command_info.first);
+        PSS_LOGGER_DEBUG("[CWorkThreadLogic::init_work_thread_logic]register command id={0}", command_info.first);
     }
-    PSS_LOGGER_DEBUG("[load_module_]>>>>>>>>>>>>>>>>>");
+    PSS_LOGGER_DEBUG("[CWorkThreadLogic::init_work_thread_logic]>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
     //执行线程对应创建
     for (int i = 0; i < thread_count; i++)
@@ -839,11 +839,6 @@ uint32 CWorkThreadLogic::get_io_server_id(uint32 connect_id)
 
 void CWorkThreadLogic::do_work_thread_timeout(uint16 work_thread_id, uint16 last_dispose_command_id, int work_thread_timeout)
 {
-    PSS_LOGGER_ERROR("[CWorkThreadLogic::run_check_task]work thread{0} is block, timeout={1}, last_command_id={2}.",
-        work_thread_id,
-        work_thread_timeout,
-        last_dispose_command_id);
-
     //发送消息通知插件
     CMessage_Source source;
     source.work_thread_id_ = work_thread_id;
@@ -882,9 +877,6 @@ void CWorkThreadLogic::run_check_task(uint32 timeout_seconds)
                 });
         }
     }
-
-
-    PSS_LOGGER_DEBUG("[CWorkThreadLogic::run_check_task]check is ok.");
 }
 
 bool CWorkThreadLogic::send_frame_message(uint16 tag_thread_id, const std::string& message_tag, std::shared_ptr<CMessage_Packet> send_packet, CFrame_Message_Delay delay_timer)

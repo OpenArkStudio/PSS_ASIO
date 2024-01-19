@@ -35,7 +35,7 @@ bool CTcpClientSession::start(const CConnect_IO_Info& io_info)
         }
         catch (std::system_error const& ex)
         {
-            PSS_LOGGER_ERROR("[CTcpClientSession::start] bind addr error remote:[{}:{}] local:[{}:{}] ex.what:{}.", io_info.server_ip, io_info.server_port,io_info.client_ip,io_info.client_port, ex.what());
+            PSS_LOGGER_ERROR("[CTcpClientSession::start]bind addr error remote:[{}:{}] local:[{}:{}] ex.what:{}.", io_info.server_ip, io_info.server_port,io_info.client_ip,io_info.client_port, ex.what());
         }
     }
 
@@ -340,7 +340,7 @@ void CTcpClientSession::handle_connect(const asio::error_code& ec, tcp::resolver
         local_ip_.m_strClientIP = socket_.local_endpoint().address().to_string();
         local_ip_.m_u2Port = socket_.local_endpoint().port();
 
-        PSS_LOGGER_INFO("[CTcpClientSession::handle_connect]connect_id:{} remote[{}:{}] local[{}:{}]",
+        PSS_LOGGER_INFO("[CTcpClientSession::handle_connect]connect_id={} remote[{}:{}] local[{}:{}]",
             connect_id_,
             remote_ip_.m_strClientIP, 
             remote_ip_.m_u2Port,

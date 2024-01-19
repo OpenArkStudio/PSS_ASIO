@@ -4,7 +4,7 @@ CUdpServer::CUdpServer(asio::io_context* io_context, const CConfigNetIO& config_
     :socket_(*io_context), max_recv_size_(config_io.recv_buff_size_), max_send_size_(config_io.send_buff_size_), io_context_(io_context), server_ip_(config_io.ip_), server_port_(config_io.port_), io_list_manager_(io_list_manager)
 {
     //处理链接建立消息
-    PSS_LOGGER_DEBUG("[CUdpServer::do_accept]{0}:{1} Begin Accept.", server_ip_, server_port_);
+    PSS_LOGGER_DEBUG("[CUdpServer::CUdpServer]{0}:{1} Begin Accept.", server_ip_, server_port_);
 
     try
     {
@@ -21,7 +21,7 @@ CUdpServer::CUdpServer(asio::io_context* io_context, const CConfigNetIO& config_
     }
     catch (std::system_error const& ex)
     {
-        PSS_LOGGER_ERROR("[CUdpServer::do_accept] bind addr error local:[{}:{}] ex.what:{}.", server_ip_, server_port_, ex.what());
+        PSS_LOGGER_ERROR("[CUdpServer::CUdpServer]bind addr error local:[{}:{}] ex.what:{}.", server_ip_, server_port_, ex.what());
     }
 
     if (config_io.em_net_type_ == EM_NET_TYPE::NET_TYPE_BROADCAST)
@@ -32,7 +32,7 @@ CUdpServer::CUdpServer(asio::io_context* io_context, const CConfigNetIO& config_
         socket_.set_option(option, ec);
         if (ec)
         {
-            PSS_LOGGER_DEBUG("[CUdpServer::do_accept]{0}:{1} error bind Accept{2}.", server_ip_, server_port_, ec.message());
+            PSS_LOGGER_DEBUG("[CUdpServer::CUdpServer]{0}:{1} error bind Accept{2}.", server_ip_, server_port_, ec.message());
         }
     }
 
@@ -49,6 +49,7 @@ void CUdpServer::start()
 
 _ClientIPInfo CUdpServer::get_remote_ip(uint32 connect_id)
 {
+    std::lock_guard <std::recursive_mutex> lock(udp_session_mutex_);
     _ClientIPInfo remote_ip_info;
     auto f = udp_id_2_endpoint_list_.find(connect_id);
     if (f != udp_id_2_endpoint_list_.end())
@@ -92,7 +93,7 @@ void CUdpServer::do_receive()
 
 void CUdpServer::do_receive_from(std::error_code ec, std::size_t length)
 {
-    try 
+    try
     {
         //查询当前的connect_id
         auto connect_id = add_udp_endpoint(recv_endpoint_, length, max_send_size_);
@@ -144,6 +145,7 @@ void CUdpServer::do_receive_from(std::error_code ec, std::size_t length)
                 {
                     recv_data_time_ = std::chrono::steady_clock::now();
                     cid_recv_data_time_[connect_id] = std::chrono::steady_clock::now();
+
                     //添加到数据队列处理
                     App_WorkThreadLogic::instance()->assignation_thread_module_logic(connect_id, message_list, self);
                 }
@@ -187,6 +189,11 @@ void CUdpServer::close()
 
 void CUdpServer::close_server()
 {
+    std::lock_guard <std::recursive_mutex> lock(udp_session_mutex_);
+    if (!socket_.is_open())
+    {
+        return;
+    }
     //释放所有udp资源
     for (const auto& session_info : udp_id_2_endpoint_list_)
     {
@@ -276,7 +283,7 @@ void CUdpServer::do_write_immediately(uint32 connect_id, const char* data, size_
 
     if (session_info == nullptr)
     {
-        PSS_LOGGER_DEBUG("[CUdpServer::do_write_immediately]({}) is nullptr.", connect_id);
+        PSS_LOGGER_DEBUG("[CUdpServer::do_write_immediately]connect_id={0} is nullptr.", connect_id);
         return;
     }
 
@@ -313,6 +320,8 @@ void CUdpServer::do_write_immediately(uint32 connect_id, const char* data, size_
 
 uint32 CUdpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t length, uint32 max_buffer_length)
 {
+    std::lock_guard <std::recursive_mutex> lock(udp_session_mutex_);
+
     auto f = udp_endpoint_2_id_list_.find(recv_endpoint);
     if (f != udp_endpoint_2_id_list_.end())
     {
@@ -367,6 +376,8 @@ uint32 CUdpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t l
 
 shared_ptr<CUdp_Session_Info> CUdpServer::find_udp_endpoint_by_id(uint32 connect_id)
 {
+    std::lock_guard <std::recursive_mutex> lock(udp_session_mutex_);
+
     auto f = udp_id_2_endpoint_list_.find(connect_id);
     if (f != udp_id_2_endpoint_list_.end())
     {
@@ -378,6 +389,12 @@ shared_ptr<CUdp_Session_Info> CUdpServer::find_udp_endpoint_by_id(uint32 connect
 
 void CUdpServer::close_udp_endpoint_by_id(uint32 connect_id)
 {
+    std::lock_guard <std::recursive_mutex> lock(udp_session_mutex_);
+    if (!socket_.is_open())
+    {
+        return;
+    }
+
     auto self(shared_from_this());
 
     _ClientIPInfo remote_ip;
@@ -408,6 +425,7 @@ void CUdpServer::close_udp_endpoint_by_id(uint32 connect_id)
 
 void CUdpServer::add_send_finish_size(uint32 connect_id, size_t length)
 {
+    std::lock_guard <std::recursive_mutex> lock(udp_session_mutex_);
     auto f = udp_id_2_endpoint_list_.find(connect_id);
     if (f != udp_id_2_endpoint_list_.end())
     {

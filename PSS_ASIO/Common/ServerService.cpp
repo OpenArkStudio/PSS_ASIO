@@ -100,7 +100,7 @@ bool CServerService::init_service(const std::string& pss_config_file_name)
     signals.async_wait(
         [this](std::error_code ec, int)
         {
-            PSS_LOGGER_DEBUG("[CServerService::init_service] server is error({0}).", ec.message());
+            PSS_LOGGER_DEBUG("[CServerService::init_service]server is error({0}).", ec.message());
             App_ServerService::instance()->stop_service();
         });
 
@@ -120,7 +120,7 @@ bool CServerService::init_service(const std::string& pss_config_file_name)
             packet_parse.packet_parse_path_,
             packet_parse.packet_parse_file_name_))
         {
-            PSS_LOGGER_DEBUG("[CServerService::init_service] load error.");
+            PSS_LOGGER_DEBUG("[CServerService::init_service]load error.");
         }
     }
 

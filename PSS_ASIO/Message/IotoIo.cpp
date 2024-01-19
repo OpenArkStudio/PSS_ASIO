@@ -167,13 +167,13 @@ uint32 CIotoIo::get_to_session_id(uint32 session_id, const _ClientIPInfo& from_i
         if (s_2_s.from_session_id_ == session_id 
             && (s_2_s.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_FROM || s_2_s.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH))
         {
-            return get_endpoint_session_id(from_io, s_2_s);
+            return get_endpoint_session_id(session_id, from_io, s_2_s);
         }
         
         if (s_2_s.to_session_id_ == session_id
             &&(s_2_s.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_TO || s_2_s.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH))
         {
-            return get_endpoint_session_id(from_io, s_2_s);
+            return get_endpoint_session_id(session_id, from_io, s_2_s);
         }
     }
 
@@ -219,11 +219,22 @@ const CIo_Connect_Info* CIotoIo::find_io_to_io_list(const _ClientIPInfo& from_io
     return nullptr;
 }
 
-uint32 CIotoIo::get_endpoint_session_id(const _ClientIPInfo& from_io, const CIo_Connect_Info& s_2_s)
+uint32 CIotoIo::get_endpoint_session_id(uint32 session_id, const _ClientIPInfo& from_io, const CIo_Connect_Info& s_2_s)
 {
     if (s_2_s.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH)
     {
-        return s_2_s.to_session_id_;
+        if (session_id == s_2_s.from_session_id_)
+        {
+            return s_2_s.to_session_id_;
+        }
+        else if (session_id == s_2_s.to_session_id_)
+        {
+            return s_2_s.from_session_id_;
+        }
+        else
+        {
+            return 0;
+        }
     }
     else if (s_2_s.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_FROM)
     {
@@ -274,7 +285,6 @@ uint32 CIotoIo::get_regedit_bridge_session_id(const _ClientIPInfo& from_io, EM_C
         //找到了在线的
         return f->second;
     }
-
 }
 
 std::string CIotoIo::get_connect_list_key(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type) const

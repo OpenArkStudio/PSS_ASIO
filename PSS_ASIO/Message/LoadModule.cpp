@@ -48,7 +48,7 @@ bool CLoadModule::load_plugin_module(const string& module_file_path, const strin
     if (module_list_.end() != f)
     {
         //卸载旧的插件
-        PSS_LOGGER_DEBUG("[CLoadModule::LoadMoudle] module_name = {0}, Execute Function LoadModuleData is error!", module_file_name);
+        PSS_LOGGER_DEBUG("[CLoadModule::LoadMoudle]module_name = {0}, Execute Function LoadModuleData is error!", module_file_name);
         return false;
     }
 
@@ -59,7 +59,7 @@ bool CLoadModule::load_plugin_module(const string& module_file_path, const strin
 
     if (nRet != 0)
     {
-        PSS_LOGGER_DEBUG("[CLoadModule::LoadMoudle] module_name = {0}, Execute Function LoadModuleData is error!", module_file_name);
+        PSS_LOGGER_DEBUG("[CLoadModule::LoadMoudle]module_name = {0}, Execute Function LoadModuleData is error!", module_file_name);
         return false;
     }
 
@@ -86,7 +86,7 @@ bool CLoadModule::load_plugin_module(const string& module_file_path, const strin
     module_list_[module_file_name] = module_info;
     module_name_list_.emplace_back(module_file_name);
 
-    PSS_LOGGER_DEBUG("[CLoadModule::LoadMoudle] Begin Load ModuleName[{0}] OK!", module_file_name);
+    PSS_LOGGER_DEBUG("[CLoadModule::LoadMoudle]Begin Load ModuleName[{0}] OK!", module_file_name);
     return true;
 }
 
@@ -122,7 +122,7 @@ bool CLoadModule::unload_plugin_module(const string& module_file_name, bool is_d
             delete_module_name_list(module_file_name);
         }
 
-        PSS_LOGGER_DEBUG("[CLoadModule::UnLoadModule] Close Module={0}!", module_file_name);
+        PSS_LOGGER_DEBUG("[CLoadModule::UnLoadModule]Close Module={0}!", module_file_name);
 
         return true;
     }
@@ -153,7 +153,7 @@ bool CLoadModule::load_module_info(shared_ptr<_ModuleInfo> module_info) const
 
     if (nullptr == module_info)
     {
-        PSS_LOGGER_DEBUG("[CLoadModule::LoadModuleInfo] module_name = {0}, module_info is nullptr!", module_info->module_file_name_);
+        PSS_LOGGER_ERROR("[CLoadModule::LoadModuleInfo]module_info is nullptr!");
         return false;
     }
 
@@ -164,7 +164,7 @@ bool CLoadModule::load_module_info(shared_ptr<_ModuleInfo> module_info) const
 
     if (nullptr == module_info->hModule_)
     {
-        PSS_LOGGER_DEBUG("[CLoadModule::LoadModuleInfo] module_name = {0}, module_info->hModule is nullptr({1})!", module_info->module_file_name_, CLoadLibrary::PSS_dlerror());
+        PSS_LOGGER_DEBUG("[CLoadModule::LoadModuleInfo]module_name = {0}, module_info->hModule is nullptr({1})!", module_info->module_file_name_, CLoadLibrary::PSS_dlerror());
         return false;
     }
 
@@ -172,7 +172,7 @@ bool CLoadModule::load_module_info(shared_ptr<_ModuleInfo> module_info) const
 
     if (nullptr == module_info->load_module_)
     {
-        PSS_LOGGER_DEBUG("[CLoadModule::LoadModuleInfo] module_name = {0}, Function LoadMoudle is error!", module_info->module_file_name_);
+        PSS_LOGGER_DEBUG("[CLoadModule::LoadModuleInfo]module_name = {0}, Function LoadMoudle is error!", module_info->module_file_name_);
         return false;
     }
 
@@ -180,7 +180,7 @@ bool CLoadModule::load_module_info(shared_ptr<_ModuleInfo> module_info) const
 
     if (nullptr == module_info->unload_module_)
     {
-        PSS_LOGGER_DEBUG("[CLoadModule::LoadModuleInfo] module_name = {0}, Function UnloadModule is error!", module_info->module_file_name_);
+        PSS_LOGGER_DEBUG("[CLoadModule::LoadModuleInfo]module_name = {0}, Function UnloadModule is error!", module_info->module_file_name_);
         return false;
     }
 
@@ -188,7 +188,7 @@ bool CLoadModule::load_module_info(shared_ptr<_ModuleInfo> module_info) const
 
     if (nullptr == module_info->do_message_)
     {
-        PSS_LOGGER_DEBUG("[CLoadModule::LoadModuleInfo] module_name = {0}, Function DoModuleMessage is error({1})!", module_info->module_file_name_, errno);
+        PSS_LOGGER_DEBUG("[CLoadModule::LoadModuleInfo]module_name = {0}, Function DoModuleMessage is error({1})!", module_info->module_file_name_, errno);
         return false;
     }
 
@@ -196,7 +196,7 @@ bool CLoadModule::load_module_info(shared_ptr<_ModuleInfo> module_info) const
 
     if (nullptr == module_info->get_module_state_)
     {
-        PSS_LOGGER_DEBUG("[CLoadModule::LoadModuleInfo] module_name = {0}, Function GetModuleState is error({1})!", module_info->module_file_name_, errno);
+        PSS_LOGGER_DEBUG("[CLoadModule::LoadModuleInfo]module_name = {0}, Function GetModuleState is error({1})!", module_info->module_file_name_, errno);
         return false;
     }
 
@@ -204,14 +204,14 @@ bool CLoadModule::load_module_info(shared_ptr<_ModuleInfo> module_info) const
 
     if (nullptr == module_info->set_output_)
     {
-        PSS_LOGGER_DEBUG("[CLoadModule::LoadModuleInfo] module_name = {0}, Function set_output is error({1})!", module_info->module_file_name_, errno);
+        PSS_LOGGER_DEBUG("[CLoadModule::LoadModuleInfo]module_name = {0}, Function set_output is error({1})!", module_info->module_file_name_, errno);
         return false;
     }
 
     module_info->module_run_finction_ptr_ = (module_run_finction_ptr)CLoadLibrary::PSS_dlsym(module_info->hModule_, "module_run");
     if (nullptr == module_info->set_output_)
     {
-        PSS_LOGGER_DEBUG("[CLoadModule::LoadModuleInfo] module_name = {0}, Function module_run is error({1})!", module_info->module_file_name_, errno);
+        PSS_LOGGER_DEBUG("[CLoadModule::LoadModuleInfo]module_name = {0}, Function module_run is error({1})!", module_info->module_file_name_, errno);
         return false;
     }
 

@@ -65,7 +65,7 @@ bool CLoadPacketParse::LoadPacketInfo(uint32 u4PacketParseID, const std::string&
 
     if(nullptr == pPacketParseInfo->m_hModule || !pPacketParseInfo->packet_connect_ptr_)
     {
-        dispaly_error_message("Connect", packet_parse_file, pPacketParseInfo);
+        dispaly_error_message("connect", packet_parse_file, pPacketParseInfo);
         return false;
     }
     
@@ -73,7 +73,7 @@ bool CLoadPacketParse::LoadPacketInfo(uint32 u4PacketParseID, const std::string&
 
     if(nullptr == pPacketParseInfo->m_hModule || !pPacketParseInfo->packet_disconnect_ptr_)
     {
-        dispaly_error_message("DisConnect", packet_parse_file, pPacketParseInfo);
+        dispaly_error_message("disconnect", packet_parse_file, pPacketParseInfo);
         return false;
     }
 
@@ -81,7 +81,7 @@ bool CLoadPacketParse::LoadPacketInfo(uint32 u4PacketParseID, const std::string&
 
     if (nullptr == pPacketParseInfo->m_hModule || !pPacketParseInfo->packet_load_ptr_)
     {
-        dispaly_error_message("Load", packet_parse_file, pPacketParseInfo);
+        dispaly_error_message("packet_load", packet_parse_file, pPacketParseInfo);
         return false;
     }
 
@@ -89,7 +89,7 @@ bool CLoadPacketParse::LoadPacketInfo(uint32 u4PacketParseID, const std::string&
 
     if (nullptr == pPacketParseInfo->m_hModule || !pPacketParseInfo->packet_close_ptr_)
     {
-        dispaly_error_message("Close", packet_parse_file, pPacketParseInfo);
+        dispaly_error_message("packet_close", packet_parse_file, pPacketParseInfo);
         return false;
     }
 
@@ -97,7 +97,7 @@ bool CLoadPacketParse::LoadPacketInfo(uint32 u4PacketParseID, const std::string&
 
     if (nullptr == pPacketParseInfo->m_hModule || !pPacketParseInfo->packet_set_output_ptr_)
     {
-        dispaly_error_message("Set_output", packet_parse_file, pPacketParseInfo);
+        dispaly_error_message("set_output", packet_parse_file, pPacketParseInfo);
         return false;
     }
 

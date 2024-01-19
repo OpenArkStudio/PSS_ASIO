@@ -56,7 +56,7 @@ public:
 
     const CIo_Connect_Info* find_io_to_io_list(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE& from_io_type);
 private:
-    uint32 get_endpoint_session_id(const _ClientIPInfo& from_io, const CIo_Connect_Info& s_2_s);
+    uint32 get_endpoint_session_id(uint32 session_id, const _ClientIPInfo& from_io, const CIo_Connect_Info& s_2_s);
 
     bool compare_connect_io(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type, const _ClientIPInfo& target_io, EM_CONNECT_IO_TYPE target_io_type) const;
  
