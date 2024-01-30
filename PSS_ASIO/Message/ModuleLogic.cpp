@@ -91,12 +91,11 @@ void CModuleLogic::each_session_id(const session_func& session_fn) const
     sessions_interface_.each_session_id(session_fn);
 }
 
-void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_seconds, uint32 connect_timeout, uint16 io_send_time_check, const config_logic_list& logic_list, ISessionService* session_service)
+void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_seconds, uint32 connect_timeout, const config_logic_list& logic_list, ISessionService* session_service)
 {
     //初始化线程数
     thread_count_ = (uint16)thread_count;
     connect_timeout_ = connect_timeout;
-    io_send_time_check_ = io_send_time_check;
 
     App_tms::instance()->Init();
 
@@ -497,18 +496,9 @@ void CWorkThreadLogic::do_work_thread_module_logic(shared_ptr<ISession> session,
 
 void CWorkThreadLogic::send_io_buffer_to_session(uint32 connect_id, std::shared_ptr<ISession> session, std::shared_ptr<CMessage_Packet> format_packet) const
 {
-    if (io_send_time_check_ > 0)
-    {
-        session->set_write_buffer(connect_id,
-            format_packet->buffer_.c_str(),
-            format_packet->buffer_.size());
-    }
-    else
-    {
-        session->do_write_immediately(connect_id,
-            format_packet->buffer_.c_str(),
-            format_packet->buffer_.size());
-    }
+    session->do_write_immediately(connect_id,
+        format_packet->buffer_.c_str(),
+        format_packet->buffer_.size());
 }
 
 void CWorkThreadLogic::do_io_message_delivery(uint32 connect_id, std::shared_ptr<CMessage_Packet> send_packet, shared_ptr<CModuleLogic> module_logic)

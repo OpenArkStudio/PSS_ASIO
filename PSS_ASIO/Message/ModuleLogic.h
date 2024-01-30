@@ -89,7 +89,7 @@ class CWorkThreadLogic
 public:
     CWorkThreadLogic() = default;
 
-    void init_work_thread_logic(int thread_count, uint16 timeout_seconds, uint32 connect_timeout, uint16 io_send_time_check, const config_logic_list& logic_list, ISessionService* session_service);
+    void init_work_thread_logic(int thread_count, uint16 timeout_seconds, uint32 connect_timeout, const config_logic_list& logic_list, ISessionService* session_service);
 
     void init_communication_service(ICommunicationInterface* communicate_service);
 
@@ -180,7 +180,6 @@ private:
     hashmaplogictimer plgin_timer_list_;
     std::recursive_mutex plugin_timer_mutex_;
     uint32 connect_timeout_ = 0;
-    uint16 io_send_time_check_ = 0;
 };
 
 using App_WorkThreadLogic = PSS_singleton<CWorkThreadLogic>;

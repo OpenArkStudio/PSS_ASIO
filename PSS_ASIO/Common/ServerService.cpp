@@ -134,7 +134,6 @@ bool CServerService::init_service(const std::string& pss_config_file_name)
     App_WorkThreadLogic::instance()->init_work_thread_logic(App_ServerConfig::instance()->get_config_workthread().work_thread_count_,
         (uint16)App_ServerConfig::instance()->get_config_workthread().work_timeout_seconds_,
         (uint32)App_ServerConfig::instance()->get_config_workthread().client_connect_timeout_,
-        (uint16)App_ServerConfig::instance()->get_config_workthread().io_send_time_check_,
         App_ServerConfig::instance()->get_config_logic_list(),
         App_SessionService::instance());
 
