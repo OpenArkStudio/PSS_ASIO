@@ -151,8 +151,6 @@ public:
 
     uint32 get_curr_thread_logic_id() const;
 
-    void send_io_buffer() const;
-
     uint32 get_connect_id(uint32 server_id) const;
 
     void regedit_bridge_session_id(uint32 connect_id) const;

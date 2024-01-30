@@ -1,4 +1,4 @@
-#ifndef _PSS_TIMERSTAMP_H
+﻿#ifndef _PSS_TIMERSTAMP_H
 #define _PSS_TIMERSTAMP_H
 
 //获得和计算时间戳相关类型

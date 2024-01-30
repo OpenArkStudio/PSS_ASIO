@@ -100,18 +100,6 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
 
     App_tms::instance()->Init();
 
-    //如果存在发送周期，则启动一个定时器，定时检测发送缓冲
-    if (io_send_time_check_ > 0)
-    {
-        auto timer_ptr_send_check = App_TimerManager::instance()->GetTimerPtr()->addTimer_loop(chrono::seconds(1), chrono::milliseconds(io_send_time_check_), [this]()
-            {
-                //发送检查和发送数据消息
-                App_tms::instance()->AddMessage(0, [this]() {
-                    send_io_buffer();
-                    });
-            });
-    }
-
     load_module_.set_session_service(session_service);
 
     //初始化插件加载
@@ -679,19 +667,6 @@ int CWorkThreadLogic::module_run(const std::string& module_name, std::shared_ptr
 uint32 CWorkThreadLogic::get_curr_thread_logic_id() const
 {
     return App_tms::instance()->GetLogicThreadID();
-}
-
-void CWorkThreadLogic::send_io_buffer() const
-{
-    //到时间了，群发数据
-    for (auto module_logic : thread_module_list_)
-    {
-        module_logic->each_session_id([module_logic](uint32 session_id) {
-            //将缓冲中的数据发送出去
-            auto session = module_logic->get_session_interface(session_id);
-            session->do_write(session_id);
-            });
-    }
 }
 
 bool CWorkThreadLogic::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id)

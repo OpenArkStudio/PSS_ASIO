@@ -1,4 +1,4 @@
-#ifndef _PSS_CCONNECT_COUNTER_H
+﻿#ifndef _PSS_CCONNECT_COUNTER_H
 #define _PSS_CCONNECT_COUNTER_H
 
 #include "define.h"
