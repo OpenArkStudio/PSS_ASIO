@@ -83,7 +83,7 @@ void CBaseCommand::logic_connect_tcp()
     io_info.send_size = 1024;
     io_info.recv_size = 1024;
     io_info.server_ip = "127.0.0.1";
-    io_info.server_port = 10003;
+    io_info.server_port = 10004;
     io_info.client_ip = "127.0.0.1";
     io_info.client_port = 10091;
     io_info.server_id = 1001;
@@ -112,14 +112,14 @@ void CBaseCommand::logic_connect_udp()
 
 void CBaseCommand::test_io_2_io()
 {
-    //测试io 2 to 透传代码(将10092 桥接到 10003上)
+    //测试io 2 to 透传代码(将10092 桥接到 10091上)
     _ClientIPInfo from_io;
     from_io.m_strClientIP = "127.0.0.1";
     from_io.m_u2Port = 10092;
 
     _ClientIPInfo to_io;
     to_io.m_strClientIP = "127.0.0.1";
-    to_io.m_u2Port = 10003;
+    to_io.m_u2Port = 10091;
 
     session_service_->add_session_io_mapping(from_io,
         EM_CONNECT_IO_TYPE::CONNECT_IO_TCP,
