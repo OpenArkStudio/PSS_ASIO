@@ -48,6 +48,7 @@ enum class ENUM_IO_BRIDGE_TYPE
     IO_BRIDGE_BATH = 0,    //双向桥接
     IO_BRIDGE_FROM,        //从from到to
     IO_BRIDGE_TO,          //从to到from
+    IO_BRIDGE_NONE,        //没有桥接
 };
 
 enum class ENUM_WHILE_STATE

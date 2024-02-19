@@ -30,16 +30,16 @@ void CIoBridge::do_bridge_io_2_io(uint32 from_session_id, uint32 to_session_id, 
     if (bridge_type == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH)
     {
         //两边的链接已经存在了
-        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(from_session_id, to_session_id);
-        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(to_session_id, from_session_id);
+        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(from_session_id, to_session_id, bridge_type);
+        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(to_session_id, from_session_id, bridge_type);
     }
     else if (bridge_type == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_FROM)
     {
-        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(from_session_id, to_session_id);
+        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(from_session_id, to_session_id, bridge_type);
     }
     else
     {
-        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(to_session_id, from_session_id);
+        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(to_session_id, from_session_id, bridge_type);
     }
 }
 
@@ -52,16 +52,16 @@ bool CIoBridge::delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNE
         //将对应链接设置为逻辑模式
         if (s_2_s.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH)
         {
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(s_2_s.from_session_id_, 0);
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(s_2_s.to_session_id_, 0);
+            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(s_2_s.from_session_id_, 0, s_2_s.bridge_type_);
+            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(s_2_s.to_session_id_, 0, s_2_s.bridge_type_);
         }
         else if (s_2_s.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_FROM)
         {
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(s_2_s.from_session_id_, 0);
+            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(s_2_s.from_session_id_, 0, s_2_s.bridge_type_);
         }
         else
         {
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(s_2_s.to_session_id_, 0);
+            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(s_2_s.to_session_id_, 0, s_2_s.bridge_type_);
         }
     }
 
@@ -81,4 +81,9 @@ void CIoBridge::unregedit_bridge_session_id(const _ClientIPInfo& from_io, EM_CON
 uint32 CIoBridge::get_to_session_id(uint32 session_id, const _ClientIPInfo& from_io)
 {
     return iotoio_.get_to_session_id(session_id, from_io);
+}
+
+ENUM_IO_BRIDGE_TYPE CIoBridge::find_io_bridge_type(uint32 session_id)
+{
+    return iotoio_.find_io_bridge_type(session_id);
 }

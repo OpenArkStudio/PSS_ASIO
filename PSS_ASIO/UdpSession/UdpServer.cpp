@@ -367,7 +367,9 @@ uint32 CUdpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t l
                     connect_id, session_info->io_bridge_connect_id_);
 
             //如果桥接成立，设置对端的桥接地址
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(session_info->io_bridge_connect_id_, connect_id);
+            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(session_info->io_bridge_connect_id_, 
+                connect_id, 
+                App_IoBridge::instance()->find_io_bridge_type(connect_id));
         }
 
         //添加映射关系

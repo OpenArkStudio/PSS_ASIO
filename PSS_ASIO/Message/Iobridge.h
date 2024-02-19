@@ -20,6 +20,7 @@ public:
 
     void do_bridge_io_2_io(uint32 from_session_id, uint32 to_session_id, ENUM_IO_BRIDGE_TYPE bridge_type) const;
 
+    ENUM_IO_BRIDGE_TYPE find_io_bridge_type(uint32 session_id);
 private:
     CIotoIo iotoio_;
 };

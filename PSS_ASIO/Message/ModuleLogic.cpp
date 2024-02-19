@@ -356,6 +356,9 @@ void CWorkThreadLogic::delete_thread_session(uint32 connect_id, shared_ptr<ISess
         communicate_service_->set_connect_id(server_id, 0);
     }
 
+    //回收链接
+    module_logic->delete_session_interface(connect_id);
+
     auto io_type = session->get_io_type();
 
     //向插件告知链接断开消息
@@ -372,9 +375,6 @@ void CWorkThreadLogic::delete_thread_session(uint32 connect_id, shared_ptr<ISess
         source.connect_mark_id_ = server_id;
 
         module_logic->do_thread_module_logic(source, recv_packet, send_packet);
-
-        //回收链接
-        module_logic->delete_session_interface(connect_id);
         });
 }
 
@@ -664,11 +664,18 @@ uint32 CWorkThreadLogic::get_curr_thread_logic_id() const
     return App_tms::instance()->GetLogicThreadID();
 }
 
-bool CWorkThreadLogic::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id)
+bool CWorkThreadLogic::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id, ENUM_IO_BRIDGE_TYPE io_type)
 {
     if (thread_count_ == 0 || thread_module_list_.empty())
     {
         return false;
+    }
+
+    //查看桥接类型是不是单向的，如果是，则继续设置对端桥接
+    if (io_type != ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH)
+    {
+        return false;
+            
     }
 
     auto curr_post_thread_index = from_io_connect_id % thread_count_;

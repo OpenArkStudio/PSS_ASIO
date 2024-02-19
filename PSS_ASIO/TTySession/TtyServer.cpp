@@ -58,7 +58,9 @@ void CTTyServer::start(asio::io_context* io_context, const std::string& tty_name
                 connect_id_, io_bridge_connect_id_);
 
             //如果桥接成立，设置对端的桥接地址
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(io_bridge_connect_id_, connect_id_);
+            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(io_bridge_connect_id_, 
+                connect_id_,
+                App_IoBridge::instance()->find_io_bridge_type(connect_id_));
         }
 
         io_list_manager_->add_accept_net_io_event(tty_name_, tty_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_TTY, std::dynamic_pointer_cast<CIo_Net_server>(shared_from_this()));

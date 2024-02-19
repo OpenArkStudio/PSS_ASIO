@@ -364,7 +364,9 @@ void CTcpSSLClientSession::handshake()
                         self->connect_id_, self->io_bridge_connect_id_);
 
                     //如果桥接成立，设置对端的桥接地址
-                    App_WorkThreadLogic::instance()->set_io_bridge_connect_id(self->io_bridge_connect_id_, self->connect_id_);
+                    App_WorkThreadLogic::instance()->set_io_bridge_connect_id(self->io_bridge_connect_id_, 
+                        self->connect_id_,
+                        App_IoBridge::instance()->find_io_bridge_type(self->connect_id_));
                 }
 
                 //添加映射关系
