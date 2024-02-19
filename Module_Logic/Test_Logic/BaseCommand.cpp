@@ -115,16 +115,16 @@ void CBaseCommand::test_io_2_io()
     //测试io 2 to 透传代码(将10092 桥接到 10091上)
     _ClientIPInfo from_io;
     from_io.m_strClientIP = "127.0.0.1";
-    from_io.m_u2Port = 10092;
+    from_io.m_u2Port = 10102;
 
     _ClientIPInfo to_io;
     to_io.m_strClientIP = "127.0.0.1";
-    to_io.m_u2Port = 10091;
+    to_io.m_u2Port = 10101;
 
     session_service_->add_session_io_mapping(from_io,
         EM_CONNECT_IO_TYPE::CONNECT_IO_TCP,
         to_io,
-        EM_CONNECT_IO_TYPE::CONNECT_IO_SERVER_TCP);
+        EM_CONNECT_IO_TYPE::CONNECT_IO_TCP);
 }
 
 void CBaseCommand::test_create_io_listen()

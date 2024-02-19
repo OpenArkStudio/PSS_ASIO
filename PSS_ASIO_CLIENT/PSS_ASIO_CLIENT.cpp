@@ -139,41 +139,73 @@ void tcp_test_connect_asynchronous_server(std::string strIP, unsigned short port
 }
 
 //测试透传转发(tcp)
-void tcp_test_io_2_io(std::string strIP, unsigned short port, unsigned short remote_port, uint16 command_id, uint16 packt_count, asio::io_context& io_context)
+void tcp_test_io_2_io(std::string strIP, unsigned short romote_port, unsigned short src_port, unsigned short des_port, uint16 command_id, uint16 packt_count, asio::io_context& io_context)
 {
-    tcp::socket s(io_context);
-    tcp::resolver resolver(io_context);
-    tcp::endpoint end_point(asio::ip::address::from_string(strIP.c_str()), port);
+    tcp::socket src_socket(io_context);
+    tcp::socket des_socket(io_context);
+ 
+    //目标IP和透传IP
+    tcp::endpoint src_end_point(asio::ip::address::from_string(strIP.c_str()), romote_port);
+    tcp::endpoint des_end_point(asio::ip::address::from_string(strIP.c_str()), romote_port);
 
     asio::error_code connect_error;
-    asio::ip::tcp::endpoint localEndpoint(asio::ip::address::from_string(strIP.c_str()), remote_port);
+    asio::ip::tcp::endpoint src_local_endpoint(asio::ip::address::from_string(strIP.c_str()), src_port);
+    asio::ip::tcp::endpoint des_local_endpoint(asio::ip::address::from_string(strIP.c_str()), des_port);
 
-    s.open(asio::ip::tcp::v4(), connect_error);
+    //建立链接
+    src_socket.open(asio::ip::tcp::v4(), connect_error);
     if (connect_error)
     {
         std::cout << "[tcp_test_io_2_io]open error(" << connect_error.message() << std::endl;
         return;
     }
 
-    s.bind(localEndpoint, connect_error);
+    des_socket.open(asio::ip::tcp::v4(), connect_error);
     if (connect_error)
     {
-        //链接失败
-        std::cout << "[tcp_test_io_2_io]bind error(" << connect_error.message() << std::endl;
+        std::cout << "[tcp_test_io_2_io]open error(" << connect_error.message() << std::endl;
         return;
     }
 
-    s.set_option(asio::ip::tcp::socket::reuse_address(true));
-    s.connect(end_point, connect_error);
+    src_socket.bind(src_local_endpoint, connect_error);
+    if (connect_error)
+    {
+        //链接失败
+        std::cout << "[tcp_test_io_2_io]src bind error(" << connect_error.message() << std::endl;
+        return;
+    }
+
+    src_socket.set_option(asio::ip::tcp::socket::reuse_address(true));
+    src_socket.connect(src_end_point, connect_error);
 
     if (connect_error)
     {
         //链接失败
-        std::cout << "[tcp_test_io_2_io]connect error(" << connect_error.message() << std::endl;
+        std::cout << "[tcp_test_io_2_io]src connect error(" << connect_error.message() << std::endl;
         return;
     }
 
-    std::cout << "[tcp_test_io_2_io](" << command_id << ")connect OK" << std::endl;
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    des_socket.bind(des_local_endpoint, connect_error);
+    if (connect_error)
+    {
+        //链接失败
+        std::cout << "[tcp_test_io_2_io]des bind error(" << connect_error.message() << std::endl;
+        return;
+    }
+
+    des_socket.set_option(asio::ip::tcp::socket::reuse_address(true));
+    des_socket.connect(des_end_point, connect_error);
+
+    if (connect_error)
+    {
+        //链接失败
+        std::cout << "[tcp_test_io_2_io]des connect error(" << connect_error.message() << std::endl;
+        return;
+    }
+
+    std::cout << "[tcp_test_io_2_io]src and des(" << command_id << ")connect OK" << std::endl;
 
     //发送数据
     char* send_buffer = new char[240 * packt_count];
@@ -195,10 +227,29 @@ void tcp_test_io_2_io(std::string strIP, unsigned short port, unsigned short rem
         nPos += 200;
     }
 
-    std::size_t send_size = asio::write(s, asio::buffer(send_buffer, 240 * packt_count));
+    std::size_t send_size = asio::write(src_socket, asio::buffer(send_buffer, 240 * packt_count));
 
-    std::cout << "[tcp_test_io_2_io](" << command_id << ")send （" << send_size << ") OK" << std::endl;
+    std::cout << "[tcp_test_io_2_io]src (" << command_id << ")send （" << send_size << ") OK" << std::endl;
 
+    //测试透传接收数据
+    char* recv_buffer = new char[240 * packt_count];
+    asio::error_code error;
+
+    size_t recv_all_size = 0;
+    while (true)
+    {
+        size_t reply_length = asio::read(des_socket, asio::buffer(recv_buffer, 240 * packt_count));
+        recv_all_size += reply_length;
+        if (recv_all_size == 240 * packt_count)
+        {
+            break;
+        }
+    }
+
+    std::cout << "[tcp_test_io_2_io]des (" << command_id << ")recv （" << send_size << ") OK" << std::endl;
+
+    src_socket.close();
+    des_socket.close();
 }
 
 //同步客户端(tcp)
@@ -347,7 +398,7 @@ int main()
             io_context.run();
         });
 
-    tcp_test_io_2_io("127.0.0.1", 10012, 10092, 0x2101, 1, io_context);
+    tcp_test_io_2_io("127.0.0.1", 10002, 10101, 10102, 0x2101, 1, io_context);
 
     tcp_test_connect_synchronize_server("127.0.0.1", 10002, 10010, 0x2101, 1, io_context);
     tcp_test_connect_synchronize_server("127.0.0.1", 10002, 10011, 0x2102, 1, io_context);

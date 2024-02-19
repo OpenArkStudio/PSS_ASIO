@@ -308,10 +308,11 @@ void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession
         communicate_service_->set_connect_id(server_id, connect_id);
     }
 
+    //必须在IO线程里注册链接信息
+    module_logic->add_session(connect_id, session, local_info, romote_info);
+
     //向插件告知链接建立消息
     App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, module_logic, local_info, romote_info]() {
-        module_logic->add_session(connect_id, session, local_info, romote_info);
-
         CMessage_Source source;
         auto recv_packet = std::make_shared<CMessage_Packet>();
         auto send_packet = std::make_shared<CMessage_Packet>();
@@ -673,6 +674,7 @@ bool CWorkThreadLogic::set_io_bridge_connect_id(uint32 from_io_connect_id, uint3
     if (nullptr == session_io)
     {
         //没找到对应链接
+        PSS_LOGGER_DEBUG("[CWorkThreadLogic::set_io_bridge_connect_id]from_io_connect_id={} is no find", from_io_connect_id);
         return false;
     }
     else

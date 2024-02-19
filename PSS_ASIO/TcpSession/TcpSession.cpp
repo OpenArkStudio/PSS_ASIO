@@ -37,8 +37,11 @@ void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size)
     io_bridge_connect_id_ = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip_);
     if (io_bridge_connect_id_ > 0)
     {
-        PSS_LOGGER_INFO("[CTcpSession::open]connect_id={}, io_bridge_connect_id:{},the bridge is set successfully.", 
+        PSS_LOGGER_DEBUG("[CTcpSession::open]connect_id={}, io_bridge_connect_id:{},the bridge is set successfully.",
                 connect_id_, io_bridge_connect_id_);
+
+        //如果桥接成立，设置对端的桥接地址
+        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(io_bridge_connect_id_, connect_id_);
     }
 
     //加入session 映射
@@ -360,6 +363,8 @@ void CTcpSession::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_
     {
         io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
         io_bridge_connect_id_ = to_io_connect_id;
+        PSS_LOGGER_DEBUG("[CTcpSession::set_io_bridge_connect_id]connect_id={}, io_bridge_connect_id:{},the bridge is set successfully.",
+            connect_id_, io_bridge_connect_id_);
     }
     else
     {
