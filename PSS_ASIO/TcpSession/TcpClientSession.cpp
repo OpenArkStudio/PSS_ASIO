@@ -227,6 +227,9 @@ void CTcpClientSession::regedit_bridge_session_id(uint32 connect_id)
         {
             PSS_LOGGER_INFO("[CTcpClientSession::regedit_bridge_session_id]connect_id={}, io_bridge_connect_id:{},the bridge is set successfully.", 
                 connect_id, io_bridge_connect_id_);
+
+            //如果桥接成立，设置对端的桥接地址
+            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(io_bridge_connect_id_, connect_id_);
         }
     }
     return;

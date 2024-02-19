@@ -360,6 +360,9 @@ uint32 CKcpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t l
         {
             PSS_LOGGER_INFO("[CKcpServer::add_udp_endpoint]connect_id={}, io_bridge_connect_id:{},the bridge is set successfully.", 
                 connect_id, io_bridge_connect_id_);
+
+            //如果桥接成立，设置对端的桥接地址
+            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(io_bridge_connect_id_, connect_id);
         }
 
         //添加映射关系
