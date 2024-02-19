@@ -35,6 +35,9 @@ void CTcpSSLSession::open(uint32 packet_parse_id, uint32 recv_size)
     {
         PSS_LOGGER_INFO("[CTcpSSLSession::open]connect_id={}, io_bridge_connect_id:{},the bridge is set successfully.", 
             connect_id_, io_bridge_connect_id_);
+
+        //如果桥接成立，设置对端的桥接地址
+        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(io_bridge_connect_id_, connect_id_);
     }
 
     //加入session 映射

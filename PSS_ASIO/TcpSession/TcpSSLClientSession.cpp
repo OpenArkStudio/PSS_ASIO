@@ -362,6 +362,9 @@ void CTcpSSLClientSession::handshake()
                 {
                     PSS_LOGGER_INFO("[CTcpSSLClientSession::handshake]connect_id={}, io_bridge_connect_id:{},the bridge is set successfully.", 
                         self->connect_id_, self->io_bridge_connect_id_);
+
+                    //如果桥接成立，设置对端的桥接地址
+                    App_WorkThreadLogic::instance()->set_io_bridge_connect_id(self->io_bridge_connect_id_, self->connect_id_);
                 }
 
                 //添加映射关系

@@ -297,6 +297,8 @@ void CWorkThreadLogic::add_frame_events(uint16 command_id, uint32 mark_id, const
 
 void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession> session, const _ClientIPInfo& local_info, const _ClientIPInfo& romote_info)
 {
+    std::lock_guard <std::recursive_mutex> lock(plugin_timer_mutex_);
+
     //session 建立连接
     uint16 curr_thread_index = connect_id % thread_count_;
     auto module_logic = thread_module_list_[curr_thread_index];
@@ -341,6 +343,8 @@ void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession
 
 void CWorkThreadLogic::delete_thread_session(uint32 connect_id, shared_ptr<ISession> session)
 {
+    std::lock_guard <std::recursive_mutex> lock(plugin_timer_mutex_);
+
     //session 连接断开
     uint16 curr_thread_index = connect_id % thread_count_;
     auto module_logic = thread_module_list_[curr_thread_index];
