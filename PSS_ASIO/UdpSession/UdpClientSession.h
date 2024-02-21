@@ -60,6 +60,8 @@ public:
 
     void do_receive_from(std::error_code ec, std::size_t length);
 
+    void need_io_bridge(const _ClientIPInfo& remote_ip);
+
 private:
     udp::socket socket_;
     asio::io_context* io_context_;

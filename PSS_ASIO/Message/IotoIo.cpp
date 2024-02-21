@@ -159,10 +159,10 @@ void CIotoIo::unregedit_bridge_session_id(const _ClientIPInfo& from_io, EM_CONNE
     }
 }
 
-Cio_bridge_result CIotoIo::get_to_session_id(uint32 session_id, const _ClientIPInfo& from_io)
+CIo_Bridge_Result CIotoIo::get_to_session_id(uint32 session_id, const _ClientIPInfo& from_io)
 {
     std::lock_guard <std::mutex> lock(mutex_);
-    Cio_bridge_result io_bridge_result;
+    CIo_Bridge_Result io_bridge_result;
 
     for (const auto& s_2_s : session_to_session_list_)
     {

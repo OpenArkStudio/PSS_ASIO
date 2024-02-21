@@ -126,6 +126,8 @@ public:
 
     udp::endpoint get_kcp_send_endpoint() const;
 
+    void need_io_bridge(const uint32& connect_id, const _ClientIPInfo& remote_ip);
+
 private:
     void do_receive();
 

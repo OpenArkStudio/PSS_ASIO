@@ -47,6 +47,50 @@ void CUdpServer::start()
     do_receive();
 }
 
+void CUdpServer::need_io_bridge(const uint32& connect_id, const _ClientIPInfo& remote_ip, shared_ptr<CUdp_Session_Info>& session_info)
+{
+    auto io_bridge_result = App_IoBridge::instance()->get_to_session_id(connect_id, remote_ip);
+
+    //对不同类型进行点对点透传进行单独判定
+    if (io_bridge_result.io_bridge_id_ > 0
+        && io_bridge_result.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH)
+    {
+        session_info->io_bridge_connect_id_ = io_bridge_result.io_bridge_id_;
+
+        PSS_LOGGER_DEBUG("[CUdpServer::add_udp_endpoint]connect_id={} IO_BRIDGE_BATH, io_bridge_connect_id:{},the bridge is set successfully.",
+            connect_id, session_info->io_bridge_connect_id_);
+
+        //如果桥接成立，设置对端的桥接地址
+        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(session_info->io_bridge_connect_id_,
+            connect_id);
+    }
+    else if (io_bridge_result.io_bridge_id_ > 0
+        && io_bridge_result.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_FROM)
+    {
+        //如果是单向的，看看朝向
+        if (io_bridge_result.io_bridge_id_ == io_bridge_result.io_from_id_)
+        {
+            //如果是相同朝向的，设置自己的对端透传ID
+            session_info->io_bridge_connect_id_ = io_bridge_result.io_bridge_id_;
+
+            PSS_LOGGER_DEBUG("[CUdpServer::add_udp_endpoint]connect_id={} ID from, io_bridge_connect_id:{},the bridge is set successfully.",
+                connect_id, session_info->io_bridge_connect_id_);
+        }
+        else
+        {
+            //如果是对端,当前链接建立后，需要设置对端可以透传。
+            session_info->io_bridge_connect_id_ = 0;
+
+            //如果桥接成立，设置对端的桥接地址
+            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(io_bridge_result.io_from_id_,
+                io_bridge_result.io_to_id_);
+
+            PSS_LOGGER_DEBUG("[CUdpServer::add_udp_endpoint]connect_id={} ID to, io_bridge_connect_id:{},the bridge is set successfully.",
+                connect_id, session_info->io_bridge_connect_id_);
+        }
+    }
+}
+
 _ClientIPInfo CUdpServer::get_remote_ip(uint32 connect_id)
 {
     std::lock_guard <std::recursive_mutex> lock(udp_session_mutex_);
@@ -360,46 +404,7 @@ uint32 CUdpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t l
         }
 
         //查看这个链接是否有桥接信息
-        auto io_bridge_result = App_IoBridge::instance()->get_to_session_id(connect_id, remote_ip);
-
-        //对不同类型进行点对点透传进行单独判定
-        if (io_bridge_result.io_bridge_id_ > 0
-            && io_bridge_result.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH)
-        {
-            session_info->io_bridge_connect_id_ = io_bridge_result.io_bridge_id_;
-
-            PSS_LOGGER_DEBUG("[CUdpServer::add_udp_endpoint]connect_id={} IO_BRIDGE_BATH, io_bridge_connect_id:{},the bridge is set successfully.",
-                connect_id, session_info->io_bridge_connect_id_);
-
-            //如果桥接成立，设置对端的桥接地址
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(session_info->io_bridge_connect_id_,
-                connect_id);
-        }
-        else if (io_bridge_result.io_bridge_id_ > 0
-            && io_bridge_result.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_FROM)
-        {
-            //如果是单向的，看看朝向
-            if (io_bridge_result.io_bridge_id_ == io_bridge_result.io_from_id_)
-            {
-                //如果是相同朝向的，设置自己的对端透传ID
-                session_info->io_bridge_connect_id_ = io_bridge_result.io_bridge_id_;
-
-                PSS_LOGGER_DEBUG("[CUdpServer::add_udp_endpoint]connect_id={} ID from, io_bridge_connect_id:{},the bridge is set successfully.",
-                    connect_id, session_info->io_bridge_connect_id_);
-            }
-            else
-            {
-                //如果是对端,当前链接建立后，需要设置对端可以透传。
-                session_info->io_bridge_connect_id_ = 0;
-
-                //如果桥接成立，设置对端的桥接地址
-                App_WorkThreadLogic::instance()->set_io_bridge_connect_id(io_bridge_result.io_from_id_,
-                    io_bridge_result.io_to_id_);
-
-                PSS_LOGGER_DEBUG("[CUdpServer::add_udp_endpoint]connect_id={} ID to, io_bridge_connect_id:{},the bridge is set successfully.",
-                    connect_id, session_info->io_bridge_connect_id_);
-            }
-        }
+        need_io_bridge(connect_id, remote_ip, session_info);
 
         //添加映射关系
         App_WorkThreadLogic::instance()->add_thread_session(connect_id, shared_from_this(), local_ip, remote_ip);
@@ -500,46 +505,7 @@ void CUdpServer::regedit_bridge_session_id(uint32 connect_id)
         }
 
         //查看这个链接是否有桥接信息
-        auto io_bridge_result = App_IoBridge::instance()->get_to_session_id(connect_id, remote_ip);
-
-        //对不同类型进行点对点透传进行单独判定
-        if (io_bridge_result.io_bridge_id_ > 0
-            && io_bridge_result.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH)
-        {
-            session_info->io_bridge_connect_id_ = io_bridge_result.io_bridge_id_;
-
-            PSS_LOGGER_DEBUG("[CUdpServer::regedit_bridge_session_id]connect_id={} IO_BRIDGE_BATH, io_bridge_connect_id:{},the bridge is set successfully.",
-                connect_id, session_info->io_bridge_connect_id_);
-
-            //如果桥接成立，设置对端的桥接地址
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(session_info->io_bridge_connect_id_,
-                connect_id);
-        }
-        else if (io_bridge_result.io_bridge_id_ > 0
-            && io_bridge_result.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_FROM)
-        {
-            //如果是单向的，看看朝向
-            if (io_bridge_result.io_bridge_id_ == io_bridge_result.io_from_id_)
-            {
-                //如果是相同朝向的，设置自己的对端透传ID
-                session_info->io_bridge_connect_id_ = io_bridge_result.io_bridge_id_;
-
-                PSS_LOGGER_DEBUG("[CUdpServer::regedit_bridge_session_id]connect_id={} ID from, io_bridge_connect_id:{},the bridge is set successfully.",
-                    connect_id, session_info->io_bridge_connect_id_);
-            }
-            else
-            {
-                //如果是对端,当前链接建立后，需要设置对端可以透传。
-                session_info->io_bridge_connect_id_ = 0;
-
-                //如果桥接成立，设置对端的桥接地址
-                App_WorkThreadLogic::instance()->set_io_bridge_connect_id(io_bridge_result.io_from_id_,
-                    io_bridge_result.io_to_id_);
-
-                PSS_LOGGER_DEBUG("[CUdpServer::regedit_bridge_session_id]connect_id={} ID to, io_bridge_connect_id:{},the bridge is set successfully.",
-                    connect_id, session_info->io_bridge_connect_id_);
-            }
-        }
+        need_io_bridge(connect_id, remote_ip, session_info);
     }
     return;
 }

@@ -77,51 +77,56 @@ void CUdpClientSession::start(const CConnect_IO_Info& io_type)
         }
 
         //查看这个链接是否有桥接信息
-        auto io_bridge_result = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip);
-
-        //对不同类型进行点对点透传进行单独判定
-        if (io_bridge_result.io_bridge_id_ > 0
-            && io_bridge_result.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH)
-        {
-            io_bridge_connect_id_ = io_bridge_result.io_bridge_id_;
-
-            PSS_LOGGER_DEBUG("[CUdpClientSession::start]connect_id={} IO_BRIDGE_BATH, io_bridge_connect_id:{},the bridge is set successfully.",
-                connect_id_, io_bridge_connect_id_);
-
-            //如果桥接成立，设置对端的桥接地址
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(io_bridge_connect_id_,
-                connect_id_);
-        }
-        else if (io_bridge_result.io_bridge_id_ > 0
-            && io_bridge_result.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_FROM)
-        {
-            //如果是单向的，看看朝向
-            if (io_bridge_result.io_bridge_id_ == io_bridge_result.io_from_id_)
-            {
-                //如果是相同朝向的，设置自己的对端透传ID
-                io_bridge_connect_id_ = io_bridge_result.io_bridge_id_;
-
-                PSS_LOGGER_DEBUG("[CUdpClientSession::start]connect_id={} ID from, io_bridge_connect_id:{},the bridge is set successfully.",
-                    connect_id_, io_bridge_connect_id_);
-            }
-            else
-            {
-                //如果是对端,当前链接建立后，需要设置对端可以透传。
-                io_bridge_connect_id_ = 0;
-
-                //如果桥接成立，设置对端的桥接地址
-                App_WorkThreadLogic::instance()->set_io_bridge_connect_id(io_bridge_result.io_from_id_,
-                    io_bridge_result.io_to_id_);
-
-                PSS_LOGGER_DEBUG("[CUdpClientSession::start]connect_id={} ID to, io_bridge_connect_id:{},the bridge is set successfully.",
-                    connect_id_, io_bridge_connect_id_);
-            }
-        }
+        need_io_bridge(remote_ip);
 
         //添加映射关系
         App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip, remote_ip);
 
         do_receive();
+    }
+}
+
+void CUdpClientSession::need_io_bridge(const _ClientIPInfo& remote_ip)
+{
+    auto io_bridge_result = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip);
+
+    //对不同类型进行点对点透传进行单独判定
+    if (io_bridge_result.io_bridge_id_ > 0
+        && io_bridge_result.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH)
+    {
+        io_bridge_connect_id_ = io_bridge_result.io_bridge_id_;
+
+        PSS_LOGGER_DEBUG("[CUdpClientSession::regedit_bridge_session_id]connect_id={} IO_BRIDGE_BATH, io_bridge_connect_id:{},the bridge is set successfully.",
+            connect_id_, io_bridge_connect_id_);
+
+        //如果桥接成立，设置对端的桥接地址
+        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(io_bridge_connect_id_,
+            connect_id_);
+    }
+    else if (io_bridge_result.io_bridge_id_ > 0
+        && io_bridge_result.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_FROM)
+    {
+        //如果是单向的，看看朝向
+        if (io_bridge_result.io_bridge_id_ == io_bridge_result.io_from_id_)
+        {
+            //如果是相同朝向的，设置自己的对端透传ID
+            io_bridge_connect_id_ = io_bridge_result.io_bridge_id_;
+
+            PSS_LOGGER_DEBUG("[CUdpClientSession::regedit_bridge_session_id]connect_id={} ID from, io_bridge_connect_id:{},the bridge is set successfully.",
+                connect_id_, io_bridge_connect_id_);
+        }
+        else
+        {
+            //如果是对端,当前链接建立后，需要设置对端可以透传。
+            io_bridge_connect_id_ = 0;
+
+            //如果桥接成立，设置对端的桥接地址
+            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(io_bridge_result.io_from_id_,
+                io_bridge_result.io_to_id_);
+
+            PSS_LOGGER_DEBUG("[CUdpClientSession::regedit_bridge_session_id]connect_id={} ID to, io_bridge_connect_id:{},the bridge is set successfully.",
+                connect_id_, io_bridge_connect_id_);
+        }
     }
 }
 
@@ -299,46 +304,7 @@ void CUdpClientSession::regedit_bridge_session_id(uint32 connect_id)
         }
 
         //查看这个链接是否有桥接信息
-        auto io_bridge_result = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip);
-
-        //对不同类型进行点对点透传进行单独判定
-        if (io_bridge_result.io_bridge_id_ > 0
-            && io_bridge_result.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH)
-        {
-            io_bridge_connect_id_ = io_bridge_result.io_bridge_id_;
-
-            PSS_LOGGER_DEBUG("[CUdpClientSession::regedit_bridge_session_id]connect_id={} IO_BRIDGE_BATH, io_bridge_connect_id:{},the bridge is set successfully.",
-                connect_id_, io_bridge_connect_id_);
-
-            //如果桥接成立，设置对端的桥接地址
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(io_bridge_connect_id_,
-                connect_id_);
-        }
-        else if (io_bridge_result.io_bridge_id_ > 0
-            && io_bridge_result.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_FROM)
-        {
-            //如果是单向的，看看朝向
-            if (io_bridge_result.io_bridge_id_ == io_bridge_result.io_from_id_)
-            {
-                //如果是相同朝向的，设置自己的对端透传ID
-                io_bridge_connect_id_ = io_bridge_result.io_bridge_id_;
-
-                PSS_LOGGER_DEBUG("[CUdpClientSession::regedit_bridge_session_id]connect_id={} ID from, io_bridge_connect_id:{},the bridge is set successfully.",
-                    connect_id_, io_bridge_connect_id_);
-            }
-            else
-            {
-                //如果是对端,当前链接建立后，需要设置对端可以透传。
-                io_bridge_connect_id_ = 0;
-
-                //如果桥接成立，设置对端的桥接地址
-                App_WorkThreadLogic::instance()->set_io_bridge_connect_id(io_bridge_result.io_from_id_,
-                    io_bridge_result.io_to_id_);
-
-                PSS_LOGGER_DEBUG("[CUdpClientSession::regedit_bridge_session_id]connect_id={} ID to, io_bridge_connect_id:{},the bridge is set successfully.",
-                    connect_id_, io_bridge_connect_id_);
-            }
-        }
+        need_io_bridge(remote_ip);
     }
     return;
 }

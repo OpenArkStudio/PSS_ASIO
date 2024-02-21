@@ -76,6 +76,8 @@ public:
 
     void set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id) final;
 
+    void need_io_bridge(const uint32& connect_id, const _ClientIPInfo& remote_ip, shared_ptr<CUdp_Session_Info>& session_info);
+
 private:
     void close_server();
 

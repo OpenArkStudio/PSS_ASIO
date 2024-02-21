@@ -78,7 +78,7 @@ void CIoBridge::unregedit_bridge_session_id(const _ClientIPInfo& from_io, EM_CON
     return iotoio_.unregedit_bridge_session_id(from_io, io_type);
 }
 
-Cio_bridge_result CIoBridge::get_to_session_id(uint32 session_id, const _ClientIPInfo& from_io)
+CIo_Bridge_Result CIoBridge::get_to_session_id(uint32 session_id, const _ClientIPInfo& from_io)
 {
     return iotoio_.get_to_session_id(session_id, from_io);
 }
