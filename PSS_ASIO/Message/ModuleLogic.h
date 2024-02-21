@@ -155,7 +155,7 @@ public:
 
     void regedit_bridge_session_id(uint32 connect_id) const;
 
-    bool set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id, ENUM_IO_BRIDGE_TYPE io_type);
+    bool set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id);
 
     int do_io_bridge_data(uint32 connect_id, uint32 io_bridge_connect_id_, CSessionBuffer& session_recv_buffer, std::size_t length, shared_ptr<ISession> session);
 

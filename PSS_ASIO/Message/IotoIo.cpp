@@ -159,50 +159,24 @@ void CIotoIo::unregedit_bridge_session_id(const _ClientIPInfo& from_io, EM_CONNE
     }
 }
 
-uint32 CIotoIo::get_to_session_id(uint32 session_id, const _ClientIPInfo& from_io)
+Cio_bridge_result CIotoIo::get_to_session_id(uint32 session_id, const _ClientIPInfo& from_io)
 {
     std::lock_guard <std::mutex> lock(mutex_);
+    Cio_bridge_result io_bridge_result;
+
     for (const auto& s_2_s : session_to_session_list_)
     {
-        if (s_2_s.from_session_id_ == session_id 
-            && (s_2_s.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_FROM || s_2_s.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH))
+        if (s_2_s.from_session_id_ == session_id || s_2_s.to_session_id_ == session_id)
         {
-            return get_endpoint_session_id(session_id, from_io, s_2_s);
-        }
-        
-        if (s_2_s.to_session_id_ == session_id
-            &&(s_2_s.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_TO || s_2_s.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH))
-        {
-            return get_endpoint_session_id(session_id, from_io, s_2_s);
+            io_bridge_result.io_bridge_id_ = get_endpoint_session_id(session_id, from_io, s_2_s);
+            io_bridge_result.io_from_id_ = s_2_s.from_session_id_;
+            io_bridge_result.io_to_id_ = s_2_s.to_session_id_;
+            io_bridge_result.bridge_type_ = s_2_s.bridge_type_;
+            break;
         }
     }
 
-    return 0;
-}
-
-ENUM_IO_BRIDGE_TYPE CIotoIo::find_io_bridge_type(uint32 session_id)
-{
-    std::lock_guard <std::mutex> lock(mutex_);
- 
-    //查找对应session的桥接类型
-    for (const auto& s_2_s : session_to_session_list_)
-    {
-        if (s_2_s.from_session_id_ == session_id)
-        {
-            return s_2_s.bridge_type_;
-        }
-
-        if (s_2_s.to_session_id_ == session_id)
-        {
-            return s_2_s.bridge_type_;
-        }
-        else
-        {
-            return ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_NONE;
-        }
-    }
-
-    return ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_NONE;
+    return io_bridge_result;
 }
 
 CIo_Connect_Info CIotoIo::find_io_to_io_session_info(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE& from_io_type)

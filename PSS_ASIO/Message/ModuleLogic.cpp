@@ -664,18 +664,11 @@ uint32 CWorkThreadLogic::get_curr_thread_logic_id() const
     return App_tms::instance()->GetLogicThreadID();
 }
 
-bool CWorkThreadLogic::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id, ENUM_IO_BRIDGE_TYPE io_type)
+bool CWorkThreadLogic::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id)
 {
     if (thread_count_ == 0 || thread_module_list_.empty())
     {
         return false;
-    }
-
-    //查看桥接类型是不是单向的，如果是，则继续设置对端桥接
-    if (io_type != ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH)
-    {
-        return false;
-            
     }
 
     auto curr_post_thread_index = from_io_connect_id % thread_count_;

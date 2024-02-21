@@ -7,6 +7,15 @@
 #include "spdlog/fmt/fmt.h"
 #include "IIoBridge.hpp"
 
+class Cio_bridge_result
+{
+public:
+    uint32 io_bridge_id_             = 0;    //对端的id
+    uint32 io_from_id_               = 0;    //从的id
+    uint32 io_to_id_                 = 0;    //去的id
+    ENUM_IO_BRIDGE_TYPE bridge_type_ = ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_NONE;
+};
+
 class CIo_Connect_Info
 {
 public:
@@ -50,13 +59,11 @@ public:
 
     void unregedit_bridge_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type);
 
-    uint32 get_to_session_id(uint32 session_id, const _ClientIPInfo& from_io);
+    Cio_bridge_result get_to_session_id(uint32 session_id, const _ClientIPInfo& from_io);
 
     CIo_Connect_Info find_io_to_io_session_info(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE& from_io_type);
 
     const CIo_Connect_Info* find_io_to_io_list(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE& from_io_type);
-
-    ENUM_IO_BRIDGE_TYPE find_io_bridge_type(uint32 session_id);
 private:
     uint32 get_endpoint_session_id(uint32 session_id, const _ClientIPInfo& from_io, const CIo_Connect_Info& s_2_s);
 
