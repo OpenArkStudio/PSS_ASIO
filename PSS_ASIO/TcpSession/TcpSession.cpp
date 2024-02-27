@@ -106,12 +106,11 @@ void CTcpSession::close_immediaterly()
             PSS_LOGGER_DEBUG("[CTcpSession::close]connect_id={0}, recv:{1}, send:{2} io_send_count:{3}",
                 self->connect_id_, recv_data_size, send_data_size, io_send_count);
 
-            self->socket_.close();
-
             //断开连接
             self->packet_parse_interface_->packet_disconnect_ptr_(self->connect_id_, io_type, App_IoBridge::instance());
 
             App_WorkThreadLogic::instance()->delete_thread_session(self->connect_id_, self);
+            self->socket_.close();
         });
 }
 

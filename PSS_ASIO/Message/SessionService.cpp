@@ -147,8 +147,6 @@ bool CSessionService::add_session_io_mapping(const _ClientIPInfo& from_io, EM_CO
 {
     auto ret = App_IoBridge::instance()->add_session_io_mapping(from_io, from_io_type, to_io, to_io_type, bridge_type);
 
-
-
     return ret;
 }
 

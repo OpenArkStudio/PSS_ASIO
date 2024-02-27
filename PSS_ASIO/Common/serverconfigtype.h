@@ -16,7 +16,6 @@ public:
     int work_timeout_seconds_ = 60;
     int s2s_timeout_seconds_ = 60;
     int client_connect_timeout_ = 0;
-    int io_send_time_check_ = 0;
     int logic_thread_bind_cpu_ = 0;   //0为不绑定CPU，1为绑定
 };
 

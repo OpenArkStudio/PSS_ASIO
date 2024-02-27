@@ -23,12 +23,6 @@ void CTcpSSLSession::open(uint32 packet_parse_id, uint32 recv_size)
     local_ip_.m_u2Port = ssl_socket_.lowest_layer().local_endpoint().port();
     packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip_, local_ip_, io_type_, App_IoBridge::instance());
 
-    //添加点对点映射
-    if (true == App_IoBridge::instance()->regedit_bridge_session_id(remote_ip_, io_type_, connect_id_))
-    {
-        io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
-    }
-
     //加入session 映射
     App_WorkThreadLogic::instance()->add_thread_session(connect_id_, shared_from_this(), local_ip_, remote_ip_);
 
@@ -54,8 +48,6 @@ void CTcpSSLSession::close(uint32 connect_id)
 
     io_context_->dispatch([self, connect_id, io_type, remote_ip, recv_data_size, send_data_size, io_send_count]()
         {
-            self->ssl_socket_.lowest_layer().close();
-
             //输出接收发送字节数
             PSS_LOGGER_DEBUG("[CTcpSession::Close]recv:{0}, send:{1} io_send_count:{2}", recv_data_size, send_data_size, io_send_count);
 
@@ -63,6 +55,7 @@ void CTcpSSLSession::close(uint32 connect_id)
             self->packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type, App_IoBridge::instance());
 
             App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
+            self->ssl_socket_.lowest_layer().close();
         });
 }
 

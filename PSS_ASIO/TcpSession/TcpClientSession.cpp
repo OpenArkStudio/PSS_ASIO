@@ -63,8 +63,6 @@ void CTcpClientSession::close(uint32 connect_id)
 
     //放到收发线程去处理
     io_context_->dispatch([self, connect_id, recv_data_size, send_data_size, io_type, remote_ip]() {
-        self->socket_.close();
-
         //输出接收发送字节数
         PSS_LOGGER_DEBUG("[CTcpClientSession::Close]recv:{0}, send:{1}", recv_data_size, send_data_size);
 
@@ -73,6 +71,7 @@ void CTcpClientSession::close(uint32 connect_id)
 
         //发送链接断开消息
         App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
+        self->socket_.close();
         });
 
 }

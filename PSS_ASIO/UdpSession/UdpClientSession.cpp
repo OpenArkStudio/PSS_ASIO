@@ -89,13 +89,6 @@ void CUdpClientSession::close(uint32 connect_id)
 
     io_context_->dispatch([self, connect_id, io_type]()
         {
-            //删除映射关系
-            _ClientIPInfo remote_ip;
-            remote_ip.m_strClientIP = self->send_endpoint_.address().to_string();
-            remote_ip.m_u2Port = self->send_endpoint_.port();
-
-            self->socket_.close();
-
             self->packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type, App_IoBridge::instance());
 
             //输出接收发送字节数
@@ -104,6 +97,7 @@ void CUdpClientSession::close(uint32 connect_id)
                 self->send_data_size_);
 
             App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
+            self->socket_.close();
         });
 }
 

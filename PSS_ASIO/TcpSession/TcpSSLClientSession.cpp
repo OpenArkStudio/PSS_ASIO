@@ -76,8 +76,6 @@ void CTcpSSLClientSession::close(uint32 connect_id)
 
     io_context_->dispatch([self, connect_id, io_type, remote_ip, recv_data_size, send_data_size]() 
         {
-            self->ssl_socket_.lowest_layer().close();
-
             //输出接收发送字节数
             PSS_LOGGER_DEBUG("[CTcpSSLClientSession::Close]recv:{0}, send:{1}", recv_data_size, send_data_size);
 
@@ -86,6 +84,8 @@ void CTcpSSLClientSession::close(uint32 connect_id)
 
             //发送链接断开消息
             App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
+
+            self->ssl_socket_.lowest_layer().close();
         });
 }
 
@@ -343,12 +343,6 @@ void CTcpSSLClientSession::handshake()
                 PSS_LOGGER_DEBUG("[CTcpSSLClientSession::start]local({0}:{1})", self->local_ip_.m_strClientIP, self->local_ip_.m_u2Port);
 
                 self->packet_parse_interface_->packet_connect_ptr_(self->connect_id_, self->remote_ip_, self->local_ip_, self->io_type_, App_IoBridge::instance());
-
-                //添加点对点映射
-                if (true == App_IoBridge::instance()->regedit_bridge_session_id(self->remote_ip_, self->io_type_, self->connect_id_))
-                {
-                    self->io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
-                }
 
                 //添加映射关系
                 App_WorkThreadLogic::instance()->add_thread_session(self->connect_id_, self, self->local_ip_, self->remote_ip_);
