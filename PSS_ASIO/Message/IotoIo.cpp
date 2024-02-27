@@ -23,15 +23,8 @@ bool CIotoIo::add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO
 
     io_2_io_list_.emplace_back(connect_info);
 
-    //查找当前链接是否存在了
-    auto from_session_id = get_regedit_bridge_session_id(from_io, from_io_type);
-    auto to_session_id = get_regedit_bridge_session_id(to_io, to_io_type);
-
-    if (from_session_id > 0 && to_session_id > 0)
-    {
-        //建立连接关系
-        session_to_session_list_.emplace_back(connect_info);
-    }
+    //这里需要注意，在add的时候，可能链接已经存在了，
+    //这时候要在外面把这个链接信息注册到里面去。完成桥接。
 
     return true;
 }
@@ -40,6 +33,7 @@ bool CIotoIo::delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT
 {
     //删除对应的点对点透传关系
     std::lock_guard <std::mutex> lock(mutex_);
+    std::vector<CIo_Connect_Info> io_connect_info_list;
     
     int connect_pos = 0;
     bool is_break = false;
@@ -48,6 +42,7 @@ bool CIotoIo::delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT
         if (true == compare_connect_io(from_io, from_io_type, io_connect.from_io_, io_connect.from_io_type_))
         {
             //找到了，删除之
+            io_connect_info_list.emplace_back(io_connect);
             io_2_io_list_.erase(io_2_io_list_.begin() + connect_pos);
             is_break = true;
         }
@@ -66,6 +61,7 @@ bool CIotoIo::delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT
     {
         if (true == compare_connect_io(from_io, from_io_type, io_connect.to_io_, io_connect.to_io_type_))
         {
+            io_connect_info_list.emplace_back(io_connect);
             io_2_io_list_.erase(io_2_io_list_.begin() + connect_pos);
             is_break = true;
         }
@@ -78,181 +74,136 @@ bool CIotoIo::delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT
         connect_pos++;
     }
 
-    delete_session_list(from_io, from_io_type);
-    delete_connect_list(from_io, from_io_type);
+    //取消桥接
+    for (const auto& io_connect_info : io_connect_info_list)
+    {
+        unlink_io_bridge(io_connect_info);
+    }
 
     return true;
 }
 
-bool CIotoIo::regedit_bridge_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type, uint32 session_id)
+void CIotoIo::link_io_bridge(const CIo_Connect_Info& io_connect_info)
+{
+    if (io_connect_info.from_session_id_ > 0 && io_connect_info.to_session_id_ > 0)
+    {
+        //如果两个链接都有，则需要根据类型来判定
+        if (io_connect_info.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH)
+        {
+            //需要两个都设置桥接
+            io_connect_info.from_session_->set_io_bridge_connect_id(io_connect_info.from_session_id_, io_connect_info.to_session_id_);
+            io_connect_info.to_session_->set_io_bridge_connect_id(io_connect_info.to_session_id_, io_connect_info.from_session_id_);
+            PSS_LOGGER_DEBUG("[CIotoIo::link_io_bridge]from_id={}, to_id={} IO_BRIDGE_BATH is bridge.", 
+                io_connect_info.from_session_id_,
+                io_connect_info.to_session_id_);
+        }
+        else if (io_connect_info.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_FROM)
+        {
+            //需要设置from
+            io_connect_info.from_session_->set_io_bridge_connect_id(io_connect_info.from_session_id_, io_connect_info.to_session_id_);
+            PSS_LOGGER_DEBUG("[CIotoIo::link_io_bridge]from_id={}, to_id={} IO_BRIDGE_FROM is bridge.",
+                io_connect_info.from_session_id_,
+                io_connect_info.to_session_id_);
+        }
+        else if (io_connect_info.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_TO)
+        {
+            //需要设置to
+            io_connect_info.to_session_->set_io_bridge_connect_id(io_connect_info.to_session_id_, io_connect_info.from_session_id_);
+            PSS_LOGGER_DEBUG("[CIotoIo::link_io_bridge]from_id={}, to_id={} IO_BRIDGE_TO is bridge.",
+                io_connect_info.from_session_id_,
+                io_connect_info.to_session_id_);
+        }
+    }
+}
+
+void CIotoIo::regedit_bridge_session_info(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type, uint32 session_id, std::shared_ptr<ISession> from_session)
 {
     std::lock_guard <std::mutex> lock(mutex_);
-    auto from_io_key = get_connect_list_key(from_io, io_type);
-    connect_list_[from_io_key] = session_id;
-    bool is_find = false;
-    bool has_find = false;
+    std::vector<CIo_Connect_Info> io_connect_info_list;
 
     //寻找链接是否已经存在
     for (auto& io_connect : io_2_io_list_)
     {
-        is_find = false;
+        //先比较from是否存在，存在则放入列表
         if (true == compare_connect_io(io_connect.from_io_, io_connect.from_io_type_, from_io, io_type))
         {
             io_connect.from_session_id_ = session_id;
-            is_find = true;
+            io_connect.from_session_ = from_session;
+            io_connect_info_list.push_back(io_connect);
         }
 
+        //先比较to是否存在，存在则放入列表
         if (true == compare_connect_io(io_connect.to_io_, io_connect.to_io_type_, from_io, io_type))
         {
             io_connect.to_session_id_ = session_id;
-            is_find = true;
-        }
-        
-        if (io_connect.from_session_id_ > 0 && io_connect.to_session_id_ > 0 && is_find)
-        {
-            //建立连接关系
-            session_to_session_list_.emplace_back(io_connect);
-            has_find = is_find;
+            io_connect.to_session_ = from_session;
+            io_connect_info_list.push_back(io_connect);
         }
     }
 
-    return has_find;
+    //如果有则返回找到了，设置桥接
+    for (const auto& io_connect_info : io_connect_info_list)
+    {
+        link_io_bridge(io_connect_info);
+    }
 }
 
-void CIotoIo::unregedit_bridge_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type)
+void CIotoIo::unlink_io_bridge(const CIo_Connect_Info& io_connect_info)
+{
+    if (io_connect_info.from_session_id_ > 0 && io_connect_info.to_session_id_ > 0)
+    {
+        //如果两个链接都有，则需要根据类型来判定
+        if (io_connect_info.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH)
+        {
+            //需要两个都设置桥接
+            io_connect_info.from_session_->set_io_bridge_connect_id(io_connect_info.from_session_id_, 0);
+            io_connect_info.to_session_->set_io_bridge_connect_id(io_connect_info.to_session_id_, 0);
+        }
+        else if (io_connect_info.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_FROM)
+        {
+            //需要设置from
+            io_connect_info.from_session_->set_io_bridge_connect_id(io_connect_info.from_session_id_, 0);
+        }
+        else if (io_connect_info.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_TO)
+        {
+            //需要设置to
+            io_connect_info.to_session_->set_io_bridge_connect_id(io_connect_info.to_session_id_, 0);
+        }
+    }
+}
+
+void CIotoIo::unregedit_bridge_session_info(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type, uint32 session_id)
 {
     std::lock_guard <std::mutex> lock(mutex_);
-    //链接失效
-    auto from_io_key = get_connect_list_key(from_io, io_type);
+    std::vector<CIo_Connect_Info> io_connect_info_list;
 
-    auto f = connect_list_.find(from_io_key);
-    if (f != connect_list_.end())
+    //删除对应的链接
+    for (auto& io_connect : io_2_io_list_)
     {
-        //删除链接消息
-        auto session_id = f->second;
-        connect_list_.erase(from_io_key);
-
-        //寻找配置消息
-        bool is_break = false;
-        for (auto& connect_info : io_2_io_list_)
+        //先比较from是否存在，存在则放入列表
+        if (true == compare_connect_io(io_connect.from_io_, io_connect.from_io_type_, from_io, io_type))
         {
-            if (connect_info.from_session_id_ == session_id)
-            {
-                connect_info.from_session_id_ = 0;
-                is_break = true;
-            }
-
-            if (is_break == false && connect_info.to_session_id_ == session_id)
-            {
-                connect_info.to_session_id_ = 0;
-                is_break = true;
-            }
-
-            if (true == is_break)
-            {
-                break;
-            }
+            io_connect_info_list.push_back(io_connect);
+            //删除对应桥接信息
+            io_connect.from_session_id_ = 0;
+            io_connect.from_session_ = nullptr;
         }
 
-        //清理链接失败信息
-        delete_session_list(from_io, io_type);
-    }
-}
-
-CIo_Bridge_Result CIotoIo::get_to_session_id(uint32 session_id, const _ClientIPInfo& from_io)
-{
-    std::lock_guard <std::mutex> lock(mutex_);
-    CIo_Bridge_Result io_bridge_result;
-
-    for (const auto& s_2_s : session_to_session_list_)
-    {
-        if (s_2_s.from_session_id_ == session_id || s_2_s.to_session_id_ == session_id)
+        //先比较to是否存在，存在则放入列表
+        if (true == compare_connect_io(io_connect.to_io_, io_connect.to_io_type_, from_io, io_type))
         {
-            io_bridge_result.io_bridge_id_ = get_endpoint_session_id(session_id, from_io, s_2_s);
-            io_bridge_result.io_from_id_ = s_2_s.from_session_id_;
-            io_bridge_result.io_to_id_ = s_2_s.to_session_id_;
-            io_bridge_result.bridge_type_ = s_2_s.bridge_type_;
-            break;
+            io_connect_info_list.push_back(io_connect);
+            //删除对应桥接信息
+            io_connect.to_session_id_ = 0;
+            io_connect.to_session_ = nullptr;
         }
     }
 
-    return io_bridge_result;
-}
-
-CIo_Connect_Info CIotoIo::find_io_to_io_session_info(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE& from_io_type)
-{
-    std::lock_guard <std::mutex> lock(mutex_);
-    for (auto& s_2_s : session_to_session_list_)
+    //取消桥接
+    for (const auto& io_connect_info : io_connect_info_list)
     {
-        if (s_2_s.from_io_ == from_io && s_2_s.from_io_type_ == from_io_type)
-        {
-            return s_2_s;
-        }
-
-        if (s_2_s.to_io_ == from_io && s_2_s.to_io_type_ == from_io_type)
-        {
-            return s_2_s;
-        }
+        unlink_io_bridge(io_connect_info);
     }
-
-    CIo_Connect_Info connect_info;
-    return connect_info;
-}
-
-const CIo_Connect_Info* CIotoIo::find_io_to_io_list(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE& from_io_type)
-{
-    std::lock_guard <std::mutex> lock(mutex_);
-    for (const auto& s_2_s : io_2_io_list_)
-    {
-        if (s_2_s.from_io_ == from_io && s_2_s.from_io_type_ == from_io_type)
-        {
-            return &s_2_s;
-        }
-
-        if (s_2_s.to_io_ == from_io && s_2_s.to_io_type_ == from_io_type)
-        {
-            return &s_2_s;
-        }
-    }
-
-    return nullptr;
-}
-
-uint32 CIotoIo::get_endpoint_session_id(uint32 session_id, const _ClientIPInfo& from_io, const CIo_Connect_Info& s_2_s)
-{
-    if (s_2_s.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH)
-    {
-        if (session_id == s_2_s.from_session_id_)
-        {
-            return s_2_s.to_session_id_;
-        }
-        else if (session_id == s_2_s.to_session_id_)
-        {
-            return s_2_s.from_session_id_;
-        }
-        else
-        {
-            return 0;
-        }
-    }
-    else if (s_2_s.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_FROM)
-    {
-        //判断两个IP是否相等
-        if (from_io == s_2_s.from_io_)
-        {
-            return s_2_s.to_session_id_;
-        }
-    }
-    else
-    {
-        //判断两个IP是否相等
-        if (from_io == s_2_s.to_io_)
-        {
-            return s_2_s.from_session_id_;
-        }
-    }
-
-    return 0;
 }
 
 bool CIotoIo::compare_connect_io(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type, const _ClientIPInfo& target_io, EM_CONNECT_IO_TYPE target_io_type) const
@@ -269,67 +220,5 @@ bool CIotoIo::compare_connect_io(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYP
     }
 }
 
-uint32 CIotoIo::get_regedit_bridge_session_id(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type)
-{
-    auto from_io_key = get_connect_list_key(from_io, io_type);
-
-    auto f = connect_list_.find(from_io_key);
-    if (f == connect_list_.end())
-    {
-        //没有找到在线的
-        return 0;
-    }
-    else
-    {
-        //找到了在线的
-        return f->second;
-    }
-}
-
-std::string CIotoIo::get_connect_list_key(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type) const
-{
-    std::string from_io_key;
-
-    if (io_type == EM_CONNECT_IO_TYPE::CONNECT_IO_TCP)
-    {
-        from_io_key = fmt::format("{0}:{1} TCP", from_io.m_strClientIP, from_io.m_u2Port);
-    }
-    else if (io_type == EM_CONNECT_IO_TYPE::CONNECT_IO_UDP)
-    {
-        from_io_key = fmt::format("{0}:{1} UDP", from_io.m_strClientIP, from_io.m_u2Port);
-    }
-    else
-    {
-        from_io_key = fmt::format("{0}:{1} TTY", from_io.m_strClientIP, from_io.m_u2Port);
-    }
-
-    return from_io_key;
-}
-
-void CIotoIo::delete_session_list(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type)
-{
-    int session_list_pos = 0;
-    for (auto s_2_s : session_to_session_list_)
-    {
-        if (s_2_s.from_io_ == from_io && s_2_s.from_io_type_ == io_type)
-        {
-            session_to_session_list_.erase(session_to_session_list_.begin() + session_list_pos);
-            break;
-        }
-        session_list_pos++;
-    }
-}
-
-void CIotoIo::delete_connect_list(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type)
-{
-    auto from_io_key = get_connect_list_key(from_io, io_type);
-
-    auto f = connect_list_.find(from_io_key);
-    if (f != connect_list_.end())
-    {
-        //删除链接消息
-        connect_list_.erase(from_io_key);
-    }
-}
 
 

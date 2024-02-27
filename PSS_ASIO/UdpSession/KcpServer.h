@@ -112,8 +112,6 @@ public:
 
     uint32 get_connect_id() final; 
 
-    void regedit_bridge_session_id(uint32 connect_id = 0) final;
-
     std::chrono::steady_clock::time_point& get_recv_time(uint32 connect_id = 0) final;
 
     void set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id) final;
@@ -125,8 +123,6 @@ public:
     bool is_kcp_id_create(const char* kcp_data, uint32 kcp_size) const;
 
     udp::endpoint get_kcp_send_endpoint() const;
-
-    void need_io_bridge(const uint32& connect_id, const _ClientIPInfo& remote_ip);
 
 private:
     void do_receive();

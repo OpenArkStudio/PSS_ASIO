@@ -182,9 +182,6 @@ void CBaseCommand::logic_connect(const CMessage_Source& source, std::shared_ptr<
     if (source.type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_TCP)
     {
         PSS_LOGGER_DEBUG("[logic_connect]connectid={}, CONNECT_IO_TCP", source.connect_id_);
-#ifdef GCOV_TEST
-        session_service_->regedit_bridge_session_id(source.connect_id_);
-#endif
     }
     else if (source.type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_UDP)
     {

@@ -145,7 +145,11 @@ std::string CSessionService::do_plugin_api(const std::string& api_name, const st
 
 bool CSessionService::add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type, const _ClientIPInfo& to_io, EM_CONNECT_IO_TYPE to_io_type, ENUM_IO_BRIDGE_TYPE bridge_type /*= ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH*/)
 {
-    return App_IoBridge::instance()->add_session_io_mapping(from_io, from_io_type, to_io, to_io_type, bridge_type);
+    auto ret = App_IoBridge::instance()->add_session_io_mapping(from_io, from_io_type, to_io, to_io_type, bridge_type);
+
+
+
+    return ret;
 }
 
 bool CSessionService::delete_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type)
@@ -197,20 +201,6 @@ uint32 CSessionService::get_connect_id(uint32 server_id)
     }
 
     return App_WorkThreadLogic::instance()->get_connect_id(server_id);
-}
-
-void CSessionService::regedit_bridge_session_id(uint32 connect_id)
-{
-    if(connect_id == 0)
-    {
-        PSS_LOGGER_WARN("[CSessionService::regedit_bridge_session_id]connect_id must over 0, regedit_bridge_session_id fail.");
-        return;
-    }
-    else
-    {
-        App_WorkThreadLogic::instance()->regedit_bridge_session_id(connect_id);
-        return;
-    }
 }
 
 void CSessionService::start_single_service(const CConfigNetIO& netio)

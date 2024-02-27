@@ -8,6 +8,7 @@
 #include "IotoIo.h"
 #include "CoreTimer.hpp"
 #include "SessionBuffer.hpp"
+#include "Iobridge.h"
 
 //根据线程的逻辑插件处理模块
 //add by freeeyes
@@ -152,8 +153,6 @@ public:
     uint32 get_curr_thread_logic_id() const;
 
     uint32 get_connect_id(uint32 server_id) const;
-
-    void regedit_bridge_session_id(uint32 connect_id) const;
 
     bool set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id);
 

@@ -11,7 +11,6 @@
 #include "SessionBuffer.hpp"
 #include "LoadPacketParse.h"
 #include "ISession.h"
-#include "Iobridge.h"
 #include "ModuleLogic.h"
 #include "ConnectCounter.h"
 
@@ -42,8 +41,6 @@ public:
 
     uint32 get_connect_id() final;
 
-    void regedit_bridge_session_id(uint32 connect_id = 0) final;
-
     std::chrono::steady_clock::time_point& get_recv_time(uint32 connect_id = 0) final;
 
     bool format_send_packet(uint32 connect_id, std::shared_ptr<CMessage_Packet> message, std::shared_ptr<CMessage_Packet> format_message) final;
@@ -63,8 +60,6 @@ public:
     void send_write_fail_to_logic(const std::string& write_fail_buffer, std::size_t buffer_length);
 
     void do_write_finish(const std::error_code& ec, uint32 connect_id, std::shared_ptr<CSendBuffer> send_buffer, std::size_t length);
-
-    void need_io_bridge();
 
 private:
     tcp::socket socket_;

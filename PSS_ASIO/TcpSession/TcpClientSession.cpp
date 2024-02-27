@@ -61,9 +61,6 @@ void CTcpClientSession::close(uint32 connect_id)
     EM_CONNECT_IO_TYPE io_type = io_type_;
     _ClientIPInfo remote_ip = remote_ip_;
 
-    //清除点对点转发消息映射
-    App_IoBridge::instance()->unregedit_bridge_session_id(remote_ip, io_type_);
-
     //放到收发线程去处理
     io_context_->dispatch([self, connect_id, recv_data_size, send_data_size, io_type, remote_ip]() {
         self->socket_.close();
@@ -210,23 +207,6 @@ uint32 CTcpClientSession::get_connect_id()
     return connect_id_;
 }
 
-void CTcpClientSession::regedit_bridge_session_id(uint32 connect_id)
-{
-    PSS_UNUSED_ARG(connect_id);
-    if (EM_SESSION_STATE::SESSION_IO_BRIDGE != io_state_)
-    {
-        //添加点对点映射
-        if (true == App_IoBridge::instance()->regedit_bridge_session_id(remote_ip_, io_type_, connect_id_))
-        {
-            io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
-        }
-
-        //查看这个链接是否有桥接信息
-        need_io_bridge();
-    }
-    return;
-}
-
 std::chrono::steady_clock::time_point& CTcpClientSession::get_recv_time(uint32 connect_id)
 {
     PSS_UNUSED_ARG(connect_id);
@@ -320,50 +300,6 @@ void CTcpClientSession::do_read_some(std::error_code ec, std::size_t length)
     }
 }
 
-void CTcpClientSession::need_io_bridge()
-{
-    auto io_bridge_result = App_IoBridge::instance()->get_to_session_id(connect_id_, remote_ip_);
-
-    //对不同类型进行点对点透传进行单独判定
-    if (io_bridge_result.io_bridge_id_ > 0
-        && io_bridge_result.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH)
-    {
-        io_bridge_connect_id_ = io_bridge_result.io_bridge_id_;
-
-        PSS_LOGGER_DEBUG("[CTcpClientSession::need_io_bridge]connect_id={} IO_BRIDGE_BATH, io_bridge_connect_id:{},the bridge is set successfully.",
-            connect_id_, io_bridge_connect_id_);
-
-        //如果桥接成立，设置对端的桥接地址
-        App_WorkThreadLogic::instance()->set_io_bridge_connect_id(io_bridge_connect_id_,
-            connect_id_);
-    }
-    else if (io_bridge_result.io_bridge_id_ > 0
-        && io_bridge_result.bridge_type_ == ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_FROM)
-    {
-        //如果是单向的，看看朝向
-        if (io_bridge_result.io_bridge_id_ == io_bridge_result.io_from_id_)
-        {
-            //如果是相同朝向的，设置自己的对端透传ID
-            io_bridge_connect_id_ = io_bridge_result.io_bridge_id_;
-
-            PSS_LOGGER_DEBUG("[CTcpClientSession::need_io_bridge]connect_id={} ID from, io_bridge_connect_id:{},the bridge is set successfully.",
-                connect_id_, io_bridge_connect_id_);
-        }
-        else
-        {
-            //如果是对端,当前链接建立后，需要设置对端可以透传。
-            io_bridge_connect_id_ = 0;
-
-            //如果桥接成立，设置对端的桥接地址
-            App_WorkThreadLogic::instance()->set_io_bridge_connect_id(io_bridge_result.io_from_id_,
-                io_bridge_result.io_to_id_);
-
-            PSS_LOGGER_DEBUG("[CTcpClientSession::need_io_bridge]connect_id={} ID to, io_bridge_connect_id:{},the bridge is set successfully.",
-                connect_id_, io_bridge_connect_id_);
-        }
-    }
-}
-
 void CTcpClientSession::handle_connect(const asio::error_code& ec, tcp::resolver::results_type::iterator endpoint_iter)
 {
     if (!ec)
@@ -387,15 +323,6 @@ void CTcpClientSession::handle_connect(const asio::error_code& ec, tcp::resolver
             local_ip_.m_u2Port);
 
         packet_parse_interface_->packet_connect_ptr_(connect_id_, remote_ip_, local_ip_, io_type_, App_IoBridge::instance());
-
-        //添加点对点映射
-        if (true == App_IoBridge::instance()->regedit_bridge_session_id(remote_ip_, io_type_, connect_id_))
-        {
-            io_state_ = EM_SESSION_STATE::SESSION_IO_BRIDGE;
-        }
-
-        //查看这个链接是否有桥接信息
-        need_io_bridge();
 
 #ifdef GCOV_TEST
         //测试发送写入失败回调消息

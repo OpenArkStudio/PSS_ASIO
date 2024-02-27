@@ -313,6 +313,9 @@ void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession
     //必须在IO线程里注册链接信息
     module_logic->add_session(connect_id, session, local_info, romote_info);
 
+    //看看是否需要桥接逻辑
+    App_IoBridge::instance()->regedit_bridge_session_info(romote_info, session->get_io_type(), connect_id, session);
+
     //向插件告知链接建立消息
     App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, module_logic, local_info, romote_info]() {
         CMessage_Source source;
@@ -358,6 +361,11 @@ void CWorkThreadLogic::delete_thread_session(uint32 connect_id, shared_ptr<ISess
 
     //回收链接
     module_logic->delete_session_interface(connect_id);
+
+    //看看是否需要取消桥接逻辑
+    App_IoBridge::instance()->unregedit_bridge_session_info(session->get_remote_ip(connect_id), 
+        session->get_io_type(), 
+        connect_id);
 
     auto io_type = session->get_io_type();
 
@@ -784,17 +792,6 @@ uint32 CWorkThreadLogic::get_connect_id(uint32 server_id) const
     {
         PSS_LOGGER_ERROR("[CWorkThreadLogic::get_connect_id]server_id={0} is not exist.",server_id);
         return 0;
-    }
-}
-
-void CWorkThreadLogic::regedit_bridge_session_id(uint32 connect_id) const
-{
-    uint16 curr_thread_index = connect_id % thread_count_;
-    auto module_logic = thread_module_list_[curr_thread_index];
-    auto session = module_logic->get_session_interface(connect_id);
-    if (session != nullptr)
-    {
-        session->regedit_bridge_session_id(connect_id);
     }
 }
 
