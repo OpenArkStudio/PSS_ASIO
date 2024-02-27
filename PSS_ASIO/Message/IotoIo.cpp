@@ -226,14 +226,11 @@ int CIotoIo::check_io_mapping(const CIo_Connect_Info& connect_info)
             return 1;
         }
 
-        if (ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH == connect_info.bridge_type_)
+        if (true == compare_connect_io(connect_info.to_io_, connect_info.to_io_type_, Connect_Info.from_io_, Connect_Info.from_io_type_))
         {
-            if (true == compare_connect_io(connect_info.to_io_, connect_info.to_io_type_, Connect_Info.from_io_, Connect_Info.from_io_type_))
-            {
-                //点对点链接已存在，不能添加
-                PSS_LOGGER_WARN("[CIotoIo::check_io_mapping]io mapping loop,to_io={}:{} is exist.", connect_info.to_io_.m_strClientIP, connect_info.to_io_.m_u2Port);
-                return 2;
-            }
+            //点对点链接已存在，不能添加
+            PSS_LOGGER_WARN("[CIotoIo::check_io_mapping]io mapping loop,to_io={}:{} is exist.", connect_info.to_io_.m_strClientIP, connect_info.to_io_.m_u2Port);
+            return 2;
         }
     }
 
