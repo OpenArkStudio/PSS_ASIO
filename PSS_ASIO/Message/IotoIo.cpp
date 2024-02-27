@@ -3,17 +3,6 @@
 bool CIotoIo::add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE from_io_type, const _ClientIPInfo& to_io, EM_CONNECT_IO_TYPE to_io_type, ENUM_IO_BRIDGE_TYPE bridge_type)
 {
     std::lock_guard <std::mutex> lock(mutex_);
-    for (const auto& Connect_Info : io_2_io_list_)
-    {
-        if (true == compare_connect_io(from_io, from_io_type, Connect_Info.from_io_, Connect_Info.from_io_type_))
-        {
-            //点对点链接已存在，不能添加
-            PSS_LOGGER_DEBUG("[CIotoIo::add_session_io_mapping]from_io={}:{} is exist.", from_io.m_strClientIP, from_io.m_u2Port);
-            return false;
-        }
-    }
-
-    //添加新的映射
     CIo_Connect_Info connect_info;
     connect_info.from_io_ = from_io;
     connect_info.from_io_type_ = from_io_type;
@@ -21,6 +10,12 @@ bool CIotoIo::add_session_io_mapping(const _ClientIPInfo& from_io, EM_CONNECT_IO
     connect_info.to_io_type_ = to_io_type;
     connect_info.bridge_type_ = bridge_type;
 
+    if(0 != this->check_io_mapping(connect_info))
+    {
+        return false;
+    }
+
+    //添加新的映射
     io_2_io_list_.emplace_back(connect_info);
 
     //这里需要注意，在add的时候，可能链接已经存在了，
@@ -220,5 +215,29 @@ bool CIotoIo::compare_connect_io(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYP
     }
 }
 
+int CIotoIo::check_io_mapping(const CIo_Connect_Info& connect_info)
+{
+    for (const auto& Connect_Info : io_2_io_list_)
+    {
+        if (true == compare_connect_io(connect_info.from_io_, connect_info.from_io_type_, Connect_Info.from_io_, Connect_Info.from_io_type_))
+        {
+            //点对点链接已存在，不能添加
+            PSS_LOGGER_WARN("[CIotoIo::check_io_mapping]io mapping duplication,from_io={}:{} is exist.", connect_info.from_io_.m_strClientIP, connect_info.from_io_.m_u2Port);
+            return 1;
+        }
+
+        if (ENUM_IO_BRIDGE_TYPE::IO_BRIDGE_BATH == connect_info.bridge_type_)
+        {
+            if (true == compare_connect_io(connect_info.to_io_, connect_info.to_io_type_, Connect_Info.from_io_, Connect_Info.from_io_type_))
+            {
+                //点对点链接已存在，不能添加
+                PSS_LOGGER_WARN("[CIotoIo::check_io_mapping]io mapping loop,to_io={}:{} is exist.", connect_info.to_io_.m_strClientIP, connect_info.to_io_.m_u2Port);
+                return 2;
+            }
+        }
+    }
+
+    return 0;
+}
 
 

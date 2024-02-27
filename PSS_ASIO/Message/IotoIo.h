@@ -66,6 +66,8 @@ private:
 
     void unlink_io_bridge(const CIo_Connect_Info& io_connect_info);
 
+    int check_io_mapping(const CIo_Connect_Info&  connect_info);
+
     vector<CIo_Connect_Info> io_2_io_list_;
     std::mutex mutex_;
 };
