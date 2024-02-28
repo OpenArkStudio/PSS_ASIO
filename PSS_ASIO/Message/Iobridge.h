@@ -3,8 +3,8 @@
 //提供IO桥接服务注册
 //add by freeeyes
 
-#include "IotoIo.h"
-#include "ModuleLogic.h"
+#include "IotoIo.h" 
+#include "SessionAddrList.h"
 
 class CIoBridge : public IIoBridge
 {
@@ -18,6 +18,7 @@ public:
     void unregedit_bridge_session_info(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type, uint32 session_id);
 private:
     CIotoIo iotoio_;
+    CSessionAddrList sesion_addr_list_;
 };
 
 using App_IoBridge = PSS_singleton<CIoBridge>;

@@ -672,31 +672,6 @@ uint32 CWorkThreadLogic::get_curr_thread_logic_id() const
     return App_tms::instance()->GetLogicThreadID();
 }
 
-bool CWorkThreadLogic::set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id)
-{
-    if (thread_count_ == 0 || thread_module_list_.empty())
-    {
-        return false;
-    }
-
-    auto curr_post_thread_index = from_io_connect_id % thread_count_;
-    auto post_module_logic = thread_module_list_[curr_post_thread_index];
-
-    auto session_io = post_module_logic->get_session_interface(from_io_connect_id);
-    if (nullptr == session_io)
-    {
-        //没找到对应链接
-        PSS_LOGGER_DEBUG("[CWorkThreadLogic::set_io_bridge_connect_id]from_io_connect_id={} is no find", from_io_connect_id);
-        return false;
-    }
-    else
-    {
-        //设置端到端的桥接id
-        session_io->set_io_bridge_connect_id(from_io_connect_id, to_io_connect_id);
-        return true;
-    }
-}
-
 void CWorkThreadLogic::send_io_bridge_message_fail(uint32 connect_id, std::shared_ptr<CMessage_Packet> bridge_packet, shared_ptr<ISession> session)
 {
     vector<std::shared_ptr<CMessage_Packet>> message_error_list;
