@@ -22,8 +22,8 @@ public:
 
     CSessionAddr_Info get_session_addr_info(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type);
 
-public:
-    std::string set_addr_key(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type);
+private:
+    std::string set_addr_key(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type) const;
 
     using hashsessionaddrlist = unordered_map<std::string, CSessionAddr_Info>;
     hashsessionaddrlist session_addr_list_;

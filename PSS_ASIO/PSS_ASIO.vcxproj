@@ -158,6 +158,7 @@
     <ClCompile Include="Message\LoadPacketParse.cpp" />
     <ClCompile Include="Message\ModuleInterfalce.cpp" />
     <ClCompile Include="Message\ModuleLogic.cpp" />
+    <ClCompile Include="Message\SessionAddrList.cpp" />
     <ClCompile Include="Message\SessionInterface.cpp" />
     <ClCompile Include="Message\SessionService.cpp" />
     <ClCompile Include="PSS_ASIO.cpp" />
@@ -211,6 +212,7 @@
     <ClInclude Include="Message\LoadPacketParse.h" />
     <ClInclude Include="Message\ModuleInterfalce.h" />
     <ClInclude Include="Message\ModuleLogic.h" />
+    <ClInclude Include="Message\SessionAddrList.h" />
     <ClInclude Include="Message\SessionInterface.h" />
     <ClInclude Include="Message\SessionService.h" />
     <ClInclude Include="QueueSession\QueueService.h" />

@@ -1,6 +1,6 @@
 #include "SessionAddrList.h"
 
-std::string CSessionAddrList::set_addr_key(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type)
+std::string CSessionAddrList::set_addr_key(const _ClientIPInfo& from_io, EM_CONNECT_IO_TYPE io_type) const
 {
     std::string from_io_key;
 
