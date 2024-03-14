@@ -204,6 +204,9 @@ void CUdpServer::close_server()
 
             veccid.push_back(connect_id);
         }
+
+        udp_id_2_endpoint_list_.clear();
+        udp_endpoint_2_id_list_.clear();
     }
 
     for (auto cid : veccid)
@@ -211,8 +214,6 @@ void CUdpServer::close_server()
         App_WorkThreadLogic::instance()->delete_thread_session(connect_id, shared_from_this());
     }
 
-    udp_id_2_endpoint_list_.clear();
-    udp_endpoint_2_id_list_.clear();
     PSS_LOGGER_DEBUG("[CUdpServer::close_server]close [{0}:{1}]", server_ip_, server_port_);
     socket_.close();
 }
@@ -327,6 +328,7 @@ void CUdpServer::do_write_immediately(uint32 connect_id, const char* data, size_
 
 uint32 CUdpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t length, uint32 max_buffer_length)
 {
+    uint32 connect_id = 0;
     {
         std::lock_guard <std::recursive_mutex> lock(udp_session_mutex_);
 
@@ -336,20 +338,22 @@ uint32 CUdpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t l
             //找到了，返回ID
             return f->second;
         }
+        else
+        {
+            //生成一个新的ID
+            connect_id = App_ConnectCounter::instance()->CreateCounter();
+
+            auto session_info = make_shared<CUdp_Session_Info>();
+            session_info->send_endpoint = recv_endpoint;
+            session_info->recv_data_size_ += length;
+            session_info->connect_id_ = connect_id;
+            session_info->udp_state = EM_UDP_VALID::UDP_VALUD;
+            session_info->session_send_buffer_.Init(max_buffer_length);
+
+            udp_endpoint_2_id_list_[recv_endpoint] = connect_id;
+            udp_id_2_endpoint_list_[connect_id] = session_info;
+        }
     }
-
-    //生成一个新的ID
-    auto connect_id = App_ConnectCounter::instance()->CreateCounter();
-
-    auto session_info = make_shared<CUdp_Session_Info>();
-    session_info->send_endpoint = recv_endpoint;
-    session_info->recv_data_size_ += length;
-    session_info->connect_id_ = connect_id;
-    session_info->udp_state = EM_UDP_VALID::UDP_VALUD;
-    session_info->session_send_buffer_.Init(max_buffer_length);
-
-    udp_endpoint_2_id_list_[recv_endpoint] = connect_id;
-    udp_id_2_endpoint_list_[connect_id] = session_info;
 
     //调用packet parse 链接建立
     _ClientIPInfo remote_ip;
