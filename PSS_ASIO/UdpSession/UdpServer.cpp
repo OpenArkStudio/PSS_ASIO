@@ -69,24 +69,31 @@ void CUdpServer::do_receive()
         asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()), recv_endpoint_,
         [self](std::error_code ec, std::size_t length)
         {
-            if (!ec)
+            try
             {
-                self->do_receive_from(ec, length);
-            }
-            else
+                if (!ec)
+                {
+                    self->do_receive_from(ec, length);
+                }
+                else
+                {
+                    PSS_LOGGER_DEBUG("[CUdpServer::do_receive]({}:{})async_receive_from:{}.",
+                        self->server_ip_,
+                        self->server_port_,
+                        ec.message());
+
+                    App_WorkThreadLogic::instance()->add_frame_events(LOGIC_LISTEN_SERVER_ERROR,
+                        0,
+                        self->server_ip_,
+                        self->server_port_,
+                        EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
+
+                    self->io_list_manager_->del_accept_net_io_event(self->server_ip_, self->server_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
+                }
+            } 
+            catch (std::system_error const& ex) 
             {
-                PSS_LOGGER_DEBUG("[CUdpServer::do_receive]({}:{})async_receive_from:{}.",
-                    self->server_ip_,
-                    self->server_port_,
-                    ec.message());
-
-                App_WorkThreadLogic::instance()->add_frame_events(LOGIC_LISTEN_SERVER_ERROR,
-                    0,
-                    self->server_ip_,
-                    self->server_port_,
-                    EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
-
-                self->io_list_manager_->del_accept_net_io_event(self->server_ip_, self->server_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
+                PSS_LOGGER_WARN("[CUdpServer::do_receive]close udp server[{}:{}], error={}",self->server_ip_,self->server_port_, ex.what());
             }
         });
 }
@@ -204,18 +211,26 @@ void CUdpServer::close_server()
 
             veccid.push_back(connect_id);
         }
-
-        udp_id_2_endpoint_list_.clear();
-        udp_endpoint_2_id_list_.clear();
     }
 
     for (auto cid : veccid)
     {
-        App_WorkThreadLogic::instance()->delete_thread_session(connect_id, shared_from_this());
+        App_WorkThreadLogic::instance()->delete_thread_session(cid, shared_from_this());
+    }
+
+    {
+        std::lock_guard <std::recursive_mutex> lock(udp_session_mutex_);
+        if (!socket_.is_open())
+        {
+            return;
+        }
+
+        udp_id_2_endpoint_list_.clear();
+        udp_endpoint_2_id_list_.clear();
+        socket_.close();
     }
 
     PSS_LOGGER_DEBUG("[CUdpServer::close_server]close [{0}:{1}]", server_ip_, server_port_);
-    socket_.close();
 }
 
 void CUdpServer::set_write_buffer(uint32 connect_id, const char* data, size_t length)
@@ -403,11 +418,6 @@ void CUdpServer::close_udp_endpoint_by_id(uint32 connect_id)
 
             remote_ip.m_strClientIP = f->second->send_endpoint.address().to_string();
             remote_ip.m_u2Port = f->second->send_endpoint.port();
-
-            //清理链接关系
-            auto session_endpoint = f->second->send_endpoint;
-            udp_id_2_endpoint_list_.erase(connect_id);
-            udp_endpoint_2_id_list_.erase(session_endpoint);
         }
 
         auto iter=cid_recv_data_time_.find(connect_id);
@@ -418,6 +428,23 @@ void CUdpServer::close_udp_endpoint_by_id(uint32 connect_id)
     }
 
     App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
+
+    {
+        std::lock_guard <std::recursive_mutex> lock(udp_session_mutex_);
+        if (!socket_.is_open())
+        {
+            return;
+        }
+
+        auto f = udp_id_2_endpoint_list_.find(connect_id);
+        if (f != udp_id_2_endpoint_list_.end())
+        {
+            //清理链接关系
+            auto session_endpoint = f->second->send_endpoint;
+            udp_id_2_endpoint_list_.erase(connect_id);
+            udp_endpoint_2_id_list_.erase(session_endpoint);
+        }
+    }
 }
 
 void CUdpServer::add_send_finish_size(uint32 connect_id, size_t length)
