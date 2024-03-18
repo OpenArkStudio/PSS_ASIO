@@ -102,7 +102,7 @@ public:
 
     void add_thread_session(uint32 connect_id, shared_ptr<ISession> session, const _ClientIPInfo& local_info, const _ClientIPInfo& romote_info);
 
-    void delete_thread_session(uint32 connect_id, shared_ptr<ISession> session);
+    void delete_thread_session(uint32 connect_id, shared_ptr<ISession> session, const _ClientIPInfo& local_info, EM_CONNECT_IO_TYPE io_type);
 
     void close_session_event(uint32 connect_id, shared_ptr<ISession> session);
 

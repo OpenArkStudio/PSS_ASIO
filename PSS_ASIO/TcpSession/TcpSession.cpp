@@ -109,7 +109,10 @@ void CTcpSession::close_immediaterly()
             //断开连接
             self->packet_parse_interface_->packet_disconnect_ptr_(self->connect_id_, io_type, App_IoBridge::instance());
 
-            App_WorkThreadLogic::instance()->delete_thread_session(self->connect_id_, self);
+            App_WorkThreadLogic::instance()->delete_thread_session(self->connect_id_, 
+                self,
+                remote_ip,
+                io_type);
             self->socket_.close();
         });
 }

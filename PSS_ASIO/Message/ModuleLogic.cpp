@@ -344,7 +344,7 @@ void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession
 #endif
 }
 
-void CWorkThreadLogic::delete_thread_session(uint32 connect_id, shared_ptr<ISession> session)
+void CWorkThreadLogic::delete_thread_session(uint32 connect_id, shared_ptr<ISession> session, const _ClientIPInfo& local_info, EM_CONNECT_IO_TYPE io_type)
 {
     std::lock_guard <std::recursive_mutex> lock(plugin_timer_mutex_);
 
@@ -363,11 +363,9 @@ void CWorkThreadLogic::delete_thread_session(uint32 connect_id, shared_ptr<ISess
     module_logic->delete_session_interface(connect_id);
 
     //看看是否需要取消桥接逻辑
-    App_IoBridge::instance()->unregedit_bridge_session_info(session->get_remote_ip(connect_id), 
-        session->get_io_type(), 
+    App_IoBridge::instance()->unregedit_bridge_session_info(local_info,
+        io_type,
         connect_id);
-
-    auto io_type = session->get_io_type();
 
     //向插件告知链接断开消息
     App_tms::instance()->AddMessage(curr_thread_index, [connect_id, server_id, io_type, module_logic]() {

@@ -258,7 +258,10 @@ void CTTyServer::close_immediaterly()
             self->packet_parse_interface_->packet_disconnect_ptr_(self->connect_id_, io_type, App_IoBridge::instance());
 
             //删除映射关系
-            App_WorkThreadLogic::instance()->delete_thread_session(self->connect_id_, self);
+            App_WorkThreadLogic::instance()->delete_thread_session(self->connect_id_, 
+                self,
+                remote_ip,
+                io_type);
 
             self->io_list_manager_->del_accept_net_io_event(self->tty_name_, self->tty_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_TTY);
         });

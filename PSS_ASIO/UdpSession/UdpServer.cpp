@@ -195,40 +195,32 @@ void CUdpServer::close()
 
 void CUdpServer::close_server()
 {
-    std::vector<uint32> veccid;
+    std::lock_guard <std::recursive_mutex> lock(udp_session_mutex_);
+    if (!socket_.is_open())
     {
-        std::lock_guard <std::recursive_mutex> lock(udp_session_mutex_);
-        if (!socket_.is_open())
-        {
-            return;
-        }
-        //释放所有udp资源
-        for (const auto& session_info : udp_id_2_endpoint_list_)
-        {
-            auto connect_id = session_info.first;
-            //这里发送数据通知()
-            packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_, App_IoBridge::instance());
+        return;
+    }
+    //释放所有udp资源
+    for (const auto& session_info : udp_id_2_endpoint_list_)
+    {
+        auto connect_id = session_info.first;
+        //这里发送数据通知()
+        packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_, App_IoBridge::instance());
 
-            veccid.push_back(connect_id);
-        }
+        //发送处理IO断开事件
+        _ClientIPInfo remote_ip_info;
+        remote_ip_info.m_strClientIP = session_info.second->send_endpoint.address().to_string();
+        remote_ip_info.m_u2Port = session_info.second->send_endpoint.port();
+
+        App_WorkThreadLogic::instance()->delete_thread_session(connect_id, 
+            shared_from_this(), 
+            remote_ip_info,
+            io_type_);
     }
 
-    for (auto cid : veccid)
-    {
-        App_WorkThreadLogic::instance()->delete_thread_session(cid, shared_from_this());
-    }
-
-    {
-        std::lock_guard <std::recursive_mutex> lock(udp_session_mutex_);
-        if (!socket_.is_open())
-        {
-            return;
-        }
-
-        udp_id_2_endpoint_list_.clear();
-        udp_endpoint_2_id_list_.clear();
-        socket_.close();
-    }
+    udp_id_2_endpoint_list_.clear();
+    udp_endpoint_2_id_list_.clear();
+    socket_.close();
 
     PSS_LOGGER_DEBUG("[CUdpServer::close_server]close [{0}:{1}]", server_ip_, server_port_);
 }
@@ -400,50 +392,37 @@ shared_ptr<CUdp_Session_Info> CUdpServer::find_udp_endpoint_by_id(uint32 connect
 
 void CUdpServer::close_udp_endpoint_by_id(uint32 connect_id)
 {
+    std::lock_guard <std::recursive_mutex> lock(udp_session_mutex_);
     auto self(shared_from_this());
+        
+    if (!socket_.is_open())
     {
-        std::lock_guard <std::recursive_mutex> lock(udp_session_mutex_);
-        if (!socket_.is_open())
-        {
-            return;
-        }
-
-        _ClientIPInfo remote_ip;
-
-        auto f = udp_id_2_endpoint_list_.find(connect_id);
-        if (f != udp_id_2_endpoint_list_.end())
-        {
-            //调用packet parse 断开消息
-            packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_, App_IoBridge::instance());
-
-            remote_ip.m_strClientIP = f->second->send_endpoint.address().to_string();
-            remote_ip.m_u2Port = f->second->send_endpoint.port();
-        }
-
-        auto iter=cid_recv_data_time_.find(connect_id);
-        if(iter != cid_recv_data_time_.end())
-        {
-            cid_recv_data_time_.erase(iter);
-        }
+        return;
     }
 
-    App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
+    _ClientIPInfo remote_ip;
 
+    auto f = udp_id_2_endpoint_list_.find(connect_id);
+    if (f != udp_id_2_endpoint_list_.end())
     {
-        std::lock_guard <std::recursive_mutex> lock(udp_session_mutex_);
-        if (!socket_.is_open())
-        {
-            return;
-        }
+        //调用packet parse 断开消息
+        packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type_, App_IoBridge::instance());
 
-        auto f = udp_id_2_endpoint_list_.find(connect_id);
-        if (f != udp_id_2_endpoint_list_.end())
-        {
-            //清理链接关系
-            auto session_endpoint = f->second->send_endpoint;
-            udp_id_2_endpoint_list_.erase(connect_id);
-            udp_endpoint_2_id_list_.erase(session_endpoint);
-        }
+        remote_ip.m_strClientIP = f->second->send_endpoint.address().to_string();
+        remote_ip.m_u2Port = f->second->send_endpoint.port();
+
+        App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self, remote_ip, io_type_);
+
+        //清理链接关系
+        auto session_endpoint = f->second->send_endpoint;
+        udp_id_2_endpoint_list_.erase(connect_id);
+        udp_endpoint_2_id_list_.erase(session_endpoint);
+    }
+
+    auto iter=cid_recv_data_time_.find(connect_id);
+    if(iter != cid_recv_data_time_.end())
+    {
+        cid_recv_data_time_.erase(iter);
     }
 }
 

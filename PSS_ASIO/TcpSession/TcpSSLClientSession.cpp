@@ -83,7 +83,10 @@ void CTcpSSLClientSession::close(uint32 connect_id)
             self->packet_parse_interface_->packet_disconnect_ptr_(connect_id, io_type, App_IoBridge::instance());
 
             //发送链接断开消息
-            App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self);
+            App_WorkThreadLogic::instance()->delete_thread_session(connect_id, 
+                self,
+                remote_ip,
+                io_type);
 
             self->ssl_socket_.lowest_layer().close();
         });
