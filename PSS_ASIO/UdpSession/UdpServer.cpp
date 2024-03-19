@@ -64,7 +64,7 @@ _ClientIPInfo CUdpServer::get_remote_ip(uint32 connect_id)
 
 void CUdpServer::set_listen_error_event(string server_ip, io_port_type server_port, string error_message)
 {
-    PSS_LOGGER_DEBUG("[CUdpServer::do_receive]({}:{})async_receive_from:{}.",
+    PSS_LOGGER_DEBUG("[CUdpServer::set_listen_error_event]({}:{})async_receive_from:{}.",
         server_ip_,
         server_port_,
         error_message);
@@ -385,7 +385,7 @@ CUdp_Session_Connect_Id CUdpServer::check_udp_endpoint_list(const udp::endpoint&
 uint32 CUdpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t length, uint32 max_buffer_length)
 {
     auto session_connect_id = check_udp_endpoint_list(recv_endpoint, length, max_buffer_length);
-    if (session_connect_id.is_new_ = false)
+    if (session_connect_id.is_new_ == false)
     {
         return session_connect_id.connect_id_;
     }
