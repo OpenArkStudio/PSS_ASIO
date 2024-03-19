@@ -94,6 +94,7 @@ void CUdpServer::do_receive()
             catch (std::system_error const& ex) 
             {
                 PSS_LOGGER_WARN("[CUdpServer::do_receive]close udp server[{}:{}], error={}",self->server_ip_,self->server_port_, ex.what());
+                self->io_list_manager_->del_accept_net_io_event(self->server_ip_, self->server_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
             }
         });
 }
@@ -178,6 +179,7 @@ void CUdpServer::do_receive_from(std::error_code ec, std::size_t length)
     catch (std::system_error const& ex) 
     {
         PSS_LOGGER_WARN("[CUdpServer::do_receive_from]close udp server[{}:{}], error={}",server_ip_,server_port_, ex.what());
+        this->io_list_manager_->del_accept_net_io_event(this->server_ip_, this->server_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
     }
 }
 
