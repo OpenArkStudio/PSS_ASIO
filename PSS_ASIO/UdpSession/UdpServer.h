@@ -24,6 +24,13 @@ enum class EM_UDP_VALID
 
 const uint32 udp_net_buffer_size = 10 * 1024 * 1024;
 
+class CUdp_Session_Connect_Id
+{
+public:
+    uint32 connect_id_ = 0;
+    bool is_new_ = true;
+};
+
 class CUdp_Session_Info
 {
 public:
@@ -74,7 +81,11 @@ public:
 
     void set_io_bridge_connect_id(uint32 from_io_connect_id, uint32 to_io_connect_id) final;
 
+    void set_listen_error_event(string server_ip, io_port_type server_port, string error_message);
+
 private:
+    CUdp_Session_Connect_Id check_udp_endpoint_list(const udp::endpoint& recv_endpoint, size_t length, uint32 max_buffer_length);
+
     void close_server();
 
     void do_receive();

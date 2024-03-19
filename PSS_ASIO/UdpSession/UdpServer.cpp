@@ -62,6 +62,22 @@ _ClientIPInfo CUdpServer::get_remote_ip(uint32 connect_id)
     return remote_ip_info;
 }
 
+void CUdpServer::set_listen_error_event(string server_ip, io_port_type server_port, string error_message)
+{
+    PSS_LOGGER_DEBUG("[CUdpServer::do_receive]({}:{})async_receive_from:{}.",
+        server_ip_,
+        server_port_,
+        error_message);
+
+    App_WorkThreadLogic::instance()->add_frame_events(LOGIC_LISTEN_SERVER_ERROR,
+        0,
+        server_ip_,
+        server_port_,
+        EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
+
+    io_list_manager_->del_accept_net_io_event(server_ip_, server_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
+}
+
 void CUdpServer::do_receive()
 {
     auto self(shared_from_this());
@@ -69,6 +85,8 @@ void CUdpServer::do_receive()
         asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()), recv_endpoint_,
         [self](std::error_code ec, std::size_t length)
         {
+            bool is_error = false;
+            std::string error_message = "";
             try
             {
                 if (!ec)
@@ -77,24 +95,20 @@ void CUdpServer::do_receive()
                 }
                 else
                 {
-                    PSS_LOGGER_DEBUG("[CUdpServer::do_receive]({}:{})async_receive_from:{}.",
-                        self->server_ip_,
-                        self->server_port_,
-                        ec.message());
-
-                    App_WorkThreadLogic::instance()->add_frame_events(LOGIC_LISTEN_SERVER_ERROR,
-                        0,
-                        self->server_ip_,
-                        self->server_port_,
-                        EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
-
-                    self->io_list_manager_->del_accept_net_io_event(self->server_ip_, self->server_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
+                    is_error = true;
+                    error_message = ec.message();
                 }
             } 
             catch (std::system_error const& ex) 
             {
-                PSS_LOGGER_WARN("[CUdpServer::do_receive]close udp server[{}:{}], error={}",self->server_ip_,self->server_port_, ex.what());
-                self->io_list_manager_->del_accept_net_io_event(self->server_ip_, self->server_port_, EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
+                is_error = true;
+                error_message = ec.message();
+            }
+
+            if (is_error == true)
+            {
+                //如果错误，则关闭连接，发送监听失败信息
+                self->set_listen_error_event(self->server_ip_, self->server_port_, error_message);
             }
         });
 }
@@ -335,33 +349,45 @@ void CUdpServer::do_write_immediately(uint32 connect_id, const char* data, size_
         });
 }
 
+CUdp_Session_Connect_Id CUdpServer::check_udp_endpoint_list(const udp::endpoint& recv_endpoint, size_t length, uint32 max_buffer_length)
+{
+    std::lock_guard <std::recursive_mutex> lock(udp_session_mutex_);
+    CUdp_Session_Connect_Id session_connect_id;
+
+    auto f = udp_endpoint_2_id_list_.find(recv_endpoint);
+    if (f != udp_endpoint_2_id_list_.end())
+    {
+        //找到了，返回ID
+        session_connect_id.connect_id_ = f->second;
+        session_connect_id.is_new_ = false;
+        return session_connect_id;
+    }
+    else
+    {
+        //生成一个新的ID
+        auto connect_id = App_ConnectCounter::instance()->CreateCounter();
+
+        auto session_info = make_shared<CUdp_Session_Info>();
+        session_info->send_endpoint = recv_endpoint;
+        session_info->recv_data_size_ += length;
+        session_info->connect_id_ = connect_id;
+        session_info->udp_state = EM_UDP_VALID::UDP_VALUD;
+        session_info->session_send_buffer_.Init(max_buffer_length);
+
+        udp_endpoint_2_id_list_[recv_endpoint] = connect_id;
+        udp_id_2_endpoint_list_[connect_id] = session_info;
+
+        session_connect_id.connect_id_ = connect_id;
+        return session_connect_id;
+    }
+}
+
 uint32 CUdpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t length, uint32 max_buffer_length)
 {
-    uint32 connect_id = 0;
+    auto session_connect_id = check_udp_endpoint_list(recv_endpoint, length, max_buffer_length);
+    if (session_connect_id.is_new_ = false)
     {
-        std::lock_guard <std::recursive_mutex> lock(udp_session_mutex_);
-
-        auto f = udp_endpoint_2_id_list_.find(recv_endpoint);
-        if (f != udp_endpoint_2_id_list_.end())
-        {
-            //找到了，返回ID
-            return f->second;
-        }
-        else
-        {
-            //生成一个新的ID
-            connect_id = App_ConnectCounter::instance()->CreateCounter();
-
-            auto session_info = make_shared<CUdp_Session_Info>();
-            session_info->send_endpoint = recv_endpoint;
-            session_info->recv_data_size_ += length;
-            session_info->connect_id_ = connect_id;
-            session_info->udp_state = EM_UDP_VALID::UDP_VALUD;
-            session_info->session_send_buffer_.Init(max_buffer_length);
-
-            udp_endpoint_2_id_list_[recv_endpoint] = connect_id;
-            udp_id_2_endpoint_list_[connect_id] = session_info;
-        }
+        return session_connect_id.connect_id_;
     }
 
     //调用packet parse 链接建立
@@ -371,12 +397,12 @@ uint32 CUdpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t l
     remote_ip.m_u2Port = recv_endpoint.port();
     local_ip.m_strClientIP = socket_.local_endpoint().address().to_string();
     local_ip.m_u2Port = socket_.local_endpoint().port();
-    packet_parse_interface_->packet_connect_ptr_(connect_id, remote_ip, local_ip, io_type_, App_IoBridge::instance());
+    packet_parse_interface_->packet_connect_ptr_(session_connect_id.connect_id_, remote_ip, local_ip, io_type_, App_IoBridge::instance());
 
     //添加映射关系
-    App_WorkThreadLogic::instance()->add_thread_session(connect_id, shared_from_this(), local_ip, remote_ip);
+    App_WorkThreadLogic::instance()->add_thread_session(session_connect_id.connect_id_, shared_from_this(), local_ip, remote_ip);
 
-    return connect_id;
+    return session_connect_id.connect_id_;
 }
 
 shared_ptr<CUdp_Session_Info> CUdpServer::find_udp_endpoint_by_id(uint32 connect_id)
