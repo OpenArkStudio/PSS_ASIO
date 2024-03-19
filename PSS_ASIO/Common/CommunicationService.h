@@ -59,8 +59,11 @@ public:
 private:
     using communication_list = unordered_map<uint32, CCommunicationIOInfo>;
     using server_connect_id_list = unordered_map<uint32, uint32>;
+    using server_is_connect_list = unordered_map<uint32, uint32>;
     communication_list communication_list_;
     server_connect_id_list server_connect_id_list_;
+    server_is_connect_list server_is_connect_list_;
+
     std::recursive_mutex mutex_;
     CreateIoContextCallbackFunc callback_;
     bool communication_is_run_ = false;

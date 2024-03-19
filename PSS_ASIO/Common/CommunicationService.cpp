@@ -29,6 +29,16 @@ bool CCommunicationService::add_connect(const CConnect_IO_Info& io_info, EM_CONN
 
 void CCommunicationService::set_connect_id(uint32 server_id, uint32 connect_id)
 {
+    std::lock_guard <std::recursive_mutex> lock(mutex_);
+
+    //查找是否存在正在连接的
+    auto server_is_connecting = server_is_connect_list_.find(server_id);
+    if (server_is_connecting != server_is_connect_list_.end())
+    {
+        //找到了清除之
+        server_is_connect_list_.erase(server_id);
+    }
+
     auto f = communication_list_.find(server_id);
     if (f != communication_list_.end())
     {
@@ -69,6 +79,22 @@ void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
         //还在初始化中，不启动链接
         PSS_LOGGER_DEBUG("[CCommunicationService::io_connect]CCommunicationService is not run");
         return;
+    }
+
+    //判断是否存在正在连接的对象(需要加锁)
+    {
+        std::lock_guard <std::recursive_mutex> lock(mutex_);
+        auto server_connecting = server_is_connect_list_.find(connect_info.io_info_.server_id);
+        if (server_connecting != server_is_connect_list_.end())
+        {
+            //找到了正在连接服务器的对象，则退出
+            PSS_LOGGER_DEBUG("[CCommunicationService::io_connect]server_id is connecting.", connect_info.io_info_.server_id);
+            return;
+        }
+        else
+        {
+            server_is_connect_list_[connect_info.io_info_.server_id] = connect_info.io_info_.server_id;
+        }
     }
 
     if (connect_info.io_type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_TCP)
