@@ -17,7 +17,6 @@ void CCommunicationService::init_communication_service(CreateIoContextCallbackFu
 
 bool CCommunicationService::add_connect(const CConnect_IO_Info& io_info, EM_CONNECT_IO_TYPE io_type)
 {
-    std::lock_guard <std::recursive_mutex> lock(mutex_);
     CCommunicationIOInfo connect_info;
     connect_info.connect_id_ = 0;
     connect_info.io_info_ = io_info;
@@ -72,7 +71,9 @@ uint32 CCommunicationService::get_connect_id(uint32 server_id)
 
 void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
 {
+    mutex_.lock();
     communication_list_[connect_info.io_info_.server_id] = connect_info;
+    mutex_.unlock();
     
     if (false == communication_is_run_)
     {
@@ -82,20 +83,20 @@ void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
     }
 
     //判断是否存在正在连接的对象(需要加锁)
+    mutex_.lock();
+    auto server_connecting = server_is_connect_list_.find(connect_info.io_info_.server_id);
+    if (server_connecting != server_is_connect_list_.end())
     {
-        std::lock_guard <std::recursive_mutex> lock(mutex_);
-        auto server_connecting = server_is_connect_list_.find(connect_info.io_info_.server_id);
-        if (server_connecting != server_is_connect_list_.end())
-        {
-            //找到了正在连接服务器的对象，则退出
-            PSS_LOGGER_DEBUG("[CCommunicationService::io_connect]server_id is connecting.", connect_info.io_info_.server_id);
-            return;
-        }
-        else
-        {
-            server_is_connect_list_[connect_info.io_info_.server_id] = connect_info.io_info_.server_id;
-        }
+        //找到了正在连接服务器的对象，则退出
+        PSS_LOGGER_DEBUG("[CCommunicationService::io_connect]server_id is connecting.", connect_info.io_info_.server_id);
+        mutex_.unlock();
+        return;
     }
+    else
+    {
+        server_is_connect_list_[connect_info.io_info_.server_id] = connect_info.io_info_.server_id;
+    }
+    mutex_.unlock();
 
     if (connect_info.io_type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_TCP)
     {
@@ -103,7 +104,9 @@ void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
         auto tcp_client_session = make_shared<CTcpClientSession>(callback_());
         if (true == tcp_client_session->start(connect_info.io_info_))
         {
+            mutex_.lock();
             communication_list_[connect_info.io_info_.server_id].session_ = tcp_client_session;
+            mutex_.unlock();
         }
     }
     else if(connect_info.io_type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_UDP)
@@ -111,7 +114,9 @@ void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
         //IO是UDP
         auto udp_client_session = make_shared<CUdpClientSession>(callback_());
         udp_client_session->start(connect_info.io_info_);
+        mutex_.lock();
         communication_list_[connect_info.io_info_.server_id].session_ = udp_client_session;
+        mutex_.unlock();
     }
     else if (connect_info.io_type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_TTY)
     {
@@ -126,14 +131,18 @@ void CCommunicationService::io_connect(CCommunicationIOInfo& connect_info)
             connect_info.io_info_.server_port,
             8,
             connect_info.io_info_.server_id);
+        mutex_.lock();
         communication_list_[connect_info.io_info_.server_id].session_ = tty_client_session;
+        mutex_.unlock();
     }
     else if (connect_info.io_type_ == EM_CONNECT_IO_TYPE::CONNECT_IO_SSL)
     {
 #ifdef SSL_SUPPORT
         auto ssl_client_session = make_shared<CTcpSSLClientSession>(callback_());
         ssl_client_session->start(connect_info.io_info_);
+        mutex_.lock();
         communication_list_[connect_info.io_info_.server_id].session_ = ssl_client_session;
+        mutex_.unlock();
 #else
         PSS_LOGGER_DEBUG("[CCommunicationService::io_connect]you mest use SSL_SUPPORT macro support ths ssl.");
 #endif
