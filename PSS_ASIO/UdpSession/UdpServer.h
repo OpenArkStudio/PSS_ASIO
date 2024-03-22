@@ -31,6 +31,15 @@ public:
     bool is_new_ = true;
 };
 
+
+//用于关闭所有的链接
+class CUdp_Session_IP_Info
+{
+public:
+    uint32 connect_id_ = 0;
+    _ClientIPInfo remote_ip_info_;
+};
+
 class CUdp_Session_Info
 {
 public:

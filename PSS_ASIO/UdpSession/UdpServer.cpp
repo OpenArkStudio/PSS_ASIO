@@ -211,11 +211,15 @@ void CUdpServer::close()
 
 void CUdpServer::close_server()
 {
-    std::lock_guard <std::recursive_mutex> lock(udp_session_mutex_);
+    vector<CUdp_Session_IP_Info> udp_session_ip_info_list;
+    CUdp_Session_IP_Info udp_session_ip_info;
+    udp_session_mutex_.lock();
     if (!socket_.is_open())
     {
+        udp_session_mutex_.unlock();
         return;
     }
+
     //释放所有udp资源
     for (const auto& session_info : udp_id_2_endpoint_list_)
     {
@@ -228,15 +232,26 @@ void CUdpServer::close_server()
         remote_ip_info.m_strClientIP = session_info.second->send_endpoint.address().to_string();
         remote_ip_info.m_u2Port = session_info.second->send_endpoint.port();
 
-        App_WorkThreadLogic::instance()->delete_thread_session(connect_id, 
-            shared_from_this(), 
-            remote_ip_info,
-            io_type_);
+        //插入列表
+        udp_session_ip_info.connect_id_ = connect_id;
+        udp_session_ip_info.remote_ip_info_ = remote_ip_info;
+        udp_session_ip_info_list.emplace_back(udp_session_ip_info);
     }
 
     udp_id_2_endpoint_list_.clear();
     udp_endpoint_2_id_list_.clear();
     socket_.close();
+    udp_session_mutex_.unlock();
+
+    //发送断开消息
+    for (const auto& udp_session_ip_info_cell : udp_session_ip_info_list)
+    {
+        App_WorkThreadLogic::instance()->delete_thread_session(udp_session_ip_info_cell.connect_id_,
+            shared_from_this(),
+            udp_session_ip_info_cell.remote_ip_info_,
+            io_type_);
+    }
+
 
     PSS_LOGGER_DEBUG("[CUdpServer::close_server]close [{0}:{1}]", server_ip_, server_port_);
 }
