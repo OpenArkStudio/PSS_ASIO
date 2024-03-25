@@ -444,7 +444,9 @@ void CUdpServer::close_udp_endpoint_by_id(uint32 connect_id)
     }
 
     _ClientIPInfo remote_ip;
+    bool is_find = false;
 
+    udp_session_mutex_.lock();
     auto f = udp_id_2_endpoint_list_.find(connect_id);
     if (f != udp_id_2_endpoint_list_.end())
     {
@@ -454,7 +456,7 @@ void CUdpServer::close_udp_endpoint_by_id(uint32 connect_id)
         remote_ip.m_strClientIP = f->second->send_endpoint.address().to_string();
         remote_ip.m_u2Port = f->second->send_endpoint.port();
 
-        App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self, remote_ip, io_type_);
+        is_find = true;
 
         //清理链接关系
         auto session_endpoint = f->second->send_endpoint;
@@ -466,6 +468,12 @@ void CUdpServer::close_udp_endpoint_by_id(uint32 connect_id)
     if(iter != cid_recv_data_time_.end())
     {
         cid_recv_data_time_.erase(iter);
+    }
+    udp_session_mutex_.unlock();
+
+    if (is_find == true)
+    {
+        App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self, remote_ip, io_type_);
     }
 }
 
