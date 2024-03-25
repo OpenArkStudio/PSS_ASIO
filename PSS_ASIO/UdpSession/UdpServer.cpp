@@ -435,7 +435,6 @@ shared_ptr<CUdp_Session_Info> CUdpServer::find_udp_endpoint_by_id(uint32 connect
 
 void CUdpServer::close_udp_endpoint_by_id(uint32 connect_id)
 {
-    std::lock_guard <std::recursive_mutex> lock(udp_session_mutex_);
     auto self(shared_from_this());
         
     if (!socket_.is_open())
@@ -458,6 +457,21 @@ void CUdpServer::close_udp_endpoint_by_id(uint32 connect_id)
 
         is_find = true;
 
+
+    }
+    udp_session_mutex_.unlock();
+
+    //发送链接断开消息，并做相关解绑操作
+    if (is_find == true)
+    {
+        App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self, remote_ip, io_type_);
+    }
+
+    //清理对象
+    udp_session_mutex_.lock();
+    f = udp_id_2_endpoint_list_.find(connect_id);
+    if (f != udp_id_2_endpoint_list_.end())
+    {
         //清理链接关系
         auto session_endpoint = f->second->send_endpoint;
         udp_id_2_endpoint_list_.erase(connect_id);
@@ -470,11 +484,6 @@ void CUdpServer::close_udp_endpoint_by_id(uint32 connect_id)
         cid_recv_data_time_.erase(iter);
     }
     udp_session_mutex_.unlock();
-
-    if (is_find == true)
-    {
-        App_WorkThreadLogic::instance()->delete_thread_session(connect_id, self, remote_ip, io_type_);
-    }
 }
 
 void CUdpServer::add_send_finish_size(uint32 connect_id, size_t length)
