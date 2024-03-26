@@ -10,6 +10,7 @@ CNetSvrManager::~CNetSvrManager()
 
 void CNetSvrManager::start_default_service()
 {
+    std::lock_guard <std::mutex> lock(list_mutex_);
     string stripport;
 
     //加载Tcp监听
@@ -97,6 +98,7 @@ void CNetSvrManager::close_all_service()
 {
     PSS_LOGGER_DEBUG("[CNetSvrManager::close_all_service]begin.");
 
+    std::lock_guard <std::mutex> lock(list_mutex_);
     std::vector<shared_ptr<CIo_Net_server>> tcp_listen_list;
     std::vector<shared_ptr<CIo_Net_server>> tcp_listen_ssl_list;
     std::vector<shared_ptr<CIo_Net_server>> udp_listen_list;
@@ -212,7 +214,7 @@ void CNetSvrManager::start_single_service(const CConfigNetIO& netio)
         if (tcp != tcp_service_list_.end())
         {
             //找到了，直接不能创建
-            PSS_LOGGER_INFO("[CNetSvrManager::start_single_service]tcp service[{}:{}] already exists", netio.ip_, netio.port_);
+            PSS_LOGGER_WARN("[CNetSvrManager::start_single_service]tcp service[{}:{}] already exists", netio.ip_, netio.port_);
             is_find = true;
         }
     }
@@ -222,7 +224,7 @@ void CNetSvrManager::start_single_service(const CConfigNetIO& netio)
         if (udp != udp_service_list_.end())
         {
             //找到了，直接不能创建
-            PSS_LOGGER_INFO("[CNetSvrManager::start_single_service]udp service[{}:{}] already exists", netio.ip_, netio.port_);
+            PSS_LOGGER_WARN("[CNetSvrManager::start_single_service]udp service[{}:{}] already exists", netio.ip_, netio.port_);
             is_find = true;
         }
     }
@@ -266,24 +268,40 @@ void CNetSvrManager::close_single_service(const CConfigNetIO& netio)
     if(EM_CONNECT_IO_TYPE::CONNECT_IO_TCP == netio.protocol_type_)
     {
         App_tms::instance()->AddMessage(0, [this, netio]() {
+            list_mutex_.lock();
             string io_key = netio.ip_ + "_" + std::to_string(netio.port_);
             PSS_LOGGER_INFO("[CNetSvrManager::close_single_service]close tcp service[{}:{}]", netio.ip_, netio.port_);
             auto tcp = tcp_service_list_.find(io_key);
             if (tcp != tcp_service_list_.end())
             {
-                tcp->second->close();
+                auto tcp_service = tcp->second;
+				tcp_service_list_.erase(io_key);
+                list_mutex_.unlock();
+                tcp_service->close();
+            }
+            else
+            {
+                list_mutex_.unlock();
             }
             });
     }
     else if(EM_CONNECT_IO_TYPE::CONNECT_IO_UDP == netio.protocol_type_)
     {
         App_tms::instance()->AddMessage(0, [this, netio]() {
+            list_mutex_.lock();
             string io_key = netio.ip_ + "_" + std::to_string(netio.port_);
             PSS_LOGGER_INFO("[CNetSvrManager::close_single_service]close udp service[{}:{}]", netio.ip_, netio.port_);
             auto udp = udp_service_list_.find(io_key);
             if (udp != udp_service_list_.end())
             {
-                udp->second->close();
+                auto udp_service = udp->second;
+                udp_service_list_.erase(io_key);
+                list_mutex_.unlock();
+                udp_service->close();
+            }
+            else
+            {
+                list_mutex_.unlock();
             }
             });
     }
