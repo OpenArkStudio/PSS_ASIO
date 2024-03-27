@@ -51,7 +51,7 @@ private:
     hashipport2tcpsslserver tcp_ssl_service_map_;
 #endif
 
-    std::mutex list_mutex_;
+    std::recursive_mutex list_mutex_;
 };
 
 using App_NetSvrManager = PSS_singleton<CNetSvrManager>;
