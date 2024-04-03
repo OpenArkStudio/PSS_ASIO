@@ -10,7 +10,7 @@ CNetSvrManager::~CNetSvrManager()
 
 void CNetSvrManager::start_default_service()
 {
-    std::lock_guard <std::mutex> lock(list_mutex_);
+    std::lock_guard <std::recursive_mutex> lock(list_mutex_);
     string stripport;
 
     //加载Tcp监听
@@ -98,7 +98,7 @@ void CNetSvrManager::close_all_service()
 {
     PSS_LOGGER_DEBUG("[CNetSvrManager::close_all_service]begin.");
 
-    std::lock_guard <std::mutex> lock(list_mutex_);
+    std::lock_guard <std::recursive_mutex> lock(list_mutex_);
     std::vector<shared_ptr<CIo_Net_server>> tcp_listen_list;
     std::vector<shared_ptr<CIo_Net_server>> tcp_listen_ssl_list;
     std::vector<shared_ptr<CIo_Net_server>> udp_listen_list;
@@ -160,7 +160,7 @@ void CNetSvrManager::close_all_service()
 
 void CNetSvrManager::add_accept_net_io_event(string io_ip, io_port_type io_port, EM_CONNECT_IO_TYPE em_io_net_type, shared_ptr<CIo_Net_server> Io_Net_server)
 {
-    std::lock_guard <std::mutex> lock(list_mutex_);
+    std::lock_guard <std::recursive_mutex> lock(list_mutex_);
     auto io_key = io_ip + "_" + std::to_string(io_port);
     if (EM_CONNECT_IO_TYPE::CONNECT_IO_TCP == em_io_net_type)
     {
@@ -182,7 +182,7 @@ void CNetSvrManager::add_accept_net_io_event(string io_ip, io_port_type io_port,
 
 void CNetSvrManager::del_accept_net_io_event(string io_ip, io_port_type io_port, EM_CONNECT_IO_TYPE em_io_net_type)
 {
-    std::lock_guard <std::mutex> lock(list_mutex_);
+    std::lock_guard <std::recursive_mutex> lock(list_mutex_);
     auto io_key = io_ip + "_" + std::to_string(io_port);
     if (EM_CONNECT_IO_TYPE::CONNECT_IO_TCP == em_io_net_type)
     { 
