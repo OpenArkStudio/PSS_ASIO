@@ -65,15 +65,44 @@ _ClientIPInfo CUdpServer::get_remote_ip(uint32 connect_id)
 void CUdpServer::set_listen_error_event(string server_ip, io_port_type server_port, string error_message)
 {
     PSS_LOGGER_DEBUG("[CUdpServer::set_listen_error_event]({}:{})async_receive_from:{}.",
-        server_ip_,
-        server_port_,
+        server_ip,
+        server_port,
         error_message);
 
     App_WorkThreadLogic::instance()->add_frame_events(LOGIC_LISTEN_SERVER_ERROR,
         0,
-        server_ip_,
-        server_port_,
+        server_ip,
+        server_port,
         EM_CONNECT_IO_TYPE::CONNECT_IO_UDP);
+}
+
+void CUdpServer::do_receive_data_logic(std::error_code ec, std::size_t length)
+{
+    bool is_error = false;
+    std::string error_message = "";
+    try
+    {
+        if (!ec)
+        {
+            do_receive_from(ec, length);
+        }
+        else
+        {
+            is_error = true;
+            error_message = ec.message();
+        }
+    }
+    catch (std::system_error const& ex)
+    {
+        is_error = true;
+        error_message = ex.what();
+    }
+
+    if (is_error == true)
+    {
+        //如果错误，则关闭连接，发送监听失败信息
+        set_listen_error_event(server_ip_, server_port_, error_message);
+    }
 }
 
 void CUdpServer::do_receive()
@@ -83,31 +112,7 @@ void CUdpServer::do_receive()
         asio::buffer(session_recv_buffer_.get_curr_write_ptr(), session_recv_buffer_.get_buffer_size()), recv_endpoint_,
         [self](std::error_code ec, std::size_t length)
         {
-            bool is_error = false;
-            std::string error_message = "";
-            try
-            {
-                if (!ec)
-                {
-                    self->do_receive_from(ec, length);
-                }
-                else
-                {
-                    is_error = true;
-                    error_message = ec.message();
-                }
-            } 
-            catch (std::system_error const& ex) 
-            {
-                is_error = true;
-                error_message = ec.message();
-            }
-
-            if (is_error == true)
-            {
-                //如果错误，则关闭连接，发送监听失败信息
-                self->set_listen_error_event(self->server_ip_, self->server_port_, error_message);
-            }
+            self->do_receive_data_logic(ec, length);
         });
 }
 
@@ -208,8 +213,7 @@ void CUdpServer::close()
 
 void CUdpServer::close_server()
 {
-    vector<CUdp_Session_IP_Info> udp_session_ip_info_list;
-    CUdp_Session_IP_Info udp_session_ip_info;
+    vector<std::shared_ptr<CUdp_Session_IP_Info>> udp_session_ip_info_list;
     udp_session_mutex_.lock();
     if (!socket_.is_open())
     {
@@ -230,8 +234,9 @@ void CUdpServer::close_server()
         remote_ip_info.m_u2Port = session_info.second->send_endpoint.port();
 
         //插入列表
-        udp_session_ip_info.connect_id_ = connect_id;
-        udp_session_ip_info.remote_ip_info_ = remote_ip_info;
+        std::shared_ptr<CUdp_Session_IP_Info> udp_session_ip_info = std::make_shared<CUdp_Session_IP_Info>();
+        udp_session_ip_info->connect_id_ = connect_id;
+        udp_session_ip_info->remote_ip_info_ = remote_ip_info;
         udp_session_ip_info_list.emplace_back(udp_session_ip_info);
     }
 
@@ -243,9 +248,9 @@ void CUdpServer::close_server()
     //发送断开消息
     for (const auto& udp_session_ip_info_cell : udp_session_ip_info_list)
     {
-        App_WorkThreadLogic::instance()->delete_thread_session(udp_session_ip_info_cell.connect_id_,
+        App_WorkThreadLogic::instance()->delete_thread_session(udp_session_ip_info_cell->connect_id_,
             shared_from_this(),
-            udp_session_ip_info_cell.remote_ip_info_,
+            udp_session_ip_info_cell->remote_ip_info_,
             io_type_);
     }
 

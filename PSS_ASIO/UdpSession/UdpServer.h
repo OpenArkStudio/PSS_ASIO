@@ -109,6 +109,8 @@ private:
 
     void close_udp_endpoint_by_id(uint32 connect_id);
 
+    void do_receive_data_logic(std::error_code ec, std::size_t length);
+
     udp::socket socket_;
     uint32 connect_client_id_ = 0;
     udp::endpoint recv_endpoint_;
