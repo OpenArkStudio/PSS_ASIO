@@ -62,7 +62,7 @@ _ClientIPInfo CUdpServer::get_remote_ip(uint32 connect_id)
     return remote_ip_info;
 }
 
-void CUdpServer::set_listen_error_event(string server_ip, io_port_type server_port, string error_message)
+void CUdpServer::set_listen_error_event(string server_ip, io_port_type server_port, string error_message) const
 {
     PSS_LOGGER_DEBUG("[CUdpServer::set_listen_error_event]({}:{})async_receive_from:{}.",
         server_ip,
@@ -234,7 +234,7 @@ void CUdpServer::close_server()
         remote_ip_info.m_u2Port = session_info.second->send_endpoint.port();
 
         //插入列表
-        std::shared_ptr<CUdp_Session_IP_Info> udp_session_ip_info = std::make_shared<CUdp_Session_IP_Info>();
+        auto udp_session_ip_info = std::make_shared<CUdp_Session_IP_Info>();
         udp_session_ip_info->connect_id_ = connect_id;
         udp_session_ip_info->remote_ip_info_ = remote_ip_info;
         udp_session_ip_info_list.emplace_back(udp_session_ip_info);
