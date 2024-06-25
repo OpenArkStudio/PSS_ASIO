@@ -56,7 +56,8 @@ public:
     uint32 kcp_id_ = 0;
     ikcpcb* kcpcb_ = nullptr;
 
-    void init_kcp(uint32 kcp_id, uint32 max_send_size, uint32 max_recv_size, kcp_output_func output_func, void* run_class)
+    template<class T>
+    void init_kcp(uint32 kcp_id, uint32 max_send_size, uint32 max_recv_size, kcp_output_func output_func, T* run_class)
     {
         //建立kcp
         kcp_id_ = kcp_id;
