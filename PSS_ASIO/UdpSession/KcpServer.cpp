@@ -333,8 +333,10 @@ uint32 CKcpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t l
         udp_endpoint_2_id_list_[recv_endpoint] = connect_id;
         udp_id_2_endpoint_list_[connect_id] = session_info;
 
+        kcp_output_func kcp_output_func_ptr = kcp_udpOutPut;
+
         //创建KCP
-        session_info->init_kcp(connect_id, max_recv_size_, max_send_size_, kcp_udpOutPut, this);
+        session_info->init_kcp(connect_id, max_recv_size_, max_send_size_, kcp_output_func_ptr, this);
 
         //刷新一下时间
         ikcp_update(session_info->kcpcb_, iclock());

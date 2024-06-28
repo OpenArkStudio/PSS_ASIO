@@ -43,7 +43,7 @@ public:
     udp::endpoint send_endpoint;
 };
 
-using kcp_output_func = int (*)(const char* buf, int len, ikcpcb* kcp, void* user);
+using kcp_output_func = std::function<int(const char* buf, int len, ikcpcb* kcp, void* user)>;
 
 class CKcp_Session_Info
 {
@@ -69,7 +69,7 @@ public:
         else
         {
             //绑定回调函数
-            kcpcb_->output = output_func;
+            kcpcb_->output = output_func.target<int(*)(const char*, int, ikcpcb*, void*)>()
 
             ikcp_nodelay(kcpcb_, 0, 10, 0, 0);
             ikcp_wndsize(kcpcb_, max_send_size, max_recv_size);
