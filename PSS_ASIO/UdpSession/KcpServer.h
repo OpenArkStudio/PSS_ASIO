@@ -59,7 +59,7 @@ public:
     ikcpcb* kcpcb_ = nullptr;
 
     template<class T>
-    void init_kcp(uint32 kcp_id, uint32 max_send_size, uint32 max_recv_size, kcp_output_func output_func, T* run_class)
+    bool init_kcp(uint32 kcp_id, uint32 max_send_size, uint32 max_recv_size, kcp_output_func output_func, T* run_class)
     {
         //建立kcp
         kcp_id_ = kcp_id;
@@ -67,6 +67,7 @@ public:
         if (nullptr == kcpcb_)
         {
             PSS_LOGGER_DEBUG("[init_kcp]connect_id={0} kcp is null.", kcp_id_);
+            return false;
         }
         else
         {
@@ -75,10 +76,19 @@ public:
             if (ptr)
             {
                 kcpcb_->output = *ptr;
+
+                ikcp_nodelay(kcpcb_, 0, 10, 0, 0);
+                ikcp_wndsize(kcpcb_, max_send_size, max_recv_size);
+                return true;
+            }
+            else
+            {
+                PSS_LOGGER_DEBUG("[init_kcp]connect_id={0} Failed to convert output_func to function pointer.", kcp_id_);
+                ikcp_release(kcpcb_);
+                kcpcb_ = nullptr;
+                return false;
             }
 
-            ikcp_nodelay(kcpcb_, 0, 10, 0, 0);
-            ikcp_wndsize(kcpcb_, max_send_size, max_recv_size);
         }
     }
 
