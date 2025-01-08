@@ -17,9 +17,9 @@ void CUdpClientSession::start(const CConnect_IO_Info& io_type)
     
     socket_.open(udp::v4());
     socket_.set_option(asio::ip::udp::socket::reuse_address(true));
-    // 设置UDP缓冲区大小为10*1024*1024字节
-    asio::socket_base::receive_buffer_size recvoption(10*1024*1024);
-    asio::socket_base::send_buffer_size sendoption(10*1024*1024);
+    // 设置UDP缓冲区大小为TCP_BUFFER_SIZE字节
+    asio::socket_base::receive_buffer_size recvoption(TCP_BUFFER_SIZE);
+    asio::socket_base::send_buffer_size sendoption(TCP_BUFFER_SIZE);
     socket_.set_option(recvoption);
     socket_.set_option(sendoption);
     //判断有没有本地IP

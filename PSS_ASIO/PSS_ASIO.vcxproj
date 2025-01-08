@@ -161,6 +161,7 @@
     <ClCompile Include="Message\SessionAddrList.cpp" />
     <ClCompile Include="Message\SessionInterface.cpp" />
     <ClCompile Include="Message\SessionService.cpp" />
+    <ClCompile Include="Message\SyncLogic.cpp" />
     <ClCompile Include="PSS_ASIO.cpp" />
     <ClCompile Include="QueueSession\Queueservice.cpp" />
     <ClCompile Include="TcpSession\TcpClientSession.cpp" />
@@ -215,6 +216,7 @@
     <ClInclude Include="Message\SessionAddrList.h" />
     <ClInclude Include="Message\SessionInterface.h" />
     <ClInclude Include="Message\SessionService.h" />
+    <ClInclude Include="Message\SyncLogic.h" />
     <ClInclude Include="QueueSession\QueueService.h" />
     <ClInclude Include="TcpSession\TcpClientSession.h" />
     <ClInclude Include="TcpSession\TcpServer.h" />

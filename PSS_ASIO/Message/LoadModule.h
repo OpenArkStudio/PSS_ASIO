@@ -65,8 +65,11 @@ public:
     string get_module_file_path(const char* pModuleName);
     void get_all_module_name(vector<string>& vecModeInfo);
 
-    //插件命令处理同步相关功能
+    //插件命令处理异步相关消息
     command_to_module_function& get_module_function_list();
+
+    command_to_module_function& get_session_function_list();
+
     int plugin_in_name_to_module_run(const std::string& module_name, std::shared_ptr<CMessage_Packet> send_packet, std::shared_ptr<CMessage_Packet> return_packet);
 
 private:
@@ -74,11 +77,16 @@ private:
 
     void delete_module_name_list(const string& module_name);
 
+    void add_command_to_module_function(const CLogic_Command_Info& logic_command_info, std::shared_ptr<_ModuleInfo> module_info);
+
+    void add_command_to_session_function(const CLogic_Command_Info& logic_command_info, std::shared_ptr<_ModuleInfo> module_info);
+
     using hashmapModuleList = unordered_map<string, shared_ptr<_ModuleInfo>>;
     hashmapModuleList module_list_;
     vector<string>    module_name_list_;               //当前插件名称列表
 
-    command_to_module_function command_to_module_function_;
+    command_to_module_function command_to_module_function_;     //异步线程执行列表
+    command_to_module_function command_to_session_function_;    //同步线程执行列表
     plugin_name_to_module_run plugin_name_to_module_run_;
     ISessionService* session_service_ = nullptr;
 };

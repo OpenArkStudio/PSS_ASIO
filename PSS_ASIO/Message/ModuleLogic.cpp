@@ -134,6 +134,9 @@ void CWorkThreadLogic::init_work_thread_logic(int thread_count, uint16 timeout_s
     }
     PSS_LOGGER_DEBUG("[CWorkThreadLogic::init_work_thread_logic]>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
+    //记录同步需要处理的消息列表
+    App_SyncLogic::instance()->Init(load_module_.get_session_function_list());
+
     //执行线程对应创建
     for (int i = 0; i < thread_count; i++)
     {
@@ -313,23 +316,41 @@ void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession
     //必须在IO线程里注册链接信息
     module_logic->add_session(connect_id, session, local_info, romote_info);
 
+    //组装消息数据
+    CMessage_Source source;
+    auto recv_packet = std::make_shared<CMessage_Packet>();
+    auto send_packet = std::make_shared<CMessage_Packet>();
+
+    recv_packet->command_id_ = LOGIC_COMMAND_CONNECT;
+
+    source.connect_id_ = connect_id;
+    source.work_thread_id_ = module_logic->get_work_thread_id();
+    source.type_ = session->get_io_type();
+    source.connect_mark_id_ = session->get_mark_id(connect_id);
+    source.local_ip_ = local_info;
+    source.remote_ip_ = romote_info;
+
+    //判断当前消息是否需要同步处理
+    if (App_SyncLogic::instance()->do_sync_message(recv_packet->command_id_,
+        source,
+        recv_packet,
+        send_packet) == true)
+    {
+        if (send_packet->buffer_.size() > 0)
+        {
+            //如果有要发送的数据，则直接同步发送
+            session->do_write_immediately(connect_id, send_packet->buffer_.c_str(), send_packet->buffer_.size());
+        }
+
+        return;
+    }
+
     //看看是否需要桥接逻辑
     App_IoBridge::instance()->regedit_bridge_session_info(romote_info, session->get_io_type(), connect_id, session);
 
     //向插件告知链接建立消息
-    App_tms::instance()->AddMessage(curr_thread_index, [session, connect_id, module_logic, local_info, romote_info]() {
-        CMessage_Source source;
-        auto recv_packet = std::make_shared<CMessage_Packet>();
-        auto send_packet = std::make_shared<CMessage_Packet>();
+    App_tms::instance()->AddMessage(curr_thread_index, [module_logic, source, recv_packet, send_packet]() {
 
-        recv_packet->command_id_ = LOGIC_COMMAND_CONNECT;
-
-        source.connect_id_ = connect_id;
-        source.work_thread_id_ = module_logic->get_work_thread_id();
-        source.type_ = session->get_io_type();
-        source.connect_mark_id_ = session->get_mark_id(connect_id);
-        source.local_ip_ = local_info;
-        source.remote_ip_ = romote_info;
 
         module_logic->do_thread_module_logic(source, recv_packet, send_packet);
         });
@@ -367,19 +388,29 @@ void CWorkThreadLogic::delete_thread_session(uint32 connect_id, shared_ptr<ISess
         io_type,
         connect_id);
 
+    //组装数据
+    CMessage_Source source;
+    auto recv_packet = std::make_shared<CMessage_Packet>();
+    auto send_packet = std::make_shared<CMessage_Packet>();
+
+    recv_packet->command_id_ = LOGIC_COMMAND_DISCONNECT;
+
+    source.connect_id_ = connect_id;
+    source.work_thread_id_ = module_logic->get_work_thread_id();
+    source.type_ = io_type;
+    source.connect_mark_id_ = server_id;
+
+    //判断当前消息是否需要同步处理
+    if (App_SyncLogic::instance()->do_sync_message(recv_packet->command_id_,
+        source,
+        recv_packet,
+        send_packet) == true)
+    {
+        return;
+    }
+
     //向插件告知链接断开消息
-    App_tms::instance()->AddMessage(curr_thread_index, [connect_id, server_id, io_type, module_logic]() {
-        CMessage_Source source;
-        auto recv_packet = std::make_shared<CMessage_Packet>();
-        auto send_packet = std::make_shared<CMessage_Packet>();
-
-        recv_packet->command_id_ = LOGIC_COMMAND_DISCONNECT;
-
-        source.connect_id_ = connect_id;
-        source.work_thread_id_ = module_logic->get_work_thread_id();
-        source.type_ = io_type;
-        source.connect_mark_id_ = server_id;
-
+    App_tms::instance()->AddMessage(curr_thread_index, [module_logic, source, recv_packet, send_packet]() {
         module_logic->do_thread_module_logic(source, recv_packet, send_packet);
         });
 }
@@ -398,26 +429,45 @@ void CWorkThreadLogic::close_session_event(uint32 connect_id, shared_ptr<ISessio
         });
 }
 
-int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, const vector<shared_ptr<CMessage_Packet>>& message_list, shared_ptr<ISession> session)
+int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, vector<shared_ptr<CMessage_Packet>>& message_list, shared_ptr<ISession> session)
 {
-    //处理线程的投递
-    uint16 curr_thread_index = connect_id % thread_count_;
-    auto module_logic = thread_module_list_[curr_thread_index];
+    //判断有没有需要同步处理的消息
+    CMessage_Source source;
+    std::shared_ptr<CMessage_Packet> send_packet = std::make_shared<CMessage_Packet>();
+
+    source.connect_id_ = connect_id;
+    source.type_ = session->get_io_type();
+    source.connect_mark_id_ = session->get_mark_id(connect_id);
+
+    //查看是否有同步需要处理的逻辑
+    App_SyncLogic::instance()->do_sync_message_list(source, message_list, send_packet);
+    if (send_packet->buffer_.size() > 0)
+    {
+        //如果有要发送的数据，则直接同步发送
+        session->do_write_immediately(connect_id, send_packet->buffer_.c_str(), send_packet->buffer_.size());
+    }
+
+    if (message_list.size() > 0)
+    {
+        //处理线程的投递
+        uint16 curr_thread_index = connect_id % thread_count_;
+        auto module_logic = thread_module_list_[curr_thread_index];
 
 #ifdef GCOV_TEST
-    PSS_LOGGER_DEBUG("[CWorkThreadLogic::assignation_thread_module_logic]({0}) curr_thread_index={1},message_list[0]->command_id_={2}).", connect_id, curr_thread_index, message_list[0]->command_id_);
+        PSS_LOGGER_DEBUG("[CWorkThreadLogic::assignation_thread_module_logic]({0}) curr_thread_index={1},message_list[0]->command_id_={2}).", connect_id, curr_thread_index, message_list[0]->command_id_);
 #endif
-    //添加到数据队列处理
-    App_tms::instance()->AddMessage(curr_thread_index, [this, session, connect_id, message_list, module_logic]() {
-        //插件逻辑处理
-        do_work_thread_module_logic(session, connect_id, message_list, module_logic);
-        });
+        //添加到数据队列处理
+        App_tms::instance()->AddMessage(curr_thread_index, [this, session, connect_id, message_list, module_logic]() {
+            //插件逻辑处理
+            do_work_thread_module_logic(session, connect_id, message_list, module_logic);
+            });
 
 #ifdef GCOV_TEST
-    //测试连接自检
-    uint32 check_timeout = 120;
-    run_check_task(check_timeout);
+        //测试连接自检
+        uint32 check_timeout = 120;
+        run_check_task(check_timeout);
 #endif
+    }
     return 0;
 }
 

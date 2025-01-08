@@ -3,11 +3,22 @@
 CTcpSession::CTcpSession(tcp::socket socket, asio::io_context* io_context)
     : socket_(std::move(socket)), io_context_(io_context)
 {
-    // 设置UDP缓冲区大小为10*1024*1024字节
-    asio::socket_base::receive_buffer_size recvoption(10*1024*1024);
-    asio::socket_base::send_buffer_size sendoption(10*1024*1024);
-    socket_.set_option(recvoption);
-    socket_.set_option(sendoption);
+    // 设置UDP缓冲区大小为TCP_BUFFER_SIZE字节
+    asio::socket_base::receive_buffer_size recvoption(TCP_BUFFER_SIZE);
+    asio::socket_base::send_buffer_size sendoption(TCP_BUFFER_SIZE);
+
+    std::error_code ec;
+    socket_.set_option(recvoption, ec);
+    if (ec) 
+    {
+        PSS_LOGGER_ERROR("[CTcpSession::CTcpSession]Failed to set receive buffer size: {0}", ec.message());
+    }
+
+    socket_.set_option(sendoption, ec);
+    if (ec) 
+    {
+        PSS_LOGGER_ERROR("[CTcpSession::CTcpSession]Failed to set send buffer size: {0}", ec.message());
+    }
 }
 
 void CTcpSession::open(uint32 packet_parse_id, uint32 recv_size)
@@ -138,6 +149,11 @@ void CTcpSession::do_read()
 void CTcpSession::do_write(uint32 connect_id)
 {
     std::lock_guard<std::mutex> lck(send_thread_mutex_);
+
+    if (session_send_buffer_.empty()) 
+    {
+        return;
+    }
 
     //组装发送数据
     auto send_buffer = make_shared<CSendBuffer>();

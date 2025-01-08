@@ -27,6 +27,30 @@ void CLoadModule::set_session_service(ISessionService* session_service)
     session_service_ = session_service;
 }
 
+void CLoadModule::add_command_to_module_function(const CLogic_Command_Info& logic_command_info, std::shared_ptr<_ModuleInfo> module_info)
+{
+    if (logic_command_info.type_ == ENUM_LOGIC_COMMAND_TYPE::COMMAND_TYPE_NO_FN)
+    {
+        command_to_module_function_[logic_command_info.command_id_] = module_info->do_message_;
+    }
+    else
+    {
+        command_to_module_function_[logic_command_info.command_id_] = logic_command_info.logic_fn_;
+    }
+}
+
+void CLoadModule::add_command_to_session_function(const CLogic_Command_Info& logic_command_info, std::shared_ptr<_ModuleInfo> module_info)
+{
+    if (logic_command_info.type_ == ENUM_LOGIC_COMMAND_TYPE::COMMAND_TYPE_NO_FN)
+    {
+        command_to_session_function_[logic_command_info.command_id_] = module_info->do_message_;
+    }
+    else
+    {
+        command_to_session_function_[logic_command_info.command_id_] = logic_command_info.logic_fn_;
+    }
+}
+
 bool CLoadModule::load_plugin_module(const string& module_file_path, const string& module_file_name, const string& module_param)
 {
     auto module_info = std::make_shared<_ModuleInfo>();
@@ -66,13 +90,16 @@ bool CLoadModule::load_plugin_module(const string& module_file_path, const strin
     //获得所有的注册指令(注册)
     for (const auto& command_info : module_frame_object.module_command_list_)
     {
-        if (command_info.type_ == ENUM_LOGIC_COMMAND_TYPE::COMMAND_TYPE_NO_FN)
+        //这里追加判定，是同步执行消息还是异步执行消息
+        if (command_info.logic_run_state_ == EM_LOGIC_RUN_STATE::LOGIC_RUN_ASYNHRONOUS)
         {
-            command_to_module_function_[command_info.command_id_] = module_info->do_message_;
+            //异步线程执行
+            add_command_to_module_function(command_info, module_info);
         }
         else
         {
-            command_to_module_function_[command_info.command_id_] = command_info.logic_fn_;
+            //同步session内执行
+            add_command_to_session_function(command_info, module_info);
         }
 
         //记录当前插件加载的命令信息
@@ -232,6 +259,12 @@ command_to_module_function& CLoadModule::get_module_function_list()
 {
     return command_to_module_function_;
 }
+
+command_to_module_function& CLoadModule::get_session_function_list()
+{
+    return command_to_session_function_;
+}
+
 
 int CLoadModule::plugin_in_name_to_module_run(const std::string& module_name, std::shared_ptr<CMessage_Packet> send_packet, std::shared_ptr<CMessage_Packet> return_packet)
 {

@@ -9,10 +9,6 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="资源文件">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="Common">
       <UniqueIdentifier>{2257a390-6bba-47cf-a68f-e77db325009d}</UniqueIdentifier>
     </Filter>
@@ -118,6 +114,9 @@
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="Message\SessionAddrList.cpp">
+      <Filter>Message</Filter>
+    </ClCompile>
+    <ClCompile Include="Message\SyncLogic.cpp">
       <Filter>Message</Filter>
     </ClCompile>
   </ItemGroup>
@@ -273,6 +272,9 @@
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="Message\SessionAddrList.h">
+      <Filter>Message</Filter>
+    </ClInclude>
+    <ClInclude Include="Message\SyncLogic.h">
       <Filter>Message</Filter>
     </ClInclude>
   </ItemGroup>

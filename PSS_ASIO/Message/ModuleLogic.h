@@ -9,6 +9,7 @@
 #include "CoreTimer.hpp"
 #include "SessionBuffer.hpp"
 #include "Iobridge.h"
+#include "SyncLogic.h"
 
 //根据线程的逻辑插件处理模块
 //add by freeeyes
@@ -106,7 +107,7 @@ public:
 
     void close_session_event(uint32 connect_id, shared_ptr<ISession> session);
 
-    int assignation_thread_module_logic(const uint32 connect_id, const vector<shared_ptr<CMessage_Packet>>& message_list, shared_ptr<ISession> session);
+    int assignation_thread_module_logic(const uint32 connect_id, vector<shared_ptr<CMessage_Packet>>& message_list, shared_ptr<ISession> session);
 
     int assignation_thread_module_logic_iotoio_error(const uint32 connect_id, const vector<shared_ptr<CMessage_Packet>>& message_list, shared_ptr<ISession> session);
 

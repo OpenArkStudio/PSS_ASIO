@@ -42,6 +42,8 @@ using float32 = float;
 using float64 = double;
 using io_port_type = uint16_t;
 
+const size_t TCP_BUFFER_SIZE = 10 * 1024 * 1024;
+
 //IO桥接类型
 enum class ENUM_IO_BRIDGE_TYPE
 {

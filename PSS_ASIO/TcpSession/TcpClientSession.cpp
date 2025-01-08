@@ -23,9 +23,9 @@ bool CTcpClientSession::start(const CConnect_IO_Info& io_info)
         asio::ip::tcp::endpoint localEndpoint(asio::ip::address::from_string(io_info.client_ip), io_info.client_port);
         socket_.open(asio::ip::tcp::v4(), connect_error);
         socket_.set_option(asio::ip::tcp::socket::reuse_address(true));
-        // 设置UDP缓冲区大小为10*1024*1024字节
-        asio::socket_base::receive_buffer_size recvoption(10*1024*1024);
-        asio::socket_base::send_buffer_size sendoption(10*1024*1024);
+        // 设置UDP缓冲区大小为TCP_BUFFER_SIZE字节
+        asio::socket_base::receive_buffer_size recvoption(TCP_BUFFER_SIZE);
+        asio::socket_base::send_buffer_size sendoption(TCP_BUFFER_SIZE);
         socket_.set_option(recvoption);
         socket_.set_option(sendoption);
 

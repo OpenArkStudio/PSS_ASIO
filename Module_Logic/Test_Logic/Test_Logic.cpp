@@ -53,11 +53,11 @@ int load_module(IFrame_Object* frame_object, string module_param)
     CPerformance_Check performance_check(random_sample, "load_module", time_cost_func);
 
     //注册插件
-    frame_object->Regedit_command(LOGIC_COMMAND_CONNECT);
+    frame_object->Regedit_command(LOGIC_COMMAND_CONNECT, EM_LOGIC_RUN_STATE::LOGIC_RUN_SYNCHRONOUS);
     frame_object->Regedit_command(LOGIC_COMMAND_DISCONNECT);
     frame_object->Regedit_command(LOGIC_CONNECT_SERVER_ERROR);
     frame_object->Regedit_command(LOGIC_LISTEN_SERVER_ERROR);
-    //frame_object->Regedit_command(COMMAND_TEST_SYNC);
+    frame_object->Regedit_command(COMMAND_TEST_SYNC, EM_LOGIC_RUN_STATE::LOGIC_RUN_SYNCHRONOUS);
     //frame_object->Regedit_command(COMMAND_TEST_ASYN);
     frame_object->Regedit_command(COMMAND_TEST_FRAME);
     frame_object->Regedit_command(COMMAND_TEST_HTTP_POST);
@@ -74,13 +74,14 @@ int load_module(IFrame_Object* frame_object, string module_param)
         std::placeholders::_3);
     frame_object->Regedit_command(COMMAND_TEST_ASYN, command_asyn_api);
 
+    /*
     auto command_sync_api = std::bind(&CBaseCommand::logic_test_sync,
         base_command.get(),
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3);
     frame_object->Regedit_command(COMMAND_TEST_SYNC, command_sync_api);
-
+    */
 
     session_service = frame_object->get_session_service();
 
@@ -144,7 +145,7 @@ int do_module_message(const CMessage_Source& source, std::shared_ptr<CMessage_Pa
     MESSAGE_FUNCTION(LOGIC_COMMAND_DISCONNECT, base_command->logic_disconnect, source, recv_packet, send_packet);
     MESSAGE_FUNCTION(LOGIC_CONNECT_SERVER_ERROR, base_command->logic_test_connect_error, source, recv_packet, send_packet);
     MESSAGE_FUNCTION(LOGIC_LISTEN_SERVER_ERROR, base_command->logic_test_listen_error, source, recv_packet, send_packet);
-    //MESSAGE_FUNCTION(COMMAND_TEST_SYNC, base_command->logic_test_sync, source, recv_packet, send_packet);
+    MESSAGE_FUNCTION(COMMAND_TEST_SYNC, base_command->logic_test_sync, source, recv_packet, send_packet);
     //MESSAGE_FUNCTION(COMMAND_TEST_ASYN, base_command->logic_test_asyn, source, recv_packet, send_packet);
     MESSAGE_FUNCTION(COMMAND_TEST_FRAME, base_command->logic_test_frame, source, recv_packet, send_packet);
     MESSAGE_FUNCTION(COMMAND_TEST_HTTP_POST, base_command->logic_http_post, source, recv_packet, send_packet);
