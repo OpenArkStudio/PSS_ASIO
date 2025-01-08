@@ -59,8 +59,6 @@ void CBaseCommand::init(ISessionService* session_service)
     test_io_2_io();
 #endif
 
-    test_io_2_io();
-
     PSS_LOGGER_DEBUG("[CBaseCommand::init]({0})io thread count.", session_service_->get_io_work_thread_count());
 }
 
