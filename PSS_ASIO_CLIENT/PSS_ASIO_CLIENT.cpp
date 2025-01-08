@@ -403,7 +403,10 @@ int main()
     tcp_test_connect_synchronize_server("127.0.0.1", 10002, 10010, 0x2101, 1, io_context);
     tcp_test_connect_synchronize_server("127.0.0.1", 10002, 10011, 0x2102, 1, io_context);
 
+    std::cout << "[udp_test_connect_synchronize_server]udp 0x2101 test ok." << std::endl;
     udp_test_connect_synchronize_server("127.0.0.1", 10005, 10012, 0x2101, io_context);
+    std::cout << "[udp_test_connect_synchronize_server]udp 0x2102 test ok." << std::endl;
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
     udp_test_connect_synchronize_server("127.0.0.1", 10005, 10012, 0x2102, io_context);
 
     from_server_get_kcp_id("127.0.0.1", 10100);
