@@ -74,7 +74,7 @@ void CKcpServer::do_receive_from(std::error_code ec, std::size_t length)
 {
     //查询当前的connect_id
     auto connect_id = add_udp_endpoint(recv_endpoint_, length, max_send_size_);
-    if (-1 == connect_id)
+    if (0 == connect_id)
     {
         //初始化kcp函数失败
         return;
@@ -344,7 +344,7 @@ uint32 CKcpServer::add_udp_endpoint(const udp::endpoint& recv_endpoint, size_t l
         auto init_ret = session_info->init_kcp(connect_id, max_recv_size_, max_send_size_, output_func, this);
         if (false == init_ret)
         {
-            return -1;
+            return 0;
         }
 
         //刷新一下时间
