@@ -330,6 +330,9 @@ void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession
     source.local_ip_ = local_info;
     source.remote_ip_ = romote_info;
 
+    //看看是否需要桥接逻辑
+    App_IoBridge::instance()->regedit_bridge_session_info(romote_info, session->get_io_type(), connect_id, session);
+
     //判断当前消息是否需要同步处理
     if (App_SyncLogic::instance()->do_sync_message(recv_packet->command_id_,
         source,
@@ -344,9 +347,6 @@ void CWorkThreadLogic::add_thread_session(uint32 connect_id, shared_ptr<ISession
 
         return;
     }
-
-    //看看是否需要桥接逻辑
-    App_IoBridge::instance()->regedit_bridge_session_info(romote_info, session->get_io_type(), connect_id, session);
 
     //向插件告知链接建立消息
     App_tms::instance()->AddMessage(curr_thread_index, [module_logic, source, recv_packet, send_packet]() {

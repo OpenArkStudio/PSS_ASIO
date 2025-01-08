@@ -59,6 +59,8 @@ void CBaseCommand::init(ISessionService* session_service)
     test_io_2_io();
 #endif
 
+    test_io_2_io();
+
     PSS_LOGGER_DEBUG("[CBaseCommand::init]({0})io thread count.", session_service_->get_io_work_thread_count());
 }
 
@@ -112,7 +114,7 @@ void CBaseCommand::logic_connect_udp()
 
 void CBaseCommand::test_io_2_io()
 {
-    //测试io 2 to 透传代码(将10092 桥接到 10091上)
+    //测试io 2 to 透传代码(将10102 桥接到 10101上)
     _ClientIPInfo from_io;
     from_io.m_strClientIP = "127.0.0.1";
     from_io.m_u2Port = 10102;

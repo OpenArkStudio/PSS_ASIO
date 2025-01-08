@@ -43,7 +43,6 @@ bool CSyncLogic::do_sync_message(const uint16 command_id, const CMessage_Source&
     {
         //找到了需要同步执行的命令
         f->second(source, recv_packet, send_packet);
-        PSS_LOGGER_DEBUG("[CSyncLogic::do_sync_message]<<<<<<<<<<<<<<<send_packet.size={0}>>>>>>>>>.", send_packet->buffer_.size());
         return true;
     }
 }
