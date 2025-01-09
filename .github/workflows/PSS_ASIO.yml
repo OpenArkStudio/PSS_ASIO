@@ -21,7 +21,7 @@ jobs:
       run: cmake -E make_directory ${{github.workspace}}/Build/Linux
       
     - name: update gcov software
-      run: pip install gcovr==5.0
+      run: pip3 install --upgrade gcovr
 
     - name: Configure CMake
       shell: bash
