@@ -78,6 +78,8 @@ jobs:
         ls -l ./PSS_ASIO/CMakeFiles/pss_asio.dir/QueueSession/
         echo "gcov********************(gcda)" 
         ls -l ./PSS_ASIO/CMakeFiles/pss_asio.dir/QueueSession/*.gcda
+        echo "gcov********************(gcc --version)" 
+        gcc --version
         echo "gcov********************end" 
         gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/QueueSession/*.cpp.gcda ../../PSS_ASIO/QueueSession/*.cpp > /dev/null
         gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/TTySession/*.cpp.gcda ../../PSS_ASIO/TTySession/*.cpp > /dev/null
