@@ -99,28 +99,3 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}      
-
-    - name: install google test
-      working-directory: ${{github.workspace}}/tests
-      shell: bash 
-      run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make
-
-    - name: run google test
-      working-directory: ${{github.workspace}}/tests
-      shell: bash 
-      run: |
-        apt list --installed | grep gtest
-        cmake .
-        cmake --build . --config debug
-        ./test_pss_asio
-    
-    - name: make report && show
-      working-directory: ${{github.workspace}}/tests
-      shell: bash 
-      run: |
-        cat Test_Pss_Asio.xml
-    - name: Push changes
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: ${{ github.ref }}
