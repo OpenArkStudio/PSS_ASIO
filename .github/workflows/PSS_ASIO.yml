@@ -23,6 +23,9 @@ jobs:
     - name: update gcov software
       run: pip3 install --upgrade gcovr
 
+    - name: Install lcov dependencies
+      run: sudo apt-get update && sudo apt-get install -y lcov gcovr
+
     - name: Configure CMake
       shell: bash
       working-directory: ${{github.workspace}}/Build/Linux
@@ -67,28 +70,20 @@ jobs:
         killall pss_asio
         sleep 20
         echo "close pss_asio"
-        echo "gcov********************" 
-        cd ${{github.workspace}}
-        pwd
-        gcovr --sonarqube > coverage.xml
-        ls -la coverage.xml
-        echo "gcov********************Begin" 
+        echo "[lcov]********************Begin" 
         cd ${{github.workspace}}/Build/Linux/
         pwd
         ls -l ./PSS_ASIO/CMakeFiles/pss_asio.dir/QueueSession/
-        echo "gcov********************(gcda)" 
+        echo "[lcov]********************(gcda)" 
         ls -l ./PSS_ASIO/CMakeFiles/pss_asio.dir/QueueSession/*.gcda
-        echo "gcov********************(gcc --version)" 
+        echo "[lcov]********************(gcc --version)" 
         gcc --version
-        echo "gcov********************end" 
-        # gcov-13 -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/QueueSession/*.cpp.gcda ../../PSS_ASIO/QueueSession/*.cpp > /dev/null
-        # gcov-13 -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/TTySession/*.cpp.gcda ../../PSS_ASIO/TTySession/*.cpp > /dev/null
-        # gcov-13 -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/TcpSession/*.cpp.gcda ../../PSS_ASIO/TcpSession/*.cpp > /dev/null
-        # gcov-13 -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/UdpSession/*.cpp.gcda ../../PSS_ASIO/UdpSession/*.cpp > /dev/null
-        # gcov-13 -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/Common/*.cpp.gcda ../../PSS_ASIO/Common/*.cpp > /dev/null
-        # gcov-13 -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/Message/*.cpp.gcda ../../PSS_ASIO/Message/*.cpp > /dev/null   
-        find ./ -name "*.gcov" | wc -l
-        echo "gcov********************End"         
+
+        lcov --capture --directory . --output-file coverage.info
+        lcov --remove coverage.info '/usr/*' --output-file coverage.info
+        genhtml coverage.info --output-directory out
+        
+        echo "[lcov]********************End"         
 
     - name: SonarCloud Scan make report
       working-directory: ${{github.workspace}}
@@ -98,4 +93,12 @@ jobs:
         /home/runner/work/PSS_ASIO/PSS_ASIO/sonar-scanner-5.0.1.3006-linux/bin/sonar-scanner -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}      
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}  
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: ./build/coverage.info
+        flags: unittests
+        fail_ci_if_error: true       
