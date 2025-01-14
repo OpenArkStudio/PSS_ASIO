@@ -64,15 +64,6 @@ if(UNIX)
 		message("[logic] jemalloc path= ${jemalloc_path}")
 		target_link_libraries(${PROJECT_NAME}  -ljemalloc)
 	endif()	
-	
-	if(gcov_check STREQUAL "1")
-		message("[logic]gcov_check is set...")
-		set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -fprofile-arcs")
--		set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -ftest-coverage")
-        set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -fprofile-update=atomic")
-		set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} --coverage")
-		message("[logic]gcov_check is set...done")
-	endif()	
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES 
