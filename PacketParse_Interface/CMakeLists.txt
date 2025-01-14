@@ -56,6 +56,23 @@ if(UNIX)
 		message("[packet parse] jemalloc path= ${jemalloc_path}")
 		target_link_libraries(${PROJECT_NAME}  -ljemalloc)
 	endif()		
+	
+	if(gcov_check STREQUAL "1")
+		message("[packet]gcov_check is set...")
+		# set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} --coverage")
+		# 编译选项
+        add_compile_options(
+            -fprofile-arcs
+            -ftest-coverage
+            -fprofile-update=atomic
+        )
+
+        # 链接选项
+        add_link_options(
+            --coverage
+        )		
+		message("[packet]gcov_check is set...done")
+	endif()	
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES 

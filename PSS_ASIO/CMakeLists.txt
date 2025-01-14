@@ -94,7 +94,18 @@ if(UNIX)
 	message("OS is Linux...")
 	if(gcov_check STREQUAL "1")
 		message("[pss_asio]gcov_check is set...")
-		set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} --coverage")
+		# set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} --coverage")
+		# 编译选项
+        add_compile_options(
+            -fprofile-arcs
+            -ftest-coverage
+            -fprofile-update=atomic
+        )
+
+        # 链接选项
+        add_link_options(
+            --coverage
+        )		
 		message("[pss_asio]gcov_check is set...done")
 	endif()
 	
