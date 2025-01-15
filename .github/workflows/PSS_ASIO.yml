@@ -120,6 +120,6 @@ jobs:
       uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        file: ./build/coverage.info
+        file: ${{github.workspace}}/Build/Linux/coverage.info
         flags: unittests
         fail_ci_if_error: true       
