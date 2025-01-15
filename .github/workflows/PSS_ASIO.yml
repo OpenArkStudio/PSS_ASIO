@@ -73,13 +73,13 @@ jobs:
         echo "[lcov]********************Begin" 
         cd ${{github.workspace}}/Build/Linux/
         pwd
-        ls -l ./PSS_ASIO/CMakeFiles/pss_asio.dir/QueueSession/
         echo "[lcov]********************(gcda)" 
         ls -l ./PSS_ASIO/CMakeFiles/pss_asio.dir/QueueSession/*.gcda
         echo "[lcov]********************(gcc --version)" 
         lcov --capture --directory . --output-file coverage.info
         lcov --remove coverage.info '/usr/*' --output-file coverage.info
-        genhtml coverage.info --output-directory out       
+        genhtml coverage.info --output-directory out   
+        ls -l coverage.info
         echo "[lcov]********************End"         
 
         echo "gcov********************" 
