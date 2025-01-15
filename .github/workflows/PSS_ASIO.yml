@@ -82,12 +82,12 @@ jobs:
         genhtml coverage.info --output-directory out       
         echo "[lcov]********************End"         
 
-        # echo "gcov********************" 
-        # cd ${{github.workspace}}
-        # pwd
-        # gcovr --sonarqube > coverage.xml
-        # ls -la coverage.xml
-        # echo "gcov********************Begin" 
+        echo "gcov********************" 
+        cd ${{github.workspace}}
+        pwd
+        gcovr --sonarqube > coverage.xml
+        ls -la coverage.xml
+        echo "gcov********************Begin" 
         # cd ${{github.workspace}}/Build/Linux/
         # pwd
         # ls -l ./PSS_ASIO/CMakeFiles/pss_asio.dir/QueueSession/
