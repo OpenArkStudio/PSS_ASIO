@@ -82,28 +82,28 @@ jobs:
         ls -l coverage.info
         echo "[lcov]********************End"         
 
-        echo "gcov********************" 
-        cd ${{github.workspace}}
-        pwd
-        gcovr --sonarqube > coverage.xml
-        ls -la coverage.xml
-        echo "gcov********************Begin" 
-        # cd ${{github.workspace}}/Build/Linux/
+        # echo "gcov********************" 
+        # cd ${{github.workspace}}
         # pwd
-        # ls -l ./PSS_ASIO/CMakeFiles/pss_asio.dir/QueueSession/
-        # echo "gcov********************(gcda)" 
-        # ls -l ./PSS_ASIO/CMakeFiles/pss_asio.dir/QueueSession/*.gcda
-        # echo "gcov********************(gcc --version)" 
-        # gcc --version
-        # echo "gcov********************end" 
-        # gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/QueueSession/*.cpp.gcda ../../PSS_ASIO/QueueSession/*.cpp > /dev/null
-        # gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/TTySession/*.cpp.gcda ../../PSS_ASIO/TTySession/*.cpp > /dev/null
-        # gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/TcpSession/*.cpp.gcda ../../PSS_ASIO/TcpSession/*.cpp > /dev/null
-        # gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/UdpSession/*.cpp.gcda ../../PSS_ASIO/UdpSession/*.cpp > /dev/null
-        # gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/Common/*.cpp.gcda ../../PSS_ASIO/Common/*.cpp > /dev/null
-        # gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/Message/*.cpp.gcda ../../PSS_ASIO/Message/*.cpp > /dev/null   
-        # find ./ -name "*.gcov" | wc -l
-        # echo "gcov********************End"         
+        # gcovr --sonarqube > coverage.xml
+        # ls -la coverage.xml
+        echo "gcov********************Begin" 
+        cd ${{github.workspace}}/Build/Linux/
+        pwd
+        ls -l ./PSS_ASIO/CMakeFiles/pss_asio.dir/QueueSession/
+        echo "gcov********************(gcda)" 
+        ls -l ./PSS_ASIO/CMakeFiles/pss_asio.dir/QueueSession/*.gcda
+        echo "gcov********************(gcc --version)" 
+        gcc --version
+        echo "gcov*********************(sonar begin)" 
+        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/QueueSession/*.cpp.gcda ../../PSS_ASIO/QueueSession/*.cpp > /dev/null
+        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/TTySession/*.cpp.gcda ../../PSS_ASIO/TTySession/*.cpp > /dev/null
+        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/TcpSession/*.cpp.gcda ../../PSS_ASIO/TcpSession/*.cpp > /dev/null
+        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/UdpSession/*.cpp.gcda ../../PSS_ASIO/UdpSession/*.cpp > /dev/null
+        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/Common/*.cpp.gcda ../../PSS_ASIO/Common/*.cpp > /dev/null
+        gcov -a ./PSS_ASIO/CMakeFiles/pss_asio.dir/Message/*.cpp.gcda ../../PSS_ASIO/Message/*.cpp > /dev/null   
+        find ./ -name "*.gcov" | wc -l
+        echo "gcov********************End"         
 
 
     - name: SonarCloud Scan make report

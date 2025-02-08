@@ -2,6 +2,7 @@
 
 void CSyncLogic::Close()
 {
+    command_to_session_function_.clear();
 }
 
 void CSyncLogic::Init(const command_to_module_function& command_to_module_function)
@@ -10,7 +11,7 @@ void CSyncLogic::Init(const command_to_module_function& command_to_module_functi
     command_to_session_function_ = command_to_module_function;
 }
 
-void CSyncLogic::do_sync_message_list(CMessage_Source& source, vector<std::shared_ptr<CMessage_Packet>>& message_list, std::shared_ptr<CMessage_Packet> send_packet)
+void CSyncLogic::do_sync_message_list(CMessage_Source& source, vector<std::shared_ptr<CMessage_Packet>>& message_list, std::shared_ptr<CMessage_Packet> send_packet) const
 {
     if (command_to_session_function_.size() == 0)
     {
@@ -23,7 +24,7 @@ void CSyncLogic::do_sync_message_list(CMessage_Source& source, vector<std::share
             std::remove_if(
                 message_list.begin(),
                 message_list.end(),
-                [source, send_packet](const std::shared_ptr<CMessage_Packet>& packet) {
+                [&source, &send_packet](const std::shared_ptr<CMessage_Packet>& packet) {
                     return App_SyncLogic::instance()->do_sync_message(packet->command_id_, source, packet, send_packet);
                 }
             ),

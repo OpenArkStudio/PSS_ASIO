@@ -433,7 +433,7 @@ int CWorkThreadLogic::assignation_thread_module_logic(const uint32 connect_id, v
 {
     //判断有没有需要同步处理的消息
     CMessage_Source source;
-    std::shared_ptr<CMessage_Packet> send_packet = std::make_shared<CMessage_Packet>();
+    auto send_packet = std::make_shared<CMessage_Packet>();
 
     source.connect_id_ = connect_id;
     source.type_ = session->get_io_type();

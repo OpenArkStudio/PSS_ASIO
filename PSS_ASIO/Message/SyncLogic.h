@@ -17,7 +17,7 @@ public:
 
     void Init(const command_to_module_function& command_to_module_function);
 
-    void do_sync_message_list(CMessage_Source& source, vector<std::shared_ptr<CMessage_Packet>>& message_list, std::shared_ptr<CMessage_Packet> send_packet);
+    void do_sync_message_list(CMessage_Source& source, vector<std::shared_ptr<CMessage_Packet>>& message_list, std::shared_ptr<CMessage_Packet> send_packet) const;
 
     bool do_sync_message(const uint16 command_id, const CMessage_Source& source, std::shared_ptr<CMessage_Packet> recv_packet, std::shared_ptr<CMessage_Packet> send_packet);
 
